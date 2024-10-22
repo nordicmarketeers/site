@@ -1,0 +1,14 @@
+/* Defined theme colors */
+@import "colors.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  background-color: white;
+}
+
+.mce-content-body {
+  @apply prose p-gutter max-w-[880px];
+}

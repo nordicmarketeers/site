@@ -1,0 +1,63 @@
+:root {
+  /* 1rem = 16px */
+
+  --font-size-base: 1rem; /* 16px */
+  --line-height-base: 1.625em; /* 26px */
+
+  --header-hero: 2.4rem; /* 38,4px */
+  --header-hero-line-height: 1.25em; /* 48px */
+
+  --header-1: 2.1875rem; /* 35px */
+  --header-1-line-height: 1.14285em; /* 40px */
+
+  --header-2-large: 2.1875rem; /* 35px */
+  --header-2-large-line-height: 1.16666666em; /* 41px */
+
+  --header-2: 1.375rem; /* 22px */
+  --header-2-line-height: 1.22727em; /* 27px */
+
+  --header-3: 1.25rem; /* 20px */
+  --header-3-line-height: 1.3em; /* 26px */
+
+  --header-4: 1rem; /* 16px */
+  --header-4-line-height: 1.625em; /* 26px */
+}
+
+@media only screen and (min-width: 1024px)  { 
+  :root {
+    /* 1rem = 16px */
+
+    --font-size-base: 1.375rem; /* 22px */
+    --line-height-base: 1.636em; /* 36px */
+
+    --header-2-large: 3.125rem; /* 50px */
+    --header-2-large-line-height: 1.3em; /* 65px */
+
+    --header-2: 2rem; /* 32px */
+    --header-2-line-height: 1.5em; /* 48px */
+
+    --header-3: 1.375rem; /* 22px */
+    --header-3-line-height: 1.636em; /* 36px */
+
+    --header-4: 1.375rem; /* 22px */
+    --header-4-line-height: 1.636em; /* 36px */
+  }
+}
+
+@media only screen and (min-width: 1280px) {
+  :root {
+    --header-2-large: 4.375rem; /* 70px */
+    --header-2-large-line-height: 1.142em; /* 80px */
+  }
+}
+
+@media only screen and (min-width: 1400px) {
+  :root {
+    --header-hero: 5.625rem; /* 90px */
+    --header-hero-line-height: 1.16666666em; /* 105px */
+
+    --header-1: 5.625rem; /* 90px */
+    --header-1-line-height: 1.16666666em; /* 105px */
+
+  }
+}
