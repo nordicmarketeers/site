@@ -1,0 +1,434 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+@import '_variables.scss';
+@import '_catalyst.scss';
+
+* {
+    font-family: $font-family-body;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+    font-family: $font-family-headings;
+    letter-spacing: -0.02rem;
+
+    span {
+        font-family: $font-family-headings;
+    }
+}
+
+h1 {
+    pre {
+        color: $primary;
+        line-height: 1;
+        font-size: 1.2rem;
+    }
+}
+
+.responsive-navigation {
+    background-color: red;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-flow: row nowrap;
+    gap: 1rem;
+
+
+    img {
+        max-width: 100px;
+    }
+}
+
+nav {
+    transition: all 0.3s ease;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: $sidebar-width;
+    padding: 0 1rem;
+    z-index: 999;
+    background-color: $black;
+
+    @media (max-width: $breakpoint-small) {
+        width: 100%;
+        bottom: auto;
+    }
+
+    .nav-content {
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-flow: column nowrap;
+        font-size: 0.8rem;
+        gap: 1rem;
+        padding: 1rem;
+        height: 100%;
+    }
+
+    .button {
+        background-color: $primary;
+        color: $black;
+
+        @media (max-width: $breakpoint-small) {
+            display: none;
+        }
+
+        &:hover {
+            background-color: $white;
+        }
+    }
+
+    img {
+        margin-bottom: 2rem;
+        margin-top: 2rem;
+
+        @media (max-width: $breakpoint-small) {
+            max-height: 64px;
+            margin: 0;
+        }
+    }
+
+    div {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        flex-flow: column nowrap;
+        gap: 1rem;
+        width: 100%;
+    }
+
+    a {
+        color: $white;
+        text-align: center;
+
+        @media (max-width: $breakpoint-small) {
+            display: none;
+        }
+    }
+}
+
+.section-content {
+    position: relative;
+    max-width: $page-max-width;
+    padding: 0 2rem;
+    margin: 0 auto;
+
+    @media (max-width: $breakpoint-small) {
+        padding: 0 1rem
+    }
+}
+
+main {
+    margin-left: $sidebar-width;
+    max-width: 100%;
+
+    @media (max-width: $breakpoint-small) {
+        margin-left: 0;
+        margin-top: 64px;
+    }
+}
+
+.hero {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-flow: row nowrap;
+    gap: 1rem;
+    padding: 0;
+
+    .hero-animation {
+        position: relative;
+        margin-bottom: -0.65ch;
+        width: 600px;
+        height: 90px;
+        display: inline-block;
+        overflow: hidden;
+
+        span {
+            animation: word-appear 0.75s cubic-bezier(.63, .01, .15, 1.01) forwards;
+            position: absolute;
+            color: $primary;
+            padding-bottom: 1rem;
+            top: -5rem;
+
+
+            &:nth-child(1) {
+                animation-delay: 1s;
+            }
+
+            &:nth-child(2) {
+                animation-delay: 2s;
+            }
+
+            &:nth-child(3) {
+                animation-delay: 3s;
+            }
+
+            &:nth-child(4) {
+                animation-delay: 4s;
+            }
+
+
+        }
+
+        &.second {
+
+            span {
+
+                &:nth-child(1) {
+                    animation-delay: 5.5s;
+                }
+
+                &:nth-child(2) {
+                    animation-delay: 6.5s;
+                }
+
+                &:nth-child(3) {
+                    animation-delay: 7.5s;
+                }
+
+                &:nth-child(4) {
+                    animation-delay: 8.5s;
+                }
+            }
+        }
+
+        @keyframes word-appear {
+            0% {
+                top: -5rem;
+            }
+
+            25%,
+            75% {
+                top: 0;
+            }
+
+            100% {
+                top: 5rem;
+            }
+        }
+    }
+
+    .header-background-image {
+        position: absolute;
+        top: -80px;
+        right: -13rem;
+        z-index: -1;
+        max-width: 850px;
+        border-radius: 0 0 $border-radius * 2 $border-radius* 2;
+
+        @media (max-width: $breakpoint-small) {
+            display: none;
+        }
+    }
+
+    h1 {
+        line-height: 1;
+        letter-spacing: -0.2rem;
+        margin-top: 4rem;
+    }
+
+    p {
+        font-size: 1.2rem;
+        max-width: 45%;
+        line-height: 1.5;
+        background-color: $white;
+        padding: 1rem 1rem 1rem 0;
+        border-radius: $border-radius * 2;
+    }
+}
+
+h2 {
+    span {
+        color: $primary;
+    }
+}
+
+#services {
+    .material-symbols-outlined {
+        font-size: 64px;
+        color: $primary;
+    }
+}
+
+#breaker {
+    padding-top: 0;
+    border-bottom: $line;
+
+    h1 {
+        margin: 0;
+        font-size: 2.5rem;
+
+        @media (max-width: $breakpoint-small) {
+            font-size: 1.2rem;
+        }
+    }
+}
+
+#unique {
+    position: relative;
+    background-color: $primary;
+
+    .section-image {
+        position: absolute;
+        left: -190px;
+        top: -200px;
+        max-width: 700px;
+        border-radius: $border-radius * 2;
+    }
+}
+
+#team {
+    position: relative;
+    background-image: url('/images/background-single-guy-in-office.jpg');
+    background-size: cover;
+    background-position: center center;
+
+    .section-image {
+        position: absolute;
+        right: -190px;
+        bottom: -400px;
+        max-width: 800px;
+        border-radius: $border-radius * 2;
+        z-index: 0;
+    }
+
+    img {
+        max-width: 120px;
+        border-radius: 100%;
+    }
+}
+
+.box {
+
+    &.box-primary {
+        background-color: $primary;
+        color: $white;
+    }
+
+    &.box-black {
+        background-color: $black;
+        color: $white;
+    }
+}
+
+q {
+    font-family: $font-family-headings;
+    color: $primary;
+    font-size: 1.2rem;
+    line-height: 1.3;
+}
+
+.accordion {
+    width: 100%;
+    overflow: hidden;
+    margin-top: 1rem;
+    border-bottom: $line;
+
+    &__intro {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-flow: row nowrap;
+        gap: 1rem;
+        position: relative;
+        padding: 1rem 0;
+        cursor: pointer;
+        font-size: 1.2rem;
+        line-height: 1.4;
+
+        &:hover {
+            .material-symbols-outlined {
+                color: $primary;
+            }
+        }
+
+        .material-symbols-outlined {
+            color: $black;
+            font-size: 2.5rem;
+        }
+
+        .expanded {
+            display: none;
+        }
+    }
+
+    &__content {
+        padding: 0 0 1rem 0;
+        max-height: 0;
+        overflow: hidden;
+        will-change: max-height;
+        transition: all 0.25s ease-out;
+        opacity: 0;
+    }
+
+    &__active {
+        .accordion__intro {
+            .expanded {
+                display: block;
+            }
+
+            .contracted {
+                display: none;
+            }
+        }
+
+        .accordion__content {
+            opacity: 1;
+        }
+    }
+}
+
+footer {
+    background-color: $primary;
+    padding: 2rem;
+    margin-left: $sidebar-width;
+    max-width: 100%;
+
+    @media (max-width: $breakpoint-small) {
+        margin-left: 0;
+    }
+
+    .sjobergska {
+        max-width: 160px;
+    }
+
+    .join-network {
+        border-left: $line;
+        padding-left: 2rem;
+
+        p {
+            color: $black;
+            font-size: 1.5rem;
+            line-height: 1.2;
+            font-weight: bold;
+        }
+    }
+
+    .footer-content {
+        max-width: $page-max-width;
+        margin: 0 auto;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-flow: row nowrap;
+        gap: 6rem;
+
+        @media (max-width: $breakpoint-small) {
+            flex-flow: column nowrap;
+        }
+
+    }
+}
