@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import classNames from "classnames";
 
 import { useConfiguration } from "../../context/configurationContext";
@@ -21,6 +21,7 @@ import {
 	NamedLink,
 	ResponsiveImage,
 	ListingCardThumbnail,
+	AvatarLarge,
 } from "../../components";
 
 import css from "./ListingCard.module.css";
@@ -215,6 +216,8 @@ export const ListingCard = props => {
 	);
 	const showListingImage = requireListingImage(foundListingTypeConfig);
 
+	console.log(listing);
+
 	const {
 		aspectWidth = 1,
 		aspectHeight = 1,
@@ -229,49 +232,118 @@ export const ListingCard = props => {
 		  }
 		: null;
 
-	return (
-		<NamedLink className={classes} name="ListingPage" params={{ id, slug }}>
-			<ListingCardImage
-				renderSizes={renderSizes}
-				title={title}
-				currentListing={currentListing}
-				config={config}
-				setActivePropsMaybe={setActivePropsMaybe}
-				aspectWidth={aspectWidth}
-				aspectHeight={aspectHeight}
-				variantPrefix={variantPrefix}
-				style={cardStyle}
-				showListingImage={showListingImage}
-			/>
-			<div className={css.info}>
-				<PriceMaybe
-					price={price}
-					publicData={publicData}
-					config={config}
-					intl={intl}
-					listingTypeConfig={foundListingTypeConfig}
-				/>
-				<div className={css.mainInfo}>
-					{showListingImage && (
-						<div className={css.title}>
-							{richText(title, {
-								longWordMinLength: MIN_LENGTH_FOR_LONG_WORDS,
-								longWordClass: css.longWord,
-							})}
+	const capitalize = str =>
+		str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
+
+	const languages = Array.isArray(publicData?.languages)
+		? publicData.languages.map(capitalize).join(", ")
+		: "";
+
+	if (publicData.listingType === "consultant_profile") {
+		return (
+			<NamedLink
+				className={classes}
+				name="ListingPage"
+				params={{ id, slug }}
+			>
+				<div className={`${css.cardWrapper} ${css.profileWrapper}`}>
+					<div className={css.topRow}>
+						<AvatarLarge
+							user={author}
+							disableProfileLink
+							className={css.cardAvatar}
+						/>
+
+						<div className={css.authorText}>
+							<p className={css.authorName}>{authorName}</p>
+							<p className={css.metaText}>Malmö, Sverige</p>
+							{languages && (
+								<p className={css.metaText}>{languages}</p>
+							)}
 						</div>
-					)}
-					{showAuthorInfo ? (
-						<div className={css.authorInfo}>
-							<FormattedMessage
-								id="ListingCard.author"
-								values={{ authorName }}
-							/>
-						</div>
-					) : null}
+					</div>
+
+					<div className={css.content}>
+						<p className={css.title}>{title}</p>
+						<p className={css.description}>
+							{listing.attributes.description}
+						</p>
+					</div>
 				</div>
-			</div>
-		</NamedLink>
-	);
+				{/* <ListingCardImage
+        renderSizes={renderSizes}
+        title={title}
+        currentListing={currentListing}
+        config={config}
+        setActivePropsMaybe={setActivePropsMaybe}
+        aspectWidth={aspectWidth}
+        aspectHeight={aspectHeight}
+        variantPrefix={variantPrefix}
+        style={cardStyle}
+        showListingImage={showListingImage}
+      />
+      <div className={css.info}>
+        <PriceMaybe
+          price={price}
+          publicData={publicData}
+          config={config}
+          intl={intl}
+          listingTypeConfig={foundListingTypeConfig}
+        />
+        <div className={css.mainInfo}>
+          {showListingImage && (
+            <div className={css.title}>
+              {richText(title, {
+                longWordMinLength: MIN_LENGTH_FOR_LONG_WORDS,
+                longWordClass: css.longWord,
+              })}
+            </div>
+          )}
+           {showAuthorInfo ? (
+            <div className={css.authorInfo}>
+              <FormattedMessage id="ListingCard.author" values={{ authorName }} />
+            </div>
+          ) : null}
+        </div>
+      </div> */}
+			</NamedLink>
+		);
+	} else
+		return (
+			<NamedLink
+				className={classes}
+				name="ListingPage"
+				params={{ id, slug }}
+			>
+				<div className={css.cardWrapper}>
+					<p className={css.jobTitle}>{title}</p>
+
+					<p className={css.jobLocation}>Malmö, Sverige</p>
+
+					<div className={css.tagRow}>
+						{publicData?.role?.[0] && (
+							<span className={css.tag}>
+								{capitalize(
+									publicData.role[0].replace("_", " ")
+								)}
+							</span>
+						)}
+
+						{publicData?.work_model && (
+							<span className={css.tag}>
+								{capitalize(publicData.work_model)}
+							</span>
+						)}
+
+						{publicData.extent.map(item => (
+							<span key={item} className={css.tag}>
+								{capitalize(item.replace("_", " "))}
+							</span>
+						))}
+					</div>
+				</div>
+			</NamedLink>
+		);
 };
 
 export default ListingCard;

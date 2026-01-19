@@ -22,6 +22,7 @@ import {
 import { parse } from "../../util/urlHelpers";
 
 import { addMarketplaceEntities } from "../../ducks/marketplaceData.duck";
+import { util as sdkUtil } from "../../util/sdkLoader";
 
 // Pagination page size might need to be dynamic on responsive page layouts
 // Current design has max 3 columns 12 is divisible by 2 and 3
@@ -464,17 +465,24 @@ export const loadData = (params, search, config) => (
 			...listingTypeVariantMaybe,
 			page,
 			perPage: RESULT_PAGE_SIZE,
-			include: ["author", "images"],
+			include: ["author", "images", "author.profileImage"],
 			"fields.listing": [
 				"title",
+				"description",
 				"geolocation",
+				"location",
 				"price",
 				"deleted",
 				"state",
+				"publicData.languages",
 				"publicData.listingType",
 				"publicData.transactionProcessAlias",
 				"publicData.unitType",
 				"publicData.cardStyle",
+				"publicData.language",
+				"publicData.role",
+				"publicData.work_model",
+				"publicData.extent",
 				// These help rendering of 'purchase' listings,
 				// when transitioning from search page to listing page
 				"publicData.pickupEnabled",
@@ -482,7 +490,6 @@ export const loadData = (params, search, config) => (
 				"publicData.priceVariationsEnabled",
 				"publicData.priceVariants",
 			],
-			"fields.user": ["profile.displayName", "profile.abbreviatedName"],
 			"fields.image": [
 				"variants.scaled-small",
 				"variants.scaled-medium",
@@ -496,6 +503,27 @@ export const loadData = (params, search, config) => (
 				aspectRatio
 			),
 			"limit.images": 1,
+			"fields.user": [
+				"profile.displayName",
+				"profile.abbreviatedName",
+				"profile.profileImage",
+			],
+			"fields.image": [
+				"variants.square-small",
+				"variants.square-small2x",
+				"variants.square-xsmall",
+				"variants.square-xsmall2x",
+			],
+			"imageVariant.square-xsmall": sdkUtil.objectQueryString({
+				w: 40,
+				h: 40,
+				fit: "crop",
+			}),
+			"imageVariant.square-xsmall2x": sdkUtil.objectQueryString({
+				w: 80,
+				h: 80,
+				fit: "crop",
+			}),
 		},
 		config,
 	});

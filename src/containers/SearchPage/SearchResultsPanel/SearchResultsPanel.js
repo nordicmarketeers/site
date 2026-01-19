@@ -78,23 +78,22 @@ const SearchResultsPanel = props => {
 
 	return (
 		<div className={classes}>
-			<ul
+			<div
 				className={
 					isMapVariant ? css.listingCardsMapVariant : css.listingCards
 				}
 			>
 				{listings.map(l => (
-					<li key={l.id.uuid} className={css.resultItem}>
-						<ListingCard
-							className={css.listingCard}
-							listing={l}
-							renderSizes={cardRenderSizes(isMapVariant)}
-							setActiveListing={setActiveListing}
-						/>
-					</li>
+					<ListingCard
+						className={css.listingCard}
+						key={l.id.uuid}
+						listing={l}
+						renderSizes={cardRenderSizes(isMapVariant)}
+						setActiveListing={setActiveListing}
+					/>
 				))}
 				{props.children}
-			</ul>
+			</div>
 			{paginationLinks}
 		</div>
 	);
