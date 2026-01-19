@@ -204,6 +204,11 @@ app.get("/sitemap-:resource", sitemapResourceRoute);
 // The corresponding <link> element is set in src/components/Page/Page.js
 app.get("/site.webmanifest", webmanifestResourceRoute);
 
+// Health check endpoint for Render
+app.get("/health", (req, res) => {
+	res.status(200).send("OK");
+});
+
 // These .well-known/* endpoints will be enabled if you are using this template as OIDC proxy
 // https://www.sharetribe.com/docs/cookbook-social-logins-and-sso/setup-open-id-connect-proxy/
 // We need to handle these endpoints separately so that they are accessible by Sharetribe backend
