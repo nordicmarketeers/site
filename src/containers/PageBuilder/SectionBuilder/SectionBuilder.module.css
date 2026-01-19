@@ -152,7 +152,7 @@
 }
 
 /**
- * Theme: dark 
+ * Theme: dark
  * These styles are at the bottom of the file so that they overwrite rules for default "light" theme.
  */
 .darkTheme h1,
@@ -214,4 +214,99 @@
 /* dark code block */
 .darkTheme pre {
 	background-color: var(--colorGrey700);
+}
+
+/* CONSULTANT PROFILE */
+
+.cardWrapper {
+	border: 1px solid var(--colorGrey300);
+	border-radius: 8px;
+	padding: 12px;
+	background: #fff;
+	min-height: 200;
+}
+
+/* Top row */
+.topRow {
+	display: flex;
+	gap: 10px;
+	margin-bottom: 10px;
+}
+
+.cardAvatar {
+	flex-shrink: 0;
+}
+
+.authorText {
+	display: flex;
+	flex-direction: column;
+}
+
+.authorName {
+	font-size: 1.6rem;
+	font-weight: var(--fontWeightSemiBold);
+	margin: 4px 0 4px 0;
+}
+
+.metaText {
+	font-size: 1.2rem;
+	color: var(--colorGrey500);
+	margin: 0;
+	padding: 0;
+}
+
+.content {
+	display: flex;
+	flex-direction: column;
+}
+
+.title {
+	font-size: 1.5rem;
+	font-weight: var(--fontWeightMedium);
+	margin: 0 0 4px 0;
+	display: -webkit-box;
+	-webkit-line-clamp: 1;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	line-height: 1.8rem;
+}
+
+.description {
+	font-size: 1.3rem;
+	color: var(--colorGrey700);
+	margin: 0;
+
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+/* CONSULTANT JOB */
+
+.jobTitle {
+	font-size: 1.6rem;
+	font-weight: var(--fontWeightSemiBold);
+	margin: 0 0 4px 0;
+}
+
+.jobLocation {
+	font-size: 1.2rem;
+	color: var(--colorGrey500);
+	margin: 0 0 10px 0;
+}
+
+.tagRow {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.tag {
+	font-size: 1.1rem;
+	padding: 4px 8px;
+	border-radius: 6px;
+	background-color: var(--colorGrey100);
+	color: var(--colorGrey700);
+	white-space: nowrap;
 }
