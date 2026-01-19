@@ -19,10 +19,105 @@
 .item {
 	padding: 4px 0 2px 0;
 
-	/* Fix broken multi-column layout in Chrome */
 	page-break-inside: avoid;
 
 	@media (--viewportMedium) {
 		padding: 6px 0 2px 0;
 	}
+}
+
+#option-search {
+	margin-bottom: 6px;
+}
+
+#option-search input {
+	border-radius: 0;
+	border-right: none;
+	border-top: none;
+	border-left: none;
+}
+
+input:focus {
+	border-color: var(--marketplaceColor);
+	box-shadow: none;
+}
+
+.dropdownCheckList {
+	position: relative;
+	display: inline-block;
+	width: 100%;
+	max-width: 563px;
+}
+
+.anchor {
+	display: block;
+	width: 100%;
+	padding: 10px 36px 10px 16px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	background: white;
+	cursor: pointer;
+	user-select: none;
+	position: relative;
+	font-size: 15px;
+	line-height: 1.4;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.anchor::after {
+	content: "";
+	position: absolute;
+	right: 12px;
+	top: 50%;
+	transform: translateY(-50%) rotate(-45deg);
+	width: 8px;
+	height: 8px;
+	border: solid #555;
+	border-width: 0 2px 2px 0;
+	transition: transform 0.15s;
+}
+
+.visible .anchor::after {
+	transform: translateY(-50%) rotate(45deg);
+}
+
+.items {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	right: 0;
+	max-height: 240px;
+	overflow-y: auto;
+	margin: 0;
+	padding: 0 0 6px 0;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	background: white;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	z-index: 10;
+	display: none;
+	list-style: none;
+}
+
+.itemsVisible {
+	display: block;
+}
+
+.item {
+	padding: 6px 12px;
+}
+
+.item:hover {
+	background: #f5faff;
+}
+
+.selectedItem {
+	background: #e6f3ff;
+	font-weight: 500;
+}
+
+.selectedItem .text {
+	color: #0066cc;
 }
