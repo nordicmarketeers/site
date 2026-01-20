@@ -204,6 +204,11 @@ export const ListingCard = props => {
 	const currentListing = ensureListing(listing);
 	const id = currentListing.id.uuid;
 	const { title = "", price, publicData } = currentListing.attributes;
+	const cityCountry = publicData.location.address
+		.split(", ")
+		.filter((_, i) => i !== 1)
+		.join(", ");
+
 	const slug = createSlug(title);
 
 	const author = ensureUser(listing.author);
@@ -256,7 +261,7 @@ export const ListingCard = props => {
 
 						<div className={css.authorText}>
 							<p className={css.authorName}>{authorName}</p>
-							<p className={css.metaText}>Malmö, Sverige</p>
+							<p className={css.metaText}>{cityCountry}</p>
 							{languages && (
 								<p className={css.metaText}>{languages}</p>
 							)}
@@ -318,7 +323,7 @@ export const ListingCard = props => {
 				<div className={css.cardWrapper}>
 					<p className={css.jobTitle}>{title}</p>
 
-					<p className={css.jobLocation}>Malmö, Sverige</p>
+					<p className={css.jobLocation}>{cityCountry}</p>
 
 					<div className={css.tagRow}>
 						{publicData?.role?.[0] && (

@@ -40,6 +40,7 @@ export const fetchListingById = listingId => (dispatch, getState, sdk) => {
 				"publicData.role",
 				"publicData.work_model",
 				"publicData.extent",
+				"publicData.location",
 				"publicData.pickupEnabled",
 				"publicData.shippingEnabled",
 				"publicData.priceVariationsEnabled",
