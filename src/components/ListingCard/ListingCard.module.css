@@ -72,7 +72,7 @@
 }
 
 .title {
-	font-size: 1.5rem;
+	font-size: 1.4rem;
 	font-weight: var(--fontWeightMedium);
 	margin: 0 0 4px 0;
 	display: -webkit-box;
@@ -84,7 +84,7 @@
 }
 
 .description {
-	font-size: 1.3rem;
+	font-size: 1.2rem;
 	color: var(--colorGrey700);
 	margin: 0;
 
