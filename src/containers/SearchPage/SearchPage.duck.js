@@ -479,7 +479,6 @@ export const loadData = (params, search, config) => (
 				"publicData.transactionProcessAlias",
 				"publicData.unitType",
 				"publicData.cardStyle",
-				"publicData.language",
 				"publicData.role",
 				"publicData.work_model",
 				"publicData.extent",
