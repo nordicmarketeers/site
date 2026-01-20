@@ -1,0 +1,42 @@
+# Exported from Render on 2026-01-19T13:53:20Z
+version: "1"
+projects:
+    - name: Nordic Marketeers Marketplace
+      environments:
+          - name: Production
+            services:
+                - type: web
+                  name: nordic-marketeers
+                  runtime: node
+                  repo: https://github.com/nordicmarketeers/site
+                  plan: free
+                  envVars:
+                      - key: REACT_APP_CSP
+                        sync: false
+                      - key: REACT_APP_ENV
+                        sync: false
+                      - key: GOOGLE_CLIENT_SECRET
+                        sync: false
+                      - key: REACT_APP_GOOGLE_CLIENT_ID
+                        sync: false
+                      - key: FACEBOOK_APP_SECRET
+                        sync: false
+                      - key: REACT_APP_FACEBOOK_APP_ID
+                        sync: false
+                      - key: REACT_APP_MARKETPLACE_NAME
+                        sync: false
+                      - key: REACT_APP_MARKETPLACE_ROOT_URL
+                        sync: false
+                      - key: SHARETRIBE_SDK_CLIENT_SECRET
+                        sync: false
+                      - key: REACT_APP_MAPBOX_ACCESS_TOKEN
+                        sync: false
+                      - key: REACT_APP_STRIPE_PUBLISHABLE_KEY
+                        sync: false
+                      - key: REACT_APP_SHARETRIBE_SDK_CLIENT_ID
+                        sync: false
+                  region: frankfurt
+                  buildCommand: yarn; yarn build
+                  startCommand: yarn start
+                  healthCheckPath: /health
+                  autoDeployTrigger: commit
