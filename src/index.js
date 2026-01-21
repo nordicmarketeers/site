@@ -70,6 +70,7 @@ const render = (store, shouldHydrate) => {
 		]);
 	})
 		.then(([_, fetchedAppAssets, cu]) => {
+			console.log(cu);
 			const { translations: translationsRaw, ...rest } =
 				fetchedAppAssets || {};
 			// We'll handle translations as a separate data.
@@ -94,6 +95,7 @@ const render = (store, shouldHydrate) => {
 						store={store}
 						hostedTranslations={translations}
 						hostedConfig={hostedConfig}
+						currentUser={cu}
 					/>,
 					{ onRecoverableError: log.onRecoverableError }
 				);
@@ -105,6 +107,7 @@ const render = (store, shouldHydrate) => {
 						store={store}
 						hostedTranslations={translations}
 						hostedConfig={hostedConfig}
+						currentUser={cu}
 					/>
 				);
 			}

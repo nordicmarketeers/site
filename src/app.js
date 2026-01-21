@@ -159,10 +159,12 @@ const MomentLocaleLoader = props => {
 };
 
 const Configurations = props => {
-	const { appConfig, children } = props;
+	const { appConfig, children, currentUser } = props;
+	console.log("appConfig: ", appConfig, currentUser);
 	const routeConfig = routeConfiguration(
 		appConfig.layout,
-		appConfig?.accessControl
+		appConfig?.accessControl,
+		currentUser
 	);
 	const locale = isTestEnv ? "en" : appConfig.localization.locale;
 
@@ -234,10 +236,16 @@ const EnvironmentVariableWarning = props => {
  * @param {Object} props.store
  * @param {Object} props.hostedTranslations
  * @param {Object} props.hostedConfig
+ * @param {Object} props.currentUser
  * @returns {JSX.Element}
  */
 export const ClientApp = props => {
-	const { store, hostedTranslations = {}, hostedConfig = {} } = props;
+	const {
+		store,
+		hostedTranslations = {},
+		hostedConfig = {},
+		currentUser,
+	} = props;
 	const appConfig = mergeConfig(hostedConfig, defaultConfig);
 
 	// Show warning on the localhost:3000, if the environment variable key contains "SECRET"
@@ -279,7 +287,7 @@ export const ClientApp = props => {
 	const logLoadDataCalls = appSettings?.env !== "test";
 
 	return (
-		<Configurations appConfig={appConfig}>
+		<Configurations appConfig={appConfig} currentUser={currentUser}>
 			<IntlProvider
 				locale={appConfig.localization.locale}
 				messages={{ ...localeMessages, ...hostedTranslations }}

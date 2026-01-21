@@ -57,6 +57,9 @@ const draftSlug = 'draft';
 
 const RedirectToLandingPage = () => <NamedRedirect name="LandingPage" />;
 
+// Custom AUTH wrappers
+import RequireCustomerPermission from '../components/RequireCustomerPermission';
+
 // NOTE: Most server-side endpoints are prefixed with /api. Requests to those
 // endpoints are indended to be handled in the server instead of the browser and
 // they will not render the application. So remember to avoid routes starting
@@ -65,17 +68,19 @@ const RedirectToLandingPage = () => <NamedRedirect name="LandingPage" />;
 
 // Our routes are exact by default.
 // See behaviour from Routes.js where Route is created.
-const routeConfiguration = (layoutConfig, accessControlConfig) => {
-  const SearchPage = layoutConfig.searchPage?.variantType === 'map' 
-    ? SearchPageWithMap 
+const routeConfiguration = (layoutConfig, accessControlConfig, currentUser) => {
+  const SearchPage = layoutConfig.searchPage?.variantType === 'map'
+    ? SearchPageWithMap
     : SearchPageWithGrid;
-  const ListingPage = layoutConfig.listingPage?.variantType === 'carousel' 
-    ? ListingPageCarousel 
+  const ListingPage = layoutConfig.listingPage?.variantType === 'carousel'
+    ? ListingPageCarousel
     : ListingPageCoverPhoto;
+
+  console.log("CU from routeconfig: ", currentUser);
 
   const isPrivateMarketplace = accessControlConfig?.marketplace?.private === true;
   const authForPrivateMarketplace = isPrivateMarketplace ? { auth: true } : {};
-  
+
   return [
     {
       path: '/',
@@ -151,25 +156,36 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       path: '/l/new',
       name: 'NewListingPage',
       auth: true,
-      component: () => (
-        <NamedRedirect
-          name="EditListingPage"
-          params={{ slug: draftSlug, id: draftId, type: 'new', tab: 'details' }}
-        />
-      ),
+	  component: props => (
+	  	<RequireCustomerPermission currentUser={currentUser}>
+		  <NamedRedirect
+            name="EditListingPage"
+            params={{ slug: draftSlug, id: draftId, type: 'new', tab: 'details' }}
+			{...props}
+          />
+	    </RequireCustomerPermission>
+	  ),
     },
     {
       path: '/l/:slug/:id/:type/:tab',
       name: 'EditListingPage',
       auth: true,
-      component: EditListingPage,
+	  component: props => (
+	  	<RequireCustomerPermission currentUser={currentUser}>
+		  <EditListingPage {...props}/>
+	    </RequireCustomerPermission>
+	  ),
       loadData: pageDataLoadingAPI.EditListingPage.loadData,
     },
     {
       path: '/l/:slug/:id/:type/:tab/:returnURLType',
       name: 'EditListingStripeOnboardingPage',
       auth: true,
-      component: EditListingPage,
+	  component: props => (
+	  	<RequireCustomerPermission currentUser={currentUser}>
+		  <EditListingPage {...props}/>
+	    </RequireCustomerPermission>
+	  ),
       loadData: pageDataLoadingAPI.EditListingPage.loadData,
     },
 
