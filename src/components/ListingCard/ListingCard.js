@@ -204,7 +204,7 @@ export const ListingCard = props => {
 	const currentListing = ensureListing(listing);
 	const id = currentListing.id.uuid;
 	const { title = "", price, publicData } = currentListing.attributes;
-	const cityCountry = publicData.location.address
+	const cityCountry = publicData?.location?.address
 		.split(", ")
 		.filter((_, i) => i !== 1)
 		.join(", ");
@@ -275,45 +275,9 @@ export const ListingCard = props => {
 						</p>
 					</div>
 				</div>
-				{/* <ListingCardImage
-        renderSizes={renderSizes}
-        title={title}
-        currentListing={currentListing}
-        config={config}
-        setActivePropsMaybe={setActivePropsMaybe}
-        aspectWidth={aspectWidth}
-        aspectHeight={aspectHeight}
-        variantPrefix={variantPrefix}
-        style={cardStyle}
-        showListingImage={showListingImage}
-      />
-      <div className={css.info}>
-        <PriceMaybe
-          price={price}
-          publicData={publicData}
-          config={config}
-          intl={intl}
-          listingTypeConfig={foundListingTypeConfig}
-        />
-        <div className={css.mainInfo}>
-          {showListingImage && (
-            <div className={css.title}>
-              {richText(title, {
-                longWordMinLength: MIN_LENGTH_FOR_LONG_WORDS,
-                longWordClass: css.longWord,
-              })}
-            </div>
-          )}
-           {showAuthorInfo ? (
-            <div className={css.authorInfo}>
-              <FormattedMessage id="ListingCard.author" values={{ authorName }} />
-            </div>
-          ) : null}
-        </div>
-      </div> */}
 			</NamedLink>
 		);
-	} else
+	} else if (publicData.listingType === "consultant_job") {
 		return (
 			<NamedLink
 				className={classes}
@@ -345,6 +309,54 @@ export const ListingCard = props => {
 								{capitalize(item.replace("_", " "))}
 							</span>
 						))}
+					</div>
+				</div>
+			</NamedLink>
+		);
+	} else
+		return (
+			<NamedLink
+				className={classes}
+				name="ListingPage"
+				params={{ id, slug }}
+			>
+				<ListingCardImage
+					renderSizes={renderSizes}
+					title={title}
+					currentListing={currentListing}
+					config={config}
+					setActivePropsMaybe={setActivePropsMaybe}
+					aspectWidth={aspectWidth}
+					aspectHeight={aspectHeight}
+					variantPrefix={variantPrefix}
+					style={cardStyle}
+					showListingImage={showListingImage}
+				/>
+				<div className={css.info}>
+					<PriceMaybe
+						price={price}
+						publicData={publicData}
+						config={config}
+						intl={intl}
+						listingTypeConfig={foundListingTypeConfig}
+					/>
+					<div className={css.mainInfo}>
+						{showListingImage && (
+							<div className={css.title}>
+								{richText(title, {
+									longWordMinLength: MIN_LENGTH_FOR_LONG_WORDS,
+									longWordClass: css.longWord,
+								})}
+							</div>
+						)}
+						{showAuthorInfo ? (
+							<div className={css.authorInfo}>
+								<FormattedMessage
+									id="ListingCard.author"
+									values={{ authorName }}
+								/>
+							</div>
+						) : null}
 					</div>
 				</div>
 			</NamedLink>
