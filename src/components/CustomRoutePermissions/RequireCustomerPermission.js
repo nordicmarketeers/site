@@ -1,18 +1,33 @@
 import React from "react";
 import { NamedRedirect } from "../.";
+import {
+	NO_ACCESS_PAGE_INITIATE_TRANSACTIONS,
+	NO_ACCESS_PAGE_POST_LISTINGS,
+	NO_ACCESS_PAGE_USER_PENDING_APPROVAL,
+	NO_ACCESS_PAGE_VIEW_LISTINGS,
+} from "../../util/urlHelpers";
 
 const RequireCustomerPermission = ({ currentUser, children }) => {
 	if (!currentUser) {
 		return <NamedRedirect name="LoginPage" />;
 	}
 
-	const isUnauthedConsultant =
+	const isUnauthedCustomer =
 		currentUser.effectivePermissionSet?.attributes?.initiateTransactions ===
 			"permission/deny" &&
 		currentUser.attributes?.profile?.publicData?.userType === "customer";
 
-	if (isUnauthedConsultant) {
-		return <NamedRedirect name="LandingPage" />;
+	if (isUnauthedCustomer) {
+		return (
+			<NamedRedirect
+				name="NoAccessPage"
+				params={{
+					scrollingDisabled: false,
+					currentUser,
+					missingAccessRight: NO_ACCESS_PAGE_USER_PENDING_APPROVAL,
+				}}
+			/>
+		);
 	}
 
 	return children;
