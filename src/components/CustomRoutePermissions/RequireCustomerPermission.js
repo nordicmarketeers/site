@@ -1,5 +1,5 @@
 import React from "react";
-import { NamedRedirect } from ".";
+import { NamedRedirect } from "../.";
 
 const RequireCustomerPermission = ({ currentUser, children }) => {
 	if (!currentUser) {

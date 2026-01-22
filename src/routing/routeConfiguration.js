@@ -57,8 +57,8 @@ const draftSlug = 'draft';
 
 const RedirectToLandingPage = () => <NamedRedirect name="LandingPage" />;
 
-// Custom AUTH wrappers
-import RequireCustomerPermission from '../components/RequireCustomerPermission';
+// Custom route permission wrappers
+import RequireCustomerPermission from '../components/CustomRoutePermissions/RequireCustomerPermission';
 
 // NOTE: Most server-side endpoints are prefixed with /api. Requests to those
 // endpoints are indended to be handled in the server instead of the browser and
@@ -160,8 +160,8 @@ const routeConfiguration = (layoutConfig, accessControlConfig, currentUser) => {
 	  	<RequireCustomerPermission currentUser={currentUser}>
 		  <NamedRedirect
             name="EditListingPage"
-            params={{ slug: draftSlug, id: draftId, type: 'new', tab: 'details' }}
 			{...props}
+            params={{ slug: draftSlug, id: draftId, type: 'new', tab: 'details' }}
           />
 	    </RequireCustomerPermission>
 	  ),
