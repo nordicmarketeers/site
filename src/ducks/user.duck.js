@@ -174,7 +174,7 @@ export const fetchCurrentUserNotifications = () => (
 	return dispatch(fetchCurrentUserNotificationsThunk()).unwrap();
 };
 
-const fetchCurrentUserPayloadCreator = (options, thunkAPI) => {
+const fetchCurrentUserPayloadCreator = async (options, thunkAPI) => {
 	const { getState, dispatch, extra: sdk, rejectWithValue } = thunkAPI;
 	const state = getState();
 	const { currentUserHasListings, currentUserShowTimestamp } =
@@ -239,29 +239,51 @@ const fetchCurrentUserPayloadCreator = (options, thunkAPI) => {
 			log.setUserId(currentUser.id.uuid);
 			return currentUser;
 		})
-		.then(currentUser => {
+		.then(async currentUser => {
+			let mergedUser = currentUser;
+
 			// If currentUser is not active (e.g. in 'pending-approval' state),
 			// then they don't have listings or transactions that we care about.
 			if (isUserAuthorized(currentUser)) {
-				if (
-					currentUserHasListings === false &&
-					updateHasListings !== false
-				) {
-					dispatch(fetchCurrentUserHasListings());
+				// Check if user has posted any listings
+				// Relevant for consultants
+				if (updateHasListings !== false) {
+					const params = {
+						states: "published",
+						page: 1,
+						perPage: 1,
+					};
+
+					const response = await sdk.ownListings.query(params);
+					const hasListings =
+						response.data.data && response.data.data.length > 0;
+
+					const hasPublishedListings =
+						hasListings &&
+						ensureOwnListing(response.data.data[0]).attributes
+							.state !== LISTING_STATE_DRAFT;
+
+					mergedUser = {
+						...mergedUser,
+						attributes: {
+							...mergedUser.attributes,
+							hasListings: !!hasPublishedListings,
+						},
+					};
 				}
 
 				if (updateNotifications !== false) {
 					dispatch(fetchCurrentUserNotifications());
 				}
 
-				if (!currentUser.attributes.emailVerified) {
+				if (!mergedUser.attributes.emailVerified) {
 					dispatch(fetchCurrentUserHasOrders());
 				}
 			}
 
 			// Make sure auth info is up to date
 			dispatch(authInfo());
-			return currentUser;
+			return mergedUser;
 		})
 		.catch(e => {
 			// Make sure auth info is up to date
