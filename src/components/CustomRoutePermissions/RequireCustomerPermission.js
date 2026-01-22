@@ -7,6 +7,10 @@ import {
 	NO_ACCESS_PAGE_VIEW_LISTINGS,
 } from "../../util/urlHelpers";
 
+// BLOCK THE USER FROM THE ROUTE IF:
+// THE USER IS OF TYPE "customer"
+// and
+// THE USER DOES NOT HAVE TRANSACTION PERMISSIONS
 const RequireCustomerPermission = ({ currentUser, children }) => {
 	if (!currentUser) {
 		return <NamedRedirect name="LoginPage" />;
