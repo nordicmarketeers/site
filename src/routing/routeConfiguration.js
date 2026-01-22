@@ -59,6 +59,7 @@ const RedirectToLandingPage = () => <NamedRedirect name="LandingPage" />;
 
 // Custom route permission wrappers
 import RequireCustomerPermission from '../components/CustomRoutePermissions/RequireCustomerPermission';
+import RequireEmailVerify from '../components/CustomRoutePermissions/RequireEmailVerify';
 
 // NOTE: Most server-side endpoints are prefixed with /api. Requests to those
 // endpoints are indended to be handled in the server instead of the browser and
@@ -157,13 +158,16 @@ const routeConfiguration = (layoutConfig, accessControlConfig, currentUser) => {
       name: 'NewListingPage',
       auth: true,
 	  component: props => (
-	  	<RequireCustomerPermission currentUser={currentUser}>
-		  <NamedRedirect
-            name="EditListingPage"
-			{...props}
-            params={{ slug: draftSlug, id: draftId, type: 'new', tab: 'details' }}
-          />
-	    </RequireCustomerPermission>
+		<RequireEmailVerify currentUser={currentUser}>
+	  	  <RequireCustomerPermission currentUser={currentUser}>
+			<NamedRedirect
+              name="EditListingPage"
+			  {...props}
+        	  params={{ slug: draftSlug, id: draftId, type: 'new', tab: 'details' }}
+        	/>
+	      </RequireCustomerPermission>
+		</RequireEmailVerify>
+
 	  ),
     },
     {
@@ -171,9 +175,11 @@ const routeConfiguration = (layoutConfig, accessControlConfig, currentUser) => {
       name: 'EditListingPage',
       auth: true,
 	  component: props => (
-	  	<RequireCustomerPermission currentUser={currentUser}>
-		  <EditListingPage {...props}/>
-	    </RequireCustomerPermission>
+		<RequireEmailVerify currentUser={currentUser}>
+	  	  <RequireCustomerPermission currentUser={currentUser}>
+			<EditListingPage {...props}/>
+	      </RequireCustomerPermission>
+		</RequireEmailVerify>
 	  ),
       loadData: pageDataLoadingAPI.EditListingPage.loadData,
     },
@@ -182,9 +188,11 @@ const routeConfiguration = (layoutConfig, accessControlConfig, currentUser) => {
       name: 'EditListingStripeOnboardingPage',
       auth: true,
 	  component: props => (
-	  	<RequireCustomerPermission currentUser={currentUser}>
-		  <EditListingPage {...props}/>
-	    </RequireCustomerPermission>
+		<RequireEmailVerify currentUser={currentUser}>
+	  	  <RequireCustomerPermission currentUser={currentUser}>
+		    <EditListingPage {...props}/>
+	      </RequireCustomerPermission>
+		</RequireEmailVerify>
 	  ),
       loadData: pageDataLoadingAPI.EditListingPage.loadData,
     },
