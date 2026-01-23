@@ -60,6 +60,7 @@ const RedirectToLandingPage = () => <NamedRedirect name="LandingPage" />;
 // Custom route permission wrappers
 import RequireCustomerPermission from '../components/CustomRoutePermissions/RequireCustomerPermission';
 import RequireEmailVerify from '../components/CustomRoutePermissions/RequireEmailVerify';
+import RequireNoConsultantPost from '../components/CustomRoutePermissions/RequireNoConsultantPosts';
 
 // NOTE: Most server-side endpoints are prefixed with /api. Requests to those
 // endpoints are indended to be handled in the server instead of the browser and
@@ -170,7 +171,9 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
 	  component: props => (
 		<RequireEmailVerify>
 	  	  <RequireCustomerPermission>
-			<EditListingPage {...props}/>
+			<RequireNoConsultantPost childProps={props}>
+			  <EditListingPage {...props}/>
+			</RequireNoConsultantPost>
 	      </RequireCustomerPermission>
 		</RequireEmailVerify>
 	  ),
@@ -183,7 +186,9 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
 	  component: props => (
 		<RequireEmailVerify>
 	  	  <RequireCustomerPermission>
-		    <EditListingPage {...props}/>
+			<RequireNoConsultantPost childProps={props}>
+		      <EditListingPage {...props}/>
+			</RequireNoConsultantPost>
 	      </RequireCustomerPermission>
 		</RequireEmailVerify>
 	  ),
