@@ -1,9 +1,12 @@
 import React from "react";
 import { NamedRedirect } from "../.";
+import { useSelector } from "react-redux";
 
 // BLOCK THE USER FROM THE ROUTE IF:
 // THE USER HAS NOT VERIFIED THEIR EMAIL ADDRESS
-const RequireEmailVerify = ({ currentUser, children }) => {
+const RequireEmailVerify = ({ children }) => {
+	const currentUser = useSelector(state => state.user.currentUser);
+
 	if (!currentUser) {
 		return <NamedRedirect name="LoginPage" />;
 	}

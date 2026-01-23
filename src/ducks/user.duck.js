@@ -283,6 +283,7 @@ const fetchCurrentUserPayloadCreator = async (options, thunkAPI) => {
 
 			// Make sure auth info is up to date
 			dispatch(authInfo());
+			console.log("CU from duck: ", mergedUser);
 			return mergedUser;
 		})
 		.catch(e => {

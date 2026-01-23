@@ -6,12 +6,16 @@ import {
 	NO_ACCESS_PAGE_USER_PENDING_APPROVAL,
 	NO_ACCESS_PAGE_VIEW_LISTINGS,
 } from "../../util/urlHelpers";
+import { useSelector } from "react-redux";
 
 // BLOCK THE USER FROM THE ROUTE IF:
 // THE USER IS OF TYPE "customer"
 // and
 // THE USER DOES NOT HAVE TRANSACTION PERMISSIONS
-const RequireCustomerPermission = ({ currentUser, children }) => {
+const RequireCustomerPermission = ({ children }) => {
+	console.log("From customerpermission");
+	const currentUser = useSelector(state => state.user.currentUser);
+
 	if (!currentUser) {
 		return <NamedRedirect name="LoginPage" />;
 	}

@@ -69,15 +69,13 @@ import RequireEmailVerify from '../components/CustomRoutePermissions/RequireEmai
 
 // Our routes are exact by default.
 // See behaviour from Routes.js where Route is created.
-const routeConfiguration = (layoutConfig, accessControlConfig, currentUser) => {
+const routeConfiguration = (layoutConfig, accessControlConfig) => {
   const SearchPage = layoutConfig.searchPage?.variantType === 'map'
     ? SearchPageWithMap
     : SearchPageWithGrid;
   const ListingPage = layoutConfig.listingPage?.variantType === 'carousel'
     ? ListingPageCarousel
     : ListingPageCoverPhoto;
-
-  console.log("CU from routeconfig: ", currentUser);
 
   const isPrivateMarketplace = accessControlConfig?.marketplace?.private === true;
   const authForPrivateMarketplace = isPrivateMarketplace ? { auth: true } : {};
@@ -158,16 +156,11 @@ const routeConfiguration = (layoutConfig, accessControlConfig, currentUser) => {
       name: 'NewListingPage',
       auth: true,
 	  component: props => (
-		<RequireEmailVerify currentUser={currentUser}>
-	  	  <RequireCustomerPermission currentUser={currentUser}>
-			<NamedRedirect
-              name="EditListingPage"
-			  {...props}
-        	  params={{ slug: draftSlug, id: draftId, type: 'new', tab: 'details' }}
-        	/>
-	      </RequireCustomerPermission>
-		</RequireEmailVerify>
-
+		<NamedRedirect
+          name="EditListingPage"
+		  {...props}
+          params={{ slug: draftSlug, id: draftId, type: 'new', tab: 'details' }}
+        />
 	  ),
     },
     {
@@ -175,8 +168,8 @@ const routeConfiguration = (layoutConfig, accessControlConfig, currentUser) => {
       name: 'EditListingPage',
       auth: true,
 	  component: props => (
-		<RequireEmailVerify currentUser={currentUser}>
-	  	  <RequireCustomerPermission currentUser={currentUser}>
+		<RequireEmailVerify>
+	  	  <RequireCustomerPermission>
 			<EditListingPage {...props}/>
 	      </RequireCustomerPermission>
 		</RequireEmailVerify>
@@ -188,8 +181,8 @@ const routeConfiguration = (layoutConfig, accessControlConfig, currentUser) => {
       name: 'EditListingStripeOnboardingPage',
       auth: true,
 	  component: props => (
-		<RequireEmailVerify currentUser={currentUser}>
-	  	  <RequireCustomerPermission currentUser={currentUser}>
+		<RequireEmailVerify>
+	  	  <RequireCustomerPermission>
 		    <EditListingPage {...props}/>
 	      </RequireCustomerPermission>
 		</RequireEmailVerify>
