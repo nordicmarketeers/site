@@ -111,12 +111,13 @@ class GeocoderMapbox {
 	getPlacePredictions(search, countryLimit, locale) {
 		const limitCountriesMaybe = countryLimit
 			? { countries: countryLimit }
-			: {};
+			: { countries: ["se"] };
 
 		return this.getClient()
 			.geocoding.forwardGeocode({
 				query: search,
 				limit: 5,
+				types: ["place"],
 				...limitCountriesMaybe,
 				language: [locale],
 			})
