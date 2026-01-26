@@ -452,7 +452,7 @@ export const speculateTransaction = (
 const stripeCustomerPayloadCreator = ({}, { dispatch, rejectWithValue }) => {
 	const fetchCurrentUserOptions = {
 		callParams: { include: ["stripeCustomer.defaultPaymentMethod"] },
-		updateHasListings: false,
+		updateHasListings: true,
 		updateNotifications: false,
 		enforce: true,
 	};

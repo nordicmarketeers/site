@@ -234,7 +234,7 @@ export const loadData = (params, search, config) => (
 		params.variant === PROFILE_PAGE_PENDING_APPROVAL_VARIANT;
 	const currentUser = getState()?.user?.currentUser;
 	const fetchCurrentUserOptions = {
-		updateHasListings: false,
+		updateHasListings: true,
 		updateNotifications: false,
 	};
 

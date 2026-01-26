@@ -28,7 +28,7 @@ export const stripeCustomerThunk = createAsyncThunk(
 	(_, { dispatch, extra: sdk, rejectWithValue }) => {
 		const fetchCurrentUserOptions = {
 			callParams: { include: ["stripeCustomer.defaultPaymentMethod"] },
-			updateHasListings: false,
+			updateHasListings: true,
 			updateNotifications: false,
 			enforce: true,
 		};
