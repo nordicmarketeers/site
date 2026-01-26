@@ -6,21 +6,14 @@ import {
 	NO_ACCESS_PAGE_USER_PENDING_APPROVAL,
 	NO_ACCESS_PAGE_VIEW_LISTINGS,
 } from "../../util/urlHelpers";
-import { useSelector } from "react-redux";
 
 // BLOCK THE USER FROM THE ROUTE IF:
 // THE USER IS OF TYPE "consultant"
 // and
 // THE USER HAS CREATED A LISTING
-const RequireNoConsultantPost = ({ children, childProps }) => {
-	const currentUser = useSelector(state => state.user.currentUser);
-
+const RequireNoConsultantPost = ({ currentUser, childProps }) => {
 	// Allow "edit", not "new"
 	const actionType = childProps?.params.type;
-
-	if (!currentUser) {
-		return <NamedRedirect name="LoginPage" />;
-	}
 
 	const isConsultantWithPost =
 		currentUser.attributes?.hasListings &&
@@ -40,8 +33,6 @@ const RequireNoConsultantPost = ({ children, childProps }) => {
 			/>
 		);
 	}
-
-	return children;
 };
 
 export default RequireNoConsultantPost;

@@ -61,6 +61,7 @@ const RedirectToLandingPage = () => <NamedRedirect name="LandingPage" />;
 import RequireCustomerPermission from '../components/CustomRoutePermissions/RequireCustomerPermission';
 import RequireEmailVerify from '../components/CustomRoutePermissions/RequireEmailVerify';
 import RequireNoConsultantPost from '../components/CustomRoutePermissions/RequireNoConsultantPosts';
+import PermissionsWrapper from '../components/CustomRoutePermissions/PermissionsWrapper';
 
 // NOTE: Most server-side endpoints are prefixed with /api. Requests to those
 // endpoints are indended to be handled in the server instead of the browser and
@@ -169,13 +170,9 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       name: 'EditListingPage',
       auth: true,
 	  component: props => (
-		<RequireEmailVerify>
-	  	  <RequireCustomerPermission>
-			<RequireNoConsultantPost childProps={props}>
-			  <EditListingPage {...props}/>
-			</RequireNoConsultantPost>
-	      </RequireCustomerPermission>
-		</RequireEmailVerify>
+		<PermissionsWrapper childProps={props} name={"EditListingPage"}>
+		  <EditListingPage {...props}/>
+		</PermissionsWrapper>
 	  ),
       loadData: pageDataLoadingAPI.EditListingPage.loadData,
     },
@@ -184,13 +181,9 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       name: 'EditListingStripeOnboardingPage',
       auth: true,
 	  component: props => (
-		<RequireEmailVerify>
-	  	  <RequireCustomerPermission>
-			<RequireNoConsultantPost childProps={props}>
-		      <EditListingPage {...props}/>
-			</RequireNoConsultantPost>
-	      </RequireCustomerPermission>
-		</RequireEmailVerify>
+		<PermissionsWrapper childProps={props} name={"EditListingPage"}>
+		  <EditListingPage {...props}/>
+		</PermissionsWrapper>
 	  ),
       loadData: pageDataLoadingAPI.EditListingPage.loadData,
     },
@@ -213,7 +206,7 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       path: '/u/:id',
       name: 'ProfilePage',
       ...authForPrivateMarketplace,
-      component: ProfilePage,
+	  component: ProfilePage,
       loadData: pageDataLoadingAPI.ProfilePage.loadData,
     },
     {
