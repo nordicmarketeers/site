@@ -151,7 +151,7 @@ const SectionBuilder = ({ sections: originalSections = [], options = {} }) => {
 
 				<div style={{ marginTop: "24px", textAlign: "center" }}>
 					<a
-						href="/s?pub_categoryLevel1=consultant_job_cat"
+						href="/s?pub_listingType=consultant_job"
 						className="Link_link__4wfKD SectionBuilder_ctaButton__+OGGi SectionBuilder_align__lJUUr"
 						style={{ display: "inline-block" }}
 					>

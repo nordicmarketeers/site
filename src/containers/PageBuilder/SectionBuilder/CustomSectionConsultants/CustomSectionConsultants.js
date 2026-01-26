@@ -58,7 +58,7 @@ const CustomConsultantsSection = props => {
 
 				<div style={{ marginTop: "24px", textAlign: "center" }}>
 					<a
-						href="/s?pub_categoryLevel1=consultants_cat"
+						href="/s?pub_listingType=consultant_profile"
 						className={classNames(
 							css.link,
 							css.ctaButton,
