@@ -2,18 +2,20 @@ import React from "react";
 import { NamedRedirect } from "../.";
 import { useSelector } from "react-redux";
 
-// Global auth wrappers
+// Global auth checkers
 import RequireEmailVerify from "./RequireEmailVerify";
 
-// Customer auth wrappers
+// Customer auth checkers
 import RequireCustomerPermission from "./RequireCustomerPermission";
 
-// Consultant auth wrappers
+// Consultant auth checkers
 import RequireNoConsultantPost from "./RequireNoConsultantPosts";
+import RequireConsultantProfile from "./RequireConsultantProfile";
 
 // IMPORTANT: Place checks in order of importance, the order you'd want them to trigger
 const authList = [
 	{
+		// Deny if user IS NOT logged in
 		check: ({ currentUser }) => {
 			if (!currentUser) return <NamedRedirect name="LoginPage" />;
 		},
@@ -21,23 +23,41 @@ const authList = [
 		pages: ["EditListingPage"],
 	},
 	{
+		// Deny if user HAS NOT verified their email address
 		check: RequireEmailVerify,
 		type: "global",
 		pages: ["EditListingPage"],
 	},
 	{
+		// Deny if customer DOES NOT have permissions
 		check: RequireCustomerPermission,
 		type: "customer",
 		pages: ["EditListingPage"],
 	},
 	{
+		// Deny if constultant HAS NOT made a post (force onboarding)
+		check: RequireConsultantProfile,
+		type: "consultant",
+		pages: [
+			"LandingPage",
+			"CMSPage",
+			"SearchPage",
+			"MakeOfferPage",
+			"ProfilePage",
+			"ProfileSettingsPage",
+			"InboxPage",
+			"ManageListingsPage",
+		],
+	},
+	{
+		// Deny if consultant HAS made a post
 		check: RequireNoConsultantPost,
 		type: "consultant",
 		pages: ["EditListingPage"],
 	},
 ];
 
-// Component meant to prevent clutter inside of routeConfiguration
+// Wraps around routes inside of routeConfiguration
 const PermissionsWrapper = ({ children, childProps, name }) => {
 	const currentUser = useSelector(state => state.user.currentUser);
 
@@ -52,8 +72,7 @@ const PermissionsWrapper = ({ children, childProps, name }) => {
 			auth.pages.includes(name) &&
 			(auth.type === userType || auth.type === "global")
 		) {
-			const authCheck = auth.check({ currentUser, childProps });
-			if (authCheck) failedCheck = authCheck;
+			failedCheck = auth.check({ currentUser, childProps });
 		}
 	});
 

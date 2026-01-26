@@ -52,15 +52,12 @@ export const ACCOUNT_SETTINGS_PAGES = [
 ];
 
 // https://en.wikipedia.org/wiki/Universally_unique_identifier#Nil_UUID
-const draftId = '00000000-0000-0000-0000-000000000000';
-const draftSlug = 'draft';
+export const draftId = '00000000-0000-0000-0000-000000000000';
+export const draftSlug = 'draft';
 
 const RedirectToLandingPage = () => <NamedRedirect name="LandingPage" />;
 
-// Custom route permission wrappers
-import RequireCustomerPermission from '../components/CustomRoutePermissions/RequireCustomerPermission';
-import RequireEmailVerify from '../components/CustomRoutePermissions/RequireEmailVerify';
-import RequireNoConsultantPost from '../components/CustomRoutePermissions/RequireNoConsultantPosts';
+// Custom route permissions wrapper
 import PermissionsWrapper from '../components/CustomRoutePermissions/PermissionsWrapper';
 
 // NOTE: Most server-side endpoints are prefixed with /api. Requests to those
@@ -86,13 +83,21 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
     {
       path: '/',
       name: 'LandingPage',
-      component: LandingPage,
+      component: props => (
+		<PermissionsWrapper childProps={props} name={"LandingPage"}>
+		  <LandingPage {...props}/>
+		</PermissionsWrapper>
+	  ),
       loadData: pageDataLoadingAPI.LandingPage.loadData,
     },
     {
       path: '/p/:pageId',
       name: 'CMSPage',
-      component: CMSPage,
+      component: props => (
+		<PermissionsWrapper childProps={props} name={"CMSPage"}>
+		  <CMSPage {...props}/>
+		</PermissionsWrapper>
+	  ),
       loadData: pageDataLoadingAPI.CMSPage.loadData,
     },
     // NOTE: when the private marketplace feature is enabled, the '/s' route is disallowed by the robots.txt resource.
@@ -101,14 +106,22 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       path: '/s',
       name: 'SearchPage',
       ...authForPrivateMarketplace,
-      component: SearchPage,
+      component: props => (
+		<PermissionsWrapper childProps={props} name={"SearchPage"}>
+		  <SearchPage {...props}/>
+		</PermissionsWrapper>
+	  ),
       loadData: pageDataLoadingAPI.SearchPage.loadData,
     },
     {
       path: '/s/:listingType',
       name: 'SearchPageWithListingType',
       ...authForPrivateMarketplace,
-      component: SearchPage,
+      component: props => (
+		<PermissionsWrapper childProps={props} name={"SearchPage"}>
+		  <SearchPage {...props}/>
+		</PermissionsWrapper>
+	  ),
       loadData: pageDataLoadingAPI.SearchPage.loadData,
     },
     {
@@ -120,14 +133,22 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       path: '/l/:slug/:id',
       name: 'ListingPage',
       ...authForPrivateMarketplace,
-      component: ListingPage,
+      component: props => (
+		<PermissionsWrapper childProps={props} name={"ListingPage"}>
+		  <ListingPage {...props}/>
+		</PermissionsWrapper>
+	  ),
       loadData: pageDataLoadingAPI.ListingPage.loadData,
     },
     {
       path: '/l/:slug/:id/make-offer',
       name: 'MakeOfferPage',
       auth: true,
-      component: MakeOfferPage,
+      component: props => (
+		<PermissionsWrapper childProps={props} name={"MakeOfferPage"}>
+		  <MakeOfferPage {...props}/>
+		</PermissionsWrapper>
+	  ),
       loadData: pageDataLoadingAPI.MakeOfferPage.loadData,
     },
     {
@@ -194,7 +215,11 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       path: '/l/:id',
       name: 'ListingPageCanonical',
       ...authForPrivateMarketplace,
-      component: ListingPage,
+      component: props => (
+		<PermissionsWrapper childProps={props} name={"ListingPage"}>
+		  <ListingPage {...props}/>
+		</PermissionsWrapper>
+	  ),
       loadData: pageDataLoadingAPI.ListingPage.loadData,
     },
     {
@@ -206,14 +231,22 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       path: '/u/:id',
       name: 'ProfilePage',
       ...authForPrivateMarketplace,
-	  component: ProfilePage,
+	  component: props => (
+		<PermissionsWrapper childProps={props} name={"ProfilePage"}>
+		  <ProfilePage {...props}/>
+		</PermissionsWrapper>
+	  ),
       loadData: pageDataLoadingAPI.ProfilePage.loadData,
     },
     {
       path: '/u/:id/:variant',
       name: 'ProfilePageVariant',
       auth: true,
-      component: ProfilePage,
+      component: props => (
+		<PermissionsWrapper childProps={props} name={"ProfilePage"}>
+		  <ProfilePage {...props}/>
+		</PermissionsWrapper>
+	  ),
       loadData: pageDataLoadingAPI.ProfilePage.loadData,
     },
     {
@@ -221,7 +254,11 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       name: 'ProfileSettingsPage',
       auth: true,
       authPage: 'LoginPage',
-      component: ProfileSettingsPage,
+      component: props => (
+		<PermissionsWrapper childProps={props} name={"ProfileSettingsPage"}>
+		  <ProfileSettingsPage {...props}/>
+		</PermissionsWrapper>
+	  ),
     },
 
     // Note: authenticating with IdP (e.g. Facebook) expects that /login path exists
@@ -271,7 +308,11 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       name: 'InboxPage',
       auth: true,
       authPage: 'LoginPage',
-      component: InboxPage,
+      component: props => (
+		<PermissionsWrapper childProps={props} name={"InboxPage"}>
+		  <InboxPage {...props}/>
+		</PermissionsWrapper>
+	  ),
       loadData: pageDataLoadingAPI.InboxPage.loadData,
     },
     {
@@ -313,7 +354,11 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       name: 'ManageListingsPage',
       auth: true,
       authPage: 'LoginPage',
-      component: ManageListingsPage,
+      component: props => (
+		<PermissionsWrapper childProps={props} name={"ManageListingsPage"}>
+		  <ManageListingsPage {...props}/>
+		</PermissionsWrapper>
+	  ),
       loadData: pageDataLoadingAPI.ManageListingsPage.loadData,
     },
     {
