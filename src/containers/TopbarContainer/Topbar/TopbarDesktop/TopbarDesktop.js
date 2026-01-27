@@ -2,7 +2,11 @@ import React, { useState, useEffect } from "react";
 import classNames from "classnames";
 
 import { FormattedMessage } from "../../../../util/reactIntl";
-import { ACCOUNT_SETTINGS_PAGES } from "../../../../routing/routeConfiguration";
+import {
+	ACCOUNT_SETTINGS_PAGES,
+	draftId,
+	draftSlug,
+} from "../../../../routing/routeConfiguration";
 import {
 	Avatar,
 	InlineTextButton,
@@ -18,7 +22,12 @@ import TopbarSearchForm from "../TopbarSearchForm/TopbarSearchForm";
 import CustomLinksMenu from "./CustomLinksMenu/CustomLinksMenu";
 
 import css from "./TopbarDesktop.module.css";
-import { isConsultant } from "../../../../util/userTypeHelper";
+import {
+	isConsultant,
+	isConsultantWithPost,
+	isCustomer,
+	isUnauthedCustomer,
+} from "../../../../util/userTypeHelper";
 
 const SignupLink = () => {
 	return (
@@ -68,12 +77,25 @@ const ProfileMenu = ({
 	onLogout,
 	showManageListingsLink,
 	intl,
+	location,
 }) => {
 	const currentPageClass = page => {
 		const isAccountSettingsPage =
 			page === "AccountSettingsPage" &&
 			ACCOUNT_SETTINGS_PAGES.includes(currentPage);
-		return currentPage === page || isAccountSettingsPage
+		const isConsultantCreatingProfile =
+			page === "EditListingPage" &&
+			!isConsultantWithPost(currentUser) &&
+			location.pathname.includes("draft");
+		const isConsultantProfile =
+			page === "ListingPage" &&
+			isConsultantWithPost(currentUser) &&
+			location.pathname.includes(currentUser.attributes.latestListing) &&
+			!location.pathname.includes("edit");
+		return currentPage === page ||
+			isAccountSettingsPage ||
+			isConsultantProfile ||
+			isConsultantCreatingProfile
 			? css.currentPage
 			: null;
 	};
@@ -97,16 +119,60 @@ const ProfileMenu = ({
 			<MenuContent className={css.profileMenuContent}>
 				{showManageListingsLink ? (
 					<MenuItem key="ManageListingsPage">
-						<NamedLink
-							className={classNames(
-								css.menuLink,
-								currentPageClass("ManageListingsPage")
+						{isCustomer(currentUser) && (
+							<NamedLink
+								className={classNames(
+									css.menuLink,
+									currentPageClass("ManageListingsPage")
+								)}
+								name="ManageListingsPage"
+							>
+								<span className={css.menuItemBorder} />
+								<FormattedMessage id="TopbarDesktop.yourListingsLink" />
+							</NamedLink>
+						)}
+
+						{isConsultantWithPost(currentUser) && (
+							<NamedLink
+								className={classNames(
+									css.menuLink,
+
+									isConsultantWithPost(currentUser)
+										? currentPageClass("ListingPage")
+										: null
+								)}
+								name="ListingPage"
+								params={{
+									id: currentUser.attributes.latestListing,
+									slug: "slug",
+								}}
+								currentUser={currentUser}
+							>
+								<span className={css.menuItemBorder} />
+								<FormattedMessage id="TopbarDesktop.yourListingsLink" />
+							</NamedLink>
+						)}
+
+						{isConsultant(currentUser) &&
+							!isConsultantWithPost(currentUser) && (
+								<NamedLink
+									className={classNames(
+										css.menuLink,
+										currentPageClass("EditListingPage")
+									)}
+									name="EditListingPage"
+									params={{
+										id: draftId,
+										slug: draftSlug,
+										type: "new",
+										tab: "details",
+									}}
+									currentUser={currentUser}
+								>
+									<span className={css.menuItemBorder} />
+									<FormattedMessage id="TopbarDesktop.yourListingsLink" />
+								</NamedLink>
 							)}
-							name="ManageListingsPage"
-						>
-							<span className={css.menuItemBorder} />
-							<FormattedMessage id="TopbarDesktop.yourListingsLink" />
-						</NamedLink>
 					</MenuItem>
 				) : null}
 				<MenuItem key="ProfileSettingsPage">
@@ -185,6 +251,7 @@ const TopbarDesktop = props => {
 		showSearchForm,
 		showCreateListingsLink: rawShowCreateListingsLink,
 		inboxTab,
+		location,
 	} = props;
 	const [mounted, setMounted] = useState(false);
 
@@ -211,8 +278,9 @@ const TopbarDesktop = props => {
 			currentPage={currentPage}
 			currentUser={currentUser}
 			onLogout={onLogout}
-			showManageListingsLink={showCreateListingsLink}
+			showManageListingsLink={true}
 			intl={intl}
+			location={location}
 		/>
 	) : null;
 

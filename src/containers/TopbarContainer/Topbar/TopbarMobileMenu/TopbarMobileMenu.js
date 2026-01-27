@@ -5,7 +5,11 @@
 import React from "react";
 import classNames from "classnames";
 
-import { ACCOUNT_SETTINGS_PAGES } from "../../../../routing/routeConfiguration";
+import {
+	ACCOUNT_SETTINGS_PAGES,
+	draftId,
+	draftSlug,
+} from "../../../../routing/routeConfiguration";
 import { FormattedMessage } from "../../../../util/reactIntl";
 import { ensureCurrentUser } from "../../../../util/data";
 
@@ -18,7 +22,12 @@ import {
 } from "../../../../components";
 
 import css from "./TopbarMobileMenu.module.css";
-import { isConsultant } from "../../../../util/userTypeHelper";
+import {
+	isConsultant,
+	isConsultantWithPost,
+	isCustomer,
+	isUnauthedCustomer,
+} from "../../../../util/userTypeHelper";
 
 const CustomLinkComponent = ({ linkConfig, currentPage }) => {
 	const { group, text, type, href, route } = linkConfig;
@@ -89,6 +98,7 @@ const TopbarMobileMenu = props => {
 		customLinks,
 		onLogout,
 		showCreateListingsLink,
+		location,
 	} = props;
 
 	const user = ensureCurrentUser(currentUser);
@@ -158,6 +168,7 @@ const TopbarMobileMenu = props => {
 		) : null;
 
 	const displayName = user.attributes.profile.firstName;
+
 	const currentPageClass = page => {
 		const isAccountSettingsPage =
 			page === "AccountSettingsPage" &&
@@ -165,7 +176,20 @@ const TopbarMobileMenu = props => {
 		const isInboxPage =
 			currentPage?.indexOf("InboxPage") === 0 &&
 			page?.indexOf("InboxPage") === 0;
-		return currentPage === page || isAccountSettingsPage || isInboxPage
+		const isConsultantCreatingProfile =
+			page === "EditListingPage" &&
+			!isConsultantWithPost(currentUser) &&
+			location.pathname.includes("draft");
+		const isConsultantProfile =
+			page === "ListingPage" &&
+			isConsultantWithPost(currentUser) &&
+			location.pathname.includes(currentUser.attributes.latestListing) &&
+			!location.pathname.includes("edit");
+
+		return currentPage === page ||
+			isAccountSettingsPage ||
+			isInboxPage ||
+			isConsultantProfile
 			? css.currentPage
 			: null;
 	};
@@ -174,12 +198,48 @@ const TopbarMobileMenu = props => {
 		<li
 			className={classNames(
 				css.navigationLink,
-				currentPageClass("ManageListingsPage")
+				currentPageClass("ManageListingsPage"),
+
+				isConsultant(currentUser) && !isConsultantWithPost(currentUser)
+					? currentPageClass("EditListingPage")
+					: null,
+
+				isConsultantWithPost(currentUser)
+					? currentPageClass("ListingPage")
+					: null
 			)}
 		>
-			<NamedLink name="ManageListingsPage">
-				<FormattedMessage id="TopbarMobileMenu.yourListingsLink" />
-			</NamedLink>
+			{isCustomer(currentUser) && (
+				<NamedLink name="ManageListingsPage">
+					<FormattedMessage id="TopbarMobileMenu.yourListingsLink" />
+				</NamedLink>
+			)}
+
+			{isConsultantWithPost(currentUser) && (
+				<NamedLink
+					name="ListingPage"
+					params={{
+						id: currentUser.attributes.latestListing,
+						slug: "slug",
+					}}
+				>
+					<FormattedMessage id="TopbarDesktop.yourListingsLink" />
+				</NamedLink>
+			)}
+
+			{isConsultant(currentUser) && !isConsultantWithPost(currentUser) && (
+				<NamedLink
+					name="EditListingPage"
+					params={{
+						id: draftId,
+						slug: draftSlug,
+						type: "new",
+						tab: "details",
+					}}
+				>
+					<FormattedMessage id="TopbarDesktop.yourListingsLink" />
+				</NamedLink>
+			)}
 		</li>
 	) : null;
 

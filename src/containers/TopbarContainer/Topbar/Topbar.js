@@ -304,6 +304,7 @@ const TopbarComponent = props => {
 			customLinks={customLinks}
 			showCreateListingsLink={showCreateListingsLink}
 			inboxTab={topbarInboxTab}
+			location={location}
 		/>
 	);
 
@@ -458,6 +459,7 @@ const TopbarComponent = props => {
 					showSearchForm={showSearchForm}
 					showCreateListingsLink={showCreateListingsLink}
 					inboxTab={topbarInboxTab}
+					location={location}
 				/>
 			</div>
 			<Modal
