@@ -13,35 +13,43 @@ import RequireNoConsultantPost from "./RequireNoConsultantPosts";
 import RequireConsultantProfile from "./RequireConsultantProfile";
 
 // IMPORTANT: Place checks in order of importance, the order you'd want them to trigger
+// Check: Function to check auth, usually takes currentUser and childProps
+// Type: Who the auth is relevant for: "global" / "customer" / "consultant"
+// Pages: The pages on which the auth will be checked
 const authList = [
-	{
-		// Deny if user IS NOT logged in
-		check: ({ currentUser }) => {
-			if (!currentUser) return <NamedRedirect name="LoginPage" />;
-		},
-		type: "global",
-		pages: ["EditListingPage"],
-	},
+	// {
+	// 	// Deny if user IS NOT logged in
+	// 	check: ({ currentUser }) => {
+	// 		if (!currentUser) return <NamedRedirect name="LoginPage" />;
+	// 	},
+	// 	type: "global",
+	// 	pages: [""],
+	// },
 	{
 		// Deny if user HAS NOT verified their email address
 		check: RequireEmailVerify,
 		type: "global",
-		pages: ["EditListingPage"],
+		pages: [
+			"EditListingPage",
+			"MakeOfferPage",
+			"ProfilePage",
+			"ProfileSettingsPage",
+			"InboxPage",
+			"ManageListingsPage",
+		],
 	},
 	{
 		// Deny if customer DOES NOT have permissions
 		check: RequireCustomerPermission,
 		type: "customer",
-		pages: ["EditListingPage"],
+		pages: ["EditListingPage", "MakeOfferPage"],
 	},
 	{
 		// Deny if constultant HAS NOT made a post (force onboarding)
 		check: RequireConsultantProfile,
 		type: "consultant",
 		pages: [
-			"LandingPage",
-			"CMSPage",
-			"SearchPage",
+			"ListingPage",
 			"MakeOfferPage",
 			"ProfilePage",
 			"ProfileSettingsPage",

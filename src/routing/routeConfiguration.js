@@ -90,6 +90,7 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
 	  ),
       loadData: pageDataLoadingAPI.LandingPage.loadData,
     },
+	// Pages built inside of admin console under "pages", does not include: "/terms-of-service" and "privacy-policy"
     {
       path: '/p/:pageId',
       name: 'CMSPage',
