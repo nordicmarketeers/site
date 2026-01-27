@@ -18,6 +18,7 @@ import TopbarSearchForm from "../TopbarSearchForm/TopbarSearchForm";
 import CustomLinksMenu from "./CustomLinksMenu/CustomLinksMenu";
 
 import css from "./TopbarDesktop.module.css";
+import { isConsultant } from "../../../../util/userTypeHelper";
 
 const SignupLink = () => {
 	return (
@@ -182,10 +183,13 @@ const TopbarDesktop = props => {
 		onSearchSubmit,
 		initialSearchFormValues = {},
 		showSearchForm,
-		showCreateListingsLink,
+		showCreateListingsLink: rawShowCreateListingsLink,
 		inboxTab,
 	} = props;
 	const [mounted, setMounted] = useState(false);
+
+	const showCreateListingsLink =
+		rawShowCreateListingsLink && !isConsultant(currentUser);
 
 	useEffect(() => {
 		setMounted(true);

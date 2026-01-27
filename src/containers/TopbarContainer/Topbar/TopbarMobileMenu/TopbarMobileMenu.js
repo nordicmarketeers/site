@@ -18,6 +18,7 @@ import {
 } from "../../../../components";
 
 import css from "./TopbarMobileMenu.module.css";
+import { isConsultant } from "../../../../util/userTypeHelper";
 
 const CustomLinkComponent = ({ linkConfig, currentPage }) => {
 	const { group, text, type, href, route } = linkConfig;
@@ -234,9 +235,11 @@ const TopbarMobileMenu = props => {
 					</li>
 				</ul>
 				<ul className={css.customLinksWrapper}>{extraLinks}</ul>
-				<div className={css.spacer} />
+				{!isConsultant(currentUser) && <div className={css.spacer} />}
 			</div>
-			<div className={css.footer}>{createListingsLinkMaybe}</div>
+			{!isConsultant(currentUser) && (
+				<div className={css.footer}>{createListingsLinkMaybe}</div>
+			)}
 		</div>
 	);
 };
