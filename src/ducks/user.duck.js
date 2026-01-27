@@ -268,6 +268,9 @@ const fetchCurrentUserPayloadCreator = async (options, thunkAPI) => {
 						attributes: {
 							...mergedUser.attributes,
 							hasListings: !!hasPublishedListings,
+							latestListing: hasPublishedListings
+								? response.data?.data[0].id?.uuid
+								: null,
 						},
 					};
 				}
