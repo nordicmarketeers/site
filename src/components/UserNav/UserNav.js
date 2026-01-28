@@ -1,10 +1,20 @@
 import React from "react";
 import { FormattedMessage, useIntl } from "../../util/reactIntl";
 import classNames from "classnames";
-import { ACCOUNT_SETTINGS_PAGES } from "../../routing/routeConfiguration";
+import {
+	ACCOUNT_SETTINGS_PAGES,
+	draftId,
+	draftSlug,
+} from "../../routing/routeConfiguration";
 import { LinkTabNavHorizontal } from "../../components";
 
 import css from "./UserNav.module.css";
+import {
+	isConsultant,
+	isConsultantWithPost,
+	isCustomer,
+} from "../../util/userTypeHelper";
+import { useSelector } from "react-redux";
 
 /**
  * A component that renders a navigation bar for a user-specific pages.
@@ -25,21 +35,63 @@ const UserNav = props => {
 	} = props;
 	const intl = useIntl();
 	const classes = classNames(rootClassName || css.root, className);
+	const currentUser = useSelector(state => state.user.currentUser);
 
-	const manageListingsTabMaybe = showManageListingsLink
-		? [
-				{
-					text: <FormattedMessage id="UserNav.yourListings" />,
-					selected: currentPage === "ManageListingsPage",
-					linkProps: {
-						name: "ManageListingsPage",
+	const manageListingsTabMaybe =
+		showManageListingsLink && isCustomer(currentUser)
+			? [
+					{
+						text: <FormattedMessage id="UserNav.yourListings" />,
+						selected: currentPage === "ManageListingsPage",
+						linkProps: {
+							name: "ManageListingsPage",
+						},
 					},
-				},
-		  ]
-		: [];
+			  ]
+			: [];
+
+	const consultantProfileMaybe =
+		showManageListingsLink && isConsultantWithPost(currentUser)
+			? [
+					{
+						text: <FormattedMessage id="UserNav.yourListings" />,
+						selected: currentPage === "ListingPage",
+						linkProps: {
+							name: "ListingPage",
+							params: {
+								id: currentUser.attributes.latestListing,
+								slug: "slug",
+							},
+						},
+					},
+			  ]
+			: [];
+
+	const createConsultantProfileMaybe =
+		showManageListingsLink &&
+		isConsultant(currentUser) &&
+		!isConsultantWithPost(currentUser)
+			? [
+					{
+						text: <FormattedMessage id="UserNav.yourListings" />,
+						selected: currentPage === "EditListingPage",
+						linkProps: {
+							name: "EditListingPage",
+							params: {
+								id: draftId,
+								slug: draftSlug,
+								type: "new",
+								tab: "details",
+							},
+						},
+					},
+			  ]
+			: [];
 
 	const tabs = [
 		...manageListingsTabMaybe,
+		...consultantProfileMaybe,
+		...createConsultantProfileMaybe,
 		{
 			text: <FormattedMessage id="UserNav.profileSettings" />,
 			selected: currentPage === "ProfileSettingsPage",
