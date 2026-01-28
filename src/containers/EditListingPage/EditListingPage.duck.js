@@ -1079,6 +1079,7 @@ export const loadData = (params, search, config) => (
 	const { id, type } = params;
 	const fetchCurrentUserOptions = {
 		updateNotifications: false,
+		updateHasListings: true,
 	};
 
 	if (type === "new") {

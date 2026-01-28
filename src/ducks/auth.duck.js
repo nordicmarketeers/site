@@ -61,7 +61,12 @@ const loginThunk = createAsyncThunk(
 		return sdk
 			.login({ username, password })
 			.then(() => {
-				return dispatch(fetchCurrentUser({ afterLogin: true }));
+				return dispatch(
+					fetchCurrentUser({
+						afterLogin: true,
+						updateHasListings: true,
+					})
+				);
 			})
 			.then(() => ({ username, password }))
 			.catch(e => rejectWithValue(storableError(e)));

@@ -312,7 +312,7 @@ export const loadData = (params, search, config) => (
 	const aspectRatio = aspectHeight / aspectWidth;
 
 	return Promise.all([
-		dispatch(fetchCurrentUser()),
+		dispatch(fetchCurrentUser({ updateHasListings: true })),
 		dispatch(
 			queryOwnListings({
 				...queryParams,
