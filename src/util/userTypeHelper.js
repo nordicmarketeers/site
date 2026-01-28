@@ -1,24 +1,22 @@
-export const isConsultant = currentUser => {
+export const isConsultant = user => {
+	return user.attributes?.profile?.publicData?.userType === "consultant";
+};
+
+export const isConsultantWithPost = user => {
 	return (
-		currentUser.attributes?.profile?.publicData?.userType === "consultant"
+		user.attributes?.hasListings &&
+		user.attributes?.profile?.publicData?.userType === "consultant"
 	);
 };
 
-export const isConsultantWithPost = currentUser => {
-	return (
-		currentUser.attributes?.hasListings &&
-		currentUser.attributes?.profile?.publicData?.userType === "consultant"
-	);
+export const isCustomer = user => {
+	return user.attributes?.profile?.publicData?.userType === "customer";
 };
 
-export const isCustomer = currentUser => {
-	return currentUser.attributes?.profile?.publicData?.userType === "customer";
-};
-
-export const isUnauthedCustomer = currentUser => {
+export const isUnauthedCustomer = user => {
 	return (
-		currentUser.effectivePermissionSet?.attributes?.initiateTransactions ===
+		user.effectivePermissionSet?.attributes?.initiateTransactions ===
 			"permission/deny" &&
-		currentUser.attributes?.profile?.publicData?.userType === "customer"
+		user.attributes?.profile?.publicData?.userType === "customer"
 	);
 };
