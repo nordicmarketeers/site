@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { bool, func, object, shape, string, oneOf } from "prop-types";
 import { compose } from "redux";
 import { withRouter } from "react-router-dom";
-import { connect } from "react-redux";
+import { connect, useDispatch } from "react-redux";
 
 // Import configs and util modules
 import { intlShape, useIntl } from "../../util/reactIntl";
@@ -38,6 +38,7 @@ import {
 	stripeAccountClearError,
 	getStripeConnectAccountLink,
 } from "../../ducks/stripeConnectAccount.duck";
+import { fetchCurrentUser } from "../../ducks/user.duck";
 
 // Import shared components
 import { NamedRedirect, Page } from "../../components";
@@ -57,6 +58,7 @@ import {
 } from "./EditListingPage.duck";
 import EditListingWizard from "./EditListingWizard/EditListingWizard";
 import css from "./EditListingPage.module.css";
+import { isCustomer } from "../../util/userTypeHelper";
 
 const STRIPE_ONBOARDING_RETURN_URL_SUCCESS = "success";
 const STRIPE_ONBOARDING_RETURN_URL_FAILURE = "failure";
@@ -146,6 +148,9 @@ const pickRenderableImages = (
  */
 export const EditListingPageComponent = props => {
 	const intl = useIntl();
+	const dispatch = useDispatch();
+	const [waitingForCurrentUser, setWaitingForCurrentUser] = useState(false);
+
 	const {
 		currentUser,
 		createStripeAccountError,
@@ -205,6 +210,41 @@ export const EditListingPageComponent = props => {
 	const showWizard =
 		hasStripeOnboardingDataIfNeeded && (isNewURI || currentListing.id);
 
+	// Prevent the consultant users from being redirected before hasListings has updated (prevent weird redirects from permissionWrapper)
+	const triesRef = useRef(0);
+	const intervalRef = useRef(null);
+
+	useEffect(() => {
+		if (!shouldRedirectAfterPosting || isCustomer(currentUser)) return;
+
+		setWaitingForCurrentUser(true);
+
+		triesRef.current = 0;
+
+		intervalRef.current = setInterval(() => {
+			triesRef.current++;
+
+			if (triesRef.current >= 10) {
+				clearInterval(intervalRef.current);
+				setWaitingForCurrentUser(false);
+				return;
+			}
+
+			dispatch(fetchCurrentUser());
+		}, 700);
+
+		return () => clearInterval(intervalRef.current);
+	}, [shouldRedirectAfterPosting]);
+
+	useEffect(() => {
+		if (!shouldRedirectAfterPosting || isCustomer(currentUser)) return;
+
+		if (currentUser?.attributes?.hasListings) {
+			clearInterval(intervalRef.current);
+			setWaitingForCurrentUser(false);
+		}
+	}, [shouldRedirectAfterPosting, currentUser?.attributes?.hasListings]);
+
 	if (!isUserAuthorized(currentUser)) {
 		return (
 			<NamedRedirect
@@ -248,6 +288,14 @@ export const EditListingPageComponent = props => {
 						slug: listingSlug,
 					},
 			  };
+
+		if (waitingForCurrentUser) {
+			return <div>Laddar...</div>;
+		}
+
+		if (!currentUser?.attributes?.hasListings) {
+			return <div>Laddar...</div>;
+		}
 
 		return <NamedRedirect {...redirectProps} />;
 	} else if (showWizard) {

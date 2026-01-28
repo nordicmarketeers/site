@@ -1,11 +1,5 @@
 import React from "react";
 import { NamedRedirect } from "../.";
-import {
-	NO_ACCESS_PAGE_INITIATE_TRANSACTIONS,
-	NO_ACCESS_PAGE_POST_LISTINGS,
-	NO_ACCESS_PAGE_USER_PENDING_APPROVAL,
-	NO_ACCESS_PAGE_VIEW_LISTINGS,
-} from "../../util/urlHelpers";
 
 // BLOCK THE USER FROM THE ROUTE IF:
 // THE USER IS OF TYPE "consultant"
@@ -24,11 +18,10 @@ const RequireNoConsultantPost = ({ currentUser, childProps }) => {
 	if (isConsultantWithPost) {
 		return (
 			<NamedRedirect
-				name="NoAccessPage"
+				name="ListingPage"
 				params={{
-					scrollingDisabled: false,
-					currentUser,
-					missingAccessRight: NO_ACCESS_PAGE_POST_LISTINGS,
+					id: currentUser.attributes.latestListing,
+					slug: "slug",
 				}}
 			/>
 		);
