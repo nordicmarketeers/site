@@ -57,6 +57,7 @@ import SectionDetailsMaybe from "./SectionDetailsMaybe";
 import SectionTextMaybe from "./SectionTextMaybe";
 import SectionMultiEnumMaybe from "./SectionMultiEnumMaybe";
 import SectionYoutubeVideoMaybe from "./SectionYoutubeVideoMaybe";
+import { isConsultant } from "../../util/userTypeHelper";
 
 const MAX_MOBILE_SCREEN_WIDTH = 768;
 const MIN_LENGTH_FOR_LONG_WORDS = 20;
@@ -397,6 +398,24 @@ export const ProfilePageComponent = props => {
 		user,
 		...rest
 	} = props;
+
+	let isCustomerProfile = true;
+
+	if (user && isConsultant(user) && props.listings.length > 0) {
+		const latestListingID = props.listings[0].id.uuid;
+		return (
+			<NamedRedirect
+				name="ListingPage"
+				params={{
+					id: latestListingID,
+					slug: "slug",
+				}}
+			/>
+		);
+	} else if (user && isConsultant(user)) {
+		isCustomerProfile = false;
+	}
+
 	const isVariant = pathParams.variant?.length > 0;
 	const isPreview =
 		isVariant &&
