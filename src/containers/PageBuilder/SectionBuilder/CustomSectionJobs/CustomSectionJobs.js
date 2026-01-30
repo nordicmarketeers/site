@@ -71,7 +71,11 @@ const CustomJobsSection = props => {
 					<div style={{ marginTop: "24px", textAlign: "center" }}>
 						<a
 							href="/s?pub_listingType=consultant_job"
-							className="Link_link__4wfKD SectionBuilder_ctaButton__+OGGi SectionBuilder_align__lJUUr"
+							className={classNames(
+								css.link,
+								css.ctaButton,
+								css.alignCenter
+							)}
 							style={{ display: "inline-block" }}
 						>
 							Se alla lediga uppdrag
