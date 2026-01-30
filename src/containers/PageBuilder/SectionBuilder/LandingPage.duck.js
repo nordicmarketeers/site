@@ -102,6 +102,8 @@ export const fetchListingsByIds = listingIds => async dispatch => {
 		listingIds.map(id => dispatch(fetchListingById(id)))
 	);
 
+	if (listings === null) return null;
+
 	const cleanListings = listings.flatMap(res => {
 		const listing = res.data?.data;
 		const included = res.data?.included || [];
