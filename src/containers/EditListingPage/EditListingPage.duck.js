@@ -198,6 +198,12 @@ export const createListingDraftThunk = createAsyncThunk(
 	({ data, config }, { dispatch, rejectWithValue, extra: sdk }) => {
 		const { stockUpdate, images, ...rest } = data;
 
+		// Create "approved" property, approved if customer, pending if consultant
+		data.publicData.approved =
+			data.publicData.listingType === "consultant_profile"
+				? "pending"
+				: "approved";
+
 		// If images should be saved, create array out of the image UUIDs for the API call
 		const imageProperty =
 			typeof images !== "undefined" ? { images: imageIds(images) } : {};

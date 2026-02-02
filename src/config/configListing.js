@@ -53,6 +53,20 @@
  *   - requiredMessage (optional):    Message for those fields, which are mandatory.
  */
 export const listingFields = [
+	{
+		// Unsure if this is needed
+		key: "approved",
+		scope: "public",
+		schemaType: "enum",
+		enumOptions: [
+			{ option: "pending", label: "Pending" },
+			{ option: "approved", label: "Approved" },
+		],
+		filterConfig: {
+			indexForSearch: true,
+		},
+	},
+
 	// {
 	//   "scope": "public",
 	//   "label": "Gears",

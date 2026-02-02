@@ -460,6 +460,7 @@ export const loadData = (params, search, config) => (
 
 	const searchListingsCall = searchListings({
 		searchParams: {
+			pub_approved: "approved",
 			...rest,
 			...originMaybe,
 			...listingTypeVariantMaybe,
@@ -474,6 +475,7 @@ export const loadData = (params, search, config) => (
 				"price",
 				"deleted",
 				"state",
+				"publicData.approved",
 				"publicData.languages",
 				"publicData.listingType",
 				"publicData.transactionProcessAlias",
