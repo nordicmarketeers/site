@@ -119,7 +119,7 @@ const ProfileMenu = ({
 			<MenuContent className={css.profileMenuContent}>
 				{showManageListingsLink ? (
 					<MenuItem key="ManageListingsPage">
-						{isCustomer(currentUser) && (
+						{currentUser && isCustomer(currentUser) && (
 							<NamedLink
 								className={classNames(
 									css.menuLink,
@@ -132,7 +132,7 @@ const ProfileMenu = ({
 							</NamedLink>
 						)}
 
-						{isConsultantWithPost(currentUser) && (
+						{currentUser && isConsultantWithPost(currentUser) && (
 							<NamedLink
 								className={classNames(
 									css.menuLink,
@@ -153,7 +153,8 @@ const ProfileMenu = ({
 							</NamedLink>
 						)}
 
-						{isConsultant(currentUser) &&
+						{currentUser &&
+							isConsultant(currentUser) &&
 							!isConsultantWithPost(currentUser) && (
 								<NamedLink
 									className={classNames(
