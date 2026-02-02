@@ -281,13 +281,15 @@ export const EditListingPageComponent = props => {
 						variant: LISTING_PAGE_PENDING_APPROVAL_VARIANT,
 					},
 			  }
-			: {
+			: isCustomer(currentUser)
+			? {
 					name: "ListingPage",
 					params: {
 						id: listingId.uuid,
 						slug: listingSlug,
 					},
-			  };
+			  }
+			: { name: "ProfileSettingsPage" };
 
 		if (waitingForCurrentUser) {
 			return <div>Laddar...</div>;
