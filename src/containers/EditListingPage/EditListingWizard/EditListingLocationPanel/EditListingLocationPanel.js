@@ -118,6 +118,8 @@ const EditListingLocationPanel = props => {
 						geolocation: origin,
 						publicData: {
 							location: { address, building },
+							// Insert cardStyle here so it doesn't break
+							cardStyle: "white",
 						},
 					};
 					// Save the initialValues to state

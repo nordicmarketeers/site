@@ -125,7 +125,7 @@ export const EditListingLocationForm = props => (
 						)}
 					/>
 
-					<FieldTextInput
+					{/* <FieldTextInput
 						className={css.building}
 						type="text"
 						name="building"
@@ -137,7 +137,7 @@ export const EditListingLocationForm = props => (
 						placeholder={intl.formatMessage({
 							id: "EditListingLocationForm.buildingPlaceholder",
 						})}
-					/>
+					/> */}
 
 					<Button
 						className={css.submitButton}

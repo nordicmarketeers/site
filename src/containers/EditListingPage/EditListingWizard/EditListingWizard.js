@@ -101,31 +101,34 @@ const tabsForListingType = (processName, listingTypeConfig) => {
 	//         and listing publishing happens after last panel.
 	// Note 3: The first tab creates a draft listing and title is mandatory attribute for it.
 	//         Details tab asks for "title" and is therefore the first tab in the wizard flow.
+
+	// Style and photos tab commented out
+	// Card style insert in EditListingLocationPanel
 	const tabs = {
 		["default-booking"]: [
 			DETAILS,
 			...locationMaybe,
 			PRICING,
 			AVAILABILITY,
-			...styleOrPhotosTab,
+			// ...styleOrPhotosTab,
 		],
 		["default-purchase"]: [
 			DETAILS,
 			PRICING_AND_STOCK,
 			...deliveryMaybe,
-			...styleOrPhotosTab,
+			// ...styleOrPhotosTab,
 		],
 		["default-negotiation"]: [
 			DETAILS,
 			...locationMaybe,
 			...pricingMaybe,
-			...styleOrPhotosTab,
+			// ...styleOrPhotosTab,
 		],
 		["default-inquiry"]: [
 			DETAILS,
 			...locationMaybe,
 			...pricingMaybe,
-			...styleOrPhotosTab,
+			// ...styleOrPhotosTab,
 		],
 	};
 
