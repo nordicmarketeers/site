@@ -60,6 +60,7 @@ import EditListingWizardTab, {
 	STYLE,
 } from "./EditListingWizardTab";
 import css from "./EditListingWizard.module.css";
+import { isConsultant } from "../../../util/userTypeHelper";
 
 // This is the initial tab on editlisting wizard.
 // When listing type is known, other tabs are checked from _tabsForListingType_ function.
@@ -589,6 +590,13 @@ class EditListingWizard extends Component {
 			authScopes,
 			...rest
 		} = this.props;
+
+		// Limit the listingType based on the userType
+		config.listing.listingTypes = config.listing.listingTypes.filter(lt => {
+			return isConsultant(currentUser)
+				? lt.listingType === "consultant_profile"
+				: lt.listingType === "consultant_job";
+		});
 
 		const selectedTab = params.tab;
 		const isNewListingFlow = [
