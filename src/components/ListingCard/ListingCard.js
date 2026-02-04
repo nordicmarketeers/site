@@ -304,7 +304,7 @@ export const ListingCard = props => {
 							</span>
 						)}
 
-						{publicData.extent.map(item => (
+						{publicData?.extent.map(item => (
 							<span key={item} className={css.tag}>
 								{capitalize(item.replace("_", " "))}
 							</span>
