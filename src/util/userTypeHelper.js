@@ -4,7 +4,7 @@ export const isConsultant = user => {
 
 export const isConsultantWithPost = user => {
 	return (
-		user.attributes?.hasListings &&
+		user.attributes?.profile?.publicData?.hasListing &&
 		user.attributes?.profile?.publicData?.userType === "consultant"
 	);
 };
