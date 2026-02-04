@@ -64,7 +64,6 @@ const loginThunk = createAsyncThunk(
 				return dispatch(
 					fetchCurrentUser({
 						afterLogin: true,
-						updateHasListings: true,
 					})
 				);
 			})

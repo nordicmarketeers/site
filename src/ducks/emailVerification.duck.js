@@ -11,9 +11,7 @@ export const verifyEmail = createAsyncThunk(
 			.verifyEmail({ verificationToken })
 			.then(() => {
 				// Dispatch fetchCurrentUser after successful verification
-				dispatch(
-					fetchCurrentUser({ enforce: true, updateHasListings: true })
-				);
+				dispatch(fetchCurrentUser({ enforce: true }));
 				return true;
 			})
 			.catch(e => {

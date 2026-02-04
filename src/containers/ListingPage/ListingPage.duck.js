@@ -67,7 +67,7 @@ const showListingPayloadCreator = (
 
 	// Current user entity is fetched in a bit lazy fashion, since it's not tied to returned Promise chain.
 	const fetchCurrentUserOptions = {
-		updateHasListings: true,
+		updateHasListings: false,
 		updateNotifications: false,
 	};
 	dispatch(fetchCurrentUser(fetchCurrentUserOptions));

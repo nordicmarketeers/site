@@ -66,7 +66,7 @@ const render = (store, shouldHydrate) => {
 			store.dispatch(
 				fetchAppAssets(defaultConfig.appCdnAssets, cdnAssetsVersion)
 			),
-			store.dispatch(fetchCurrentUser({ updateHasListings: true })),
+			store.dispatch(fetchCurrentUser()),
 		]);
 	})
 		.then(([_, fetchedAppAssets, cu]) => {

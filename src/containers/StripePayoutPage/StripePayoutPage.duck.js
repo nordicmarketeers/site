@@ -81,7 +81,7 @@ export const loadData = () => (dispatch, getState, sdk) => {
 	// in case this page load fails.
 	dispatch(setInitialValues());
 	const fetchCurrentUserOptions = {
-		updateHasListings: true,
+		updateHasListings: false,
 		updateNotifications: false,
 	};
 
