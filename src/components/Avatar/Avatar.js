@@ -13,6 +13,7 @@ import { isUserAuthorized } from "../../util/userHelpers";
 import { ResponsiveImage, IconBannedUser, NamedLink } from "../../components/";
 
 import css from "./Avatar.module.css";
+import { isConsultantWithPost } from "../../util/userTypeHelper";
 
 // Responsive image sizes hint
 const AVATAR_SIZES = "40px";
@@ -93,6 +94,16 @@ export const Avatar = props => {
 			? {
 					name: "ProfilePageVariant",
 					params: { id: avatarUser.id.uuid, variant },
+			  }
+			: avatarUser.id && isConsultantWithPost(avatarUser)
+			? {
+					name: "ListingPage",
+					params: {
+						id:
+							avatarUser.attributes?.profile?.publicData
+								?.latestListing,
+						slug: "slug",
+					},
 			  }
 			: avatarUser.id
 			? { name: "ProfilePage", params: { id: avatarUser.id.uuid } }

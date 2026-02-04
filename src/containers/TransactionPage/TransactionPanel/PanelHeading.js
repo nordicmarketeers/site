@@ -57,6 +57,7 @@ const PanelHeading = props => {
 		listingTitle,
 		listingDeleted,
 		isCustomerBanned,
+		customerNameLink,
 	} = props;
 
 	const isProvider = transactionRole === "provider";
@@ -80,10 +81,61 @@ const PanelHeading = props => {
 		<>
 			<H1 className={titleClasses}>
 				<span className={css.mainTitle}>
-					<FormattedMessage
-						id={`TransactionPage.${processName}.${transactionRole}.${processState}.title`}
-						values={{ customerName, providerName, breakline }}
-					/>
+					{/* LINK TO CONSULTANT LISTING */}
+					{customerNameLink.consultant && (
+						<FormattedMessage
+							id={`TransactionPage.${processName}.${transactionRole}.${processState}.title`}
+							values={{
+								customerName: (
+									<NamedLink
+										name="ListingPage"
+										params={{
+											id: customerNameLink.id,
+											slug: "slug",
+										}}
+									>
+										{customerName}
+									</NamedLink>
+								),
+								providerName: (
+									<NamedLink
+										name="ListingPage"
+										params={{
+											id: customerNameLink.id,
+											slug: "slug",
+										}}
+									>
+										{providerName}
+									</NamedLink>
+								),
+							}}
+						/>
+					)}
+
+					{/* LINK TO  CUSTOMER PROFILE */}
+					{!customerNameLink.consultant && (
+						<FormattedMessage
+							id={`TransactionPage.${processName}.${transactionRole}.${processState}.title`}
+							values={{
+								customerName: (
+									<NamedLink
+										name={"ProfilePage"}
+										params={{ id: customerNameLink.id }}
+									>
+										{customerName}
+									</NamedLink>
+								),
+								providerName: (
+									<NamedLink
+										name={"ProfilePage"}
+										params={{ id: customerNameLink.id }}
+									>
+										{providerName}
+									</NamedLink>
+								),
+							}}
+						/>
+					)}
 				</span>
 			</H1>
 			<H2 className={css.listingTitleMobile}>

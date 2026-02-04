@@ -30,6 +30,7 @@ import DiminishedActionButtonMaybe from "./DiminishedActionButtonMaybe";
 import PanelHeading from "./PanelHeading";
 
 import css from "./TransactionPanel.module.css";
+import { isConsultantWithPost } from "../../../util/userTypeHelper";
 
 // Helper function to get display names for different roles
 const displayNames = (currentUser, provider, customer, intl) => {
@@ -232,6 +233,14 @@ export class TransactionPanelComponent extends Component {
 			otherUserDisplayNameString,
 		} = displayNames(currentUser, provider, customer, intl);
 
+		// Link to consultant listing or profile based on the user type
+		const customerNameLink = isConsultantWithPost(customer)
+			? {
+					consultant: true,
+					id: customer.attributes?.profile?.publicData?.latestListing,
+			  }
+			: { consultant: false, id: customer.id.uuid };
+
 		const deletedListingTitle = intl.formatMessage({
 			id: "TransactionPanel.deletedListingTitle",
 		});
@@ -312,6 +321,7 @@ export class TransactionPanelComponent extends Component {
 							listingId={listing?.id?.uuid}
 							listingTitle={listingTitle}
 							listingDeleted={listingDeleted}
+							customerNameLink={customerNameLink}
 						/>
 
 						<TextMaybe
