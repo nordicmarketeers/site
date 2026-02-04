@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { bool, func, object, shape, string, oneOf } from "prop-types";
 import { compose } from "redux";
 import { withRouter } from "react-router-dom";
-import { connect, useDispatch } from "react-redux";
+import { connect, useDispatch, useSelector, useStore } from "react-redux";
 
 // Import configs and util modules
 import { intlShape, useIntl } from "../../util/reactIntl";
@@ -150,6 +150,7 @@ export const EditListingPageComponent = props => {
 	const intl = useIntl();
 	const dispatch = useDispatch();
 	const [waitingForCurrentUser, setWaitingForCurrentUser] = useState(false);
+	const [hasListing, setHasListing] = useState(false);
 
 	const {
 		currentUser,
@@ -211,39 +212,29 @@ export const EditListingPageComponent = props => {
 		hasStripeOnboardingDataIfNeeded && (isNewURI || currentListing.id);
 
 	// Prevent the consultant users from being redirected before hasListings has updated (prevent weird redirects from permissionWrapper)
-	const triesRef = useRef(0);
-	const intervalRef = useRef(null);
+	const store = useStore();
 
 	useEffect(() => {
 		if (!shouldRedirectAfterPosting || isCustomer(currentUser)) return;
 
 		setWaitingForCurrentUser(true);
 
-		triesRef.current = 0;
+		const intervalId = setInterval(() => {
+			const state = store.getState();
 
-		intervalRef.current = setInterval(() => {
-			triesRef.current++;
+			const hasListingFromState =
+				state.user.currentUser?.attributes?.profile?.publicData
+					?.hasListing;
 
-			if (triesRef.current >= 10) {
-				clearInterval(intervalRef.current);
+			if (hasListingFromState) {
+				setHasListing(true);
+				clearInterval(intervalId);
 				setWaitingForCurrentUser(false);
-				return;
 			}
-
-			dispatch(fetchCurrentUser());
 		}, 700);
 
-		return () => clearInterval(intervalRef.current);
+		return () => clearInterval(intervalId);
 	}, [shouldRedirectAfterPosting]);
-
-	useEffect(() => {
-		if (!shouldRedirectAfterPosting || isCustomer(currentUser)) return;
-
-		if (currentUser?.attributes?.hasListings) {
-			clearInterval(intervalRef.current);
-			setWaitingForCurrentUser(false);
-		}
-	}, [shouldRedirectAfterPosting, currentUser?.attributes?.hasListings]);
 
 	if (!isUserAuthorized(currentUser)) {
 		return (
@@ -295,7 +286,7 @@ export const EditListingPageComponent = props => {
 			return <div>Laddar...</div>;
 		}
 
-		if (!currentUser?.attributes?.hasListings) {
+		if (!hasListing) {
 			return <div>Laddar...</div>;
 		}
 

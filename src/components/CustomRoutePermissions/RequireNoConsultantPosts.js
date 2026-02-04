@@ -10,7 +10,7 @@ const RequireNoConsultantPost = ({ currentUser, childProps }) => {
 	const actionType = childProps?.params.type;
 
 	const isConsultantWithPost =
-		currentUser.attributes?.hasListings &&
+		currentUser.attributes?.profile?.publicData?.hasListing &&
 		currentUser.attributes?.profile?.publicData?.userType ===
 			"consultant" &&
 		actionType === "new";
@@ -20,7 +20,9 @@ const RequireNoConsultantPost = ({ currentUser, childProps }) => {
 			<NamedRedirect
 				name="ListingPage"
 				params={{
-					id: currentUser.attributes.latestListing,
+					id:
+						currentUser.attributes?.profile?.publicData
+							?.latestListing,
 					slug: "slug",
 				}}
 			/>

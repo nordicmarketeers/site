@@ -59,7 +59,9 @@ const UserNav = props => {
 						linkProps: {
 							name: "ListingPage",
 							params: {
-								id: currentUser.attributes.latestListing,
+								id:
+									currentUser.attributes?.profile?.publicData
+										?.latestListing,
 								slug: "slug",
 							},
 						},

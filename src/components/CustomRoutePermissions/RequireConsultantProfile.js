@@ -8,7 +8,7 @@ import { draftId, draftSlug } from "../../routing/routeConfiguration";
 // THE USER HAS NOT CREATED A LISTING
 const RequireConsultantProfile = ({ currentUser, childProps }) => {
 	const isConsultantWithPost =
-		currentUser.attributes?.hasListings &&
+		currentUser.attributes?.profile?.publicData?.hasListing &&
 		currentUser.attributes?.profile?.publicData?.userType === "consultant";
 
 	if (!isConsultantWithPost) {

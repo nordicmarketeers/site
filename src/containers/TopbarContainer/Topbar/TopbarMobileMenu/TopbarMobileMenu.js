@@ -183,7 +183,9 @@ const TopbarMobileMenu = props => {
 		const isConsultantProfile =
 			page === "ListingPage" &&
 			isConsultantWithPost(currentUser) &&
-			location.pathname.includes(currentUser.attributes.latestListing) &&
+			location.pathname.includes(
+				currentUser.attributes?.profile?.publicData?.latestListing
+			) &&
 			!location.pathname.includes("edit");
 
 		return currentPage === page ||
@@ -219,7 +221,9 @@ const TopbarMobileMenu = props => {
 				<NamedLink
 					name="ListingPage"
 					params={{
-						id: currentUser.attributes.latestListing,
+						id:
+							currentUser.attributes?.profile?.publicData
+								?.latestListing,
 						slug: "slug",
 					}}
 				>
