@@ -174,7 +174,7 @@ export const fetchCurrentUserNotifications = () => (
 	return dispatch(fetchCurrentUserNotificationsThunk()).unwrap();
 };
 
-const fetchCurrentUserPayloadCreator = async (options, thunkAPI) => {
+const fetchCurrentUserPayloadCreator = (options, thunkAPI) => {
 	const { getState, dispatch, extra: sdk, rejectWithValue } = thunkAPI;
 	const state = getState();
 	const { currentUserHasListings, currentUserShowTimestamp } =
@@ -237,57 +237,32 @@ const fetchCurrentUserPayloadCreator = async (options, thunkAPI) => {
 
 			// set current user id to the logger
 			log.setUserId(currentUser.id.uuid);
+			console.log("CU from duck: ", currentUser);
 			return currentUser;
 		})
-		.then(async currentUser => {
-			let mergedUser = currentUser;
-
+		.then(currentUser => {
 			// If currentUser is not active (e.g. in 'pending-approval' state),
 			// then they don't have listings or transactions that we care about.
 			if (isUserAuthorized(currentUser)) {
-				// Check if user has posted any listings
-				// Relevant for consultants
-				if (updateHasListings !== false) {
-					const params = {
-						states: "published",
-						page: 1,
-						perPage: 1,
-					};
-
-					const response = await sdk.ownListings.query(params);
-					const hasListings =
-						response.data.data && response.data.data.length > 0;
-
-					const hasPublishedListings =
-						hasListings &&
-						ensureOwnListing(response.data.data[0]).attributes
-							.state !== LISTING_STATE_DRAFT;
-
-					mergedUser = {
-						...mergedUser,
-						attributes: {
-							...mergedUser.attributes,
-							hasListings: !!hasPublishedListings,
-							latestListing: hasPublishedListings
-								? response.data?.data[0].id?.uuid
-								: null,
-						},
-					};
+				if (
+					currentUserHasListings === false &&
+					updateHasListings !== false
+				) {
+					dispatch(fetchCurrentUserHasListings());
 				}
 
 				if (updateNotifications !== false) {
 					dispatch(fetchCurrentUserNotifications());
 				}
 
-				if (!mergedUser.attributes.emailVerified) {
+				if (!currentUser.attributes.emailVerified) {
 					dispatch(fetchCurrentUserHasOrders());
 				}
 			}
 
 			// Make sure auth info is up to date
 			dispatch(authInfo());
-			console.log("CU from duck: ", mergedUser);
-			return mergedUser;
+			return currentUser;
 		})
 		.catch(e => {
 			// Make sure auth info is up to date
