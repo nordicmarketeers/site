@@ -27,7 +27,7 @@ import {
 	updateStripeAccount,
 	fetchStripeAccount,
 } from "../../ducks/stripeConnectAccount.duck";
-import { fetchCurrentUser } from "../../ducks/user.duck";
+import { fetchCurrentUser, setCurrentUser } from "../../ducks/user.duck";
 
 const { UUID } = sdkTypes;
 
@@ -331,20 +331,43 @@ export const requestUpdateListing = (tab, data, config) => (
 // Publish Listing //
 /////////////////////
 
-const publishListingPayloadCreator = (
+const publishListingPayloadCreator = async (
 	{ listingId },
 	{ dispatch, rejectWithValue, extra: sdk }
 ) => {
-	return sdk.ownListings
-		.publishDraft({ id: listingId }, { expand: true })
-		.then(response => {
-			// Add the created listing to the marketplace data
-			dispatch(addMarketplaceEntities(response));
-			return response;
-		})
-		.catch(e => {
-			return rejectWithValue(storableError(e));
-		});
+	try {
+		const publishResponse = await sdk.ownListings.publishDraft(
+			{ id: listingId },
+			{ expand: true }
+		);
+
+		dispatch(addMarketplaceEntities(publishResponse));
+
+		// Add the listingID to the user
+		const userResponse = await sdk.currentUser.updateProfile(
+			{
+				publicData: {
+					latestListing: listingId.uuid,
+					hasListing: true,
+				},
+			},
+			{ expand: true, include: ["profileImage"] }
+		);
+
+		const entities = denormalisedResponseEntities(userResponse);
+
+		if (entities.length !== 1) {
+			throw new Error(
+				"Expected a resource in the sdk.currentUser.updateProfile response"
+			);
+		}
+
+		dispatch(setCurrentUser(entities[0]));
+
+		return publishResponse;
+	} catch (e) {
+		return rejectWithValue(storableError(e));
+	}
 };
 
 export const publishListingThunk = createAsyncThunk(
