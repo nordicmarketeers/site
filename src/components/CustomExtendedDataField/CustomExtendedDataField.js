@@ -32,6 +32,25 @@ const createFilterOptions = options =>
 const getLabel = fieldConfig =>
 	fieldConfig?.saveConfig?.label || fieldConfig?.label;
 
+// If field is required, add asterisk and aria-label
+const getAccessibleLabel = fieldConfig => {
+	const label = getLabel(fieldConfig);
+	const isRequired = fieldConfig?.saveConfig?.isRequired;
+
+	if (!isRequired) {
+		return label;
+	}
+
+	return (
+		<>
+			{label}{" "}
+			<span aria-label="required" role="img">
+				*
+			</span>
+		</>
+	);
+};
+
 const CustomFieldEnum = props => {
 	const { name, fieldConfig, defaultRequiredMessage, formId, intl } = props;
 	const { enumOptions = [], saveConfig } = fieldConfig || {};
@@ -47,7 +66,7 @@ const CustomFieldEnum = props => {
 		});
 	const filterOptions = createFilterOptions(enumOptions);
 
-	const label = getLabel(fieldConfig);
+	const label = getAccessibleLabel(fieldConfig);
 
 	return filterOptions ? (
 		<FieldSelect
@@ -76,10 +95,11 @@ const CustomFieldMultiEnum = props => {
 	const { name, fieldConfig, defaultRequiredMessage, formId } = props;
 	const { enumOptions = [], saveConfig } = fieldConfig || {};
 	const { isRequired, requiredMessage } = saveConfig || {};
-	const label = getLabel(fieldConfig);
 	const validateMaybe = isRequired
 		? { validate: nonEmptyArray(requiredMessage || defaultRequiredMessage) }
 		: {};
+
+	const label = getAccessibleLabel(fieldConfig);
 
 	return enumOptions ? (
 		<FieldCheckboxGroup
@@ -97,13 +117,14 @@ const CustomFieldText = props => {
 	const { name, fieldConfig, defaultRequiredMessage, formId, intl } = props;
 	const { placeholderMessage, isRequired, requiredMessage } =
 		fieldConfig?.saveConfig || {};
-	const label = getLabel(fieldConfig);
 	const validateMaybe = isRequired
 		? { validate: required(requiredMessage || defaultRequiredMessage) }
 		: {};
 	const placeholder =
 		placeholderMessage ||
 		intl.formatMessage({ id: "CustomExtendedDataField.placeholderText" });
+
+	const label = getAccessibleLabel(fieldConfig);
 
 	return (
 		<FieldTextInput
@@ -123,7 +144,6 @@ const CustomFieldLong = props => {
 	const { minimum, maximum, saveConfig } = fieldConfig;
 	const { placeholderMessage, isRequired, requiredMessage } =
 		saveConfig || {};
-	const label = getLabel(fieldConfig);
 	const placeholder =
 		placeholderMessage ||
 		intl.formatMessage({ id: "CustomExtendedDataField.placeholderLong" });
@@ -135,6 +155,8 @@ const CustomFieldLong = props => {
 		{ id: "CustomExtendedDataField.numberTooBig" },
 		{ max: maximum }
 	);
+
+	const label = getAccessibleLabel(fieldConfig);
 
 	// Field with schema type 'long' will always be validated against min & max
 	const validate = (value, min, max) => {
@@ -184,7 +206,6 @@ const CustomFieldBoolean = props => {
 	const { name, fieldConfig, defaultRequiredMessage, formId, intl } = props;
 	const { placeholderMessage, isRequired, requiredMessage } =
 		fieldConfig?.saveConfig || {};
-	const label = getLabel(fieldConfig);
 	const validateMaybe = isRequired
 		? { validate: required(requiredMessage || defaultRequiredMessage) }
 		: {};
@@ -193,6 +214,8 @@ const CustomFieldBoolean = props => {
 		intl.formatMessage({
 			id: "CustomExtendedDataField.placeholderBoolean",
 		});
+
+	const label = getAccessibleLabel(fieldConfig);
 
 	return (
 		<FieldBoolean
@@ -210,7 +233,7 @@ const CustomFieldYoutube = props => {
 	const { name, fieldConfig, defaultRequiredMessage, formId, intl } = props;
 	const { placeholderMessage, isRequired, requiredMessage } =
 		fieldConfig?.saveConfig || {};
-	const label = getLabel(fieldConfig);
+	const label = getAccessibleLabel(fieldConfig);
 	const placeholder =
 		placeholderMessage ||
 		intl.formatMessage({

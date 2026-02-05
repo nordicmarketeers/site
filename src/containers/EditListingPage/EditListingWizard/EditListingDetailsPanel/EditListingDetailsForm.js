@@ -496,9 +496,11 @@ const EditListingDetailsForm = props => (
 							name="title"
 							className={css.title}
 							type="text"
-							label={intl.formatMessage({
-								id: "EditListingDetailsForm.title",
-							})}
+							label={
+								intl.formatMessage({
+									id: "EditListingDetailsForm.title",
+								}) + " *"
+							}
 							placeholder={intl.formatMessage({
 								id: "EditListingDetailsForm.titlePlaceholder",
 							})}
@@ -517,9 +519,11 @@ const EditListingDetailsForm = props => (
 							name="description"
 							className={css.description}
 							type="textarea"
-							label={intl.formatMessage({
-								id: "EditListingDetailsForm.description",
-							})}
+							label={
+								intl.formatMessage({
+									id: "EditListingDetailsForm.description",
+								}) + " *"
+							}
 							placeholder={intl.formatMessage({
 								id:
 									"EditListingDetailsForm.descriptionPlaceholder",
