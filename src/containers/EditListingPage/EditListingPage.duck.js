@@ -28,6 +28,7 @@ import {
 	fetchStripeAccount,
 } from "../../ducks/stripeConnectAccount.duck";
 import { fetchCurrentUser, setCurrentUser } from "../../ducks/user.duck";
+import { isUnauthedConsultant } from "../../util/userTypeHelper";
 
 const { UUID } = sdkTypes;
 
@@ -195,12 +196,16 @@ const updateStockOfListingMaybe = (listingId, stockTotals, dispatch) => {
 // create, set stock, show listing (to get updated currentStock entity)
 export const createListingDraftThunk = createAsyncThunk(
 	"EditListingPage/createListingDraft",
-	({ data, config }, { dispatch, rejectWithValue, extra: sdk }) => {
+	({ data, config }, { dispatch, getState, rejectWithValue, extra: sdk }) => {
 		const { stockUpdate, images, ...rest } = data;
+
+		const state = getState();
+		const cu = state.user?.currentUser;
 
 		// Create "approved" property, approved if customer, pending if consultant
 		data.publicData.approved =
-			data.publicData.listingType === "consultant_profile"
+			data.publicData.listingType === "consultant_profile" &&
+			isUnauthedConsultant(cu)
 				? "pending"
 				: "approved";
 

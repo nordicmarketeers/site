@@ -9,6 +9,14 @@ export const isConsultantWithPost = user => {
 	);
 };
 
+export const isUnauthedConsultant = user => {
+	return (
+		user.effectivePermissionSet?.attributes?.initiateTransactions ===
+			"permission/deny" &&
+		user.attributes?.profile?.publicData?.userType === "consultant"
+	);
+};
+
 export const isCustomer = user => {
 	return user.attributes?.profile?.publicData?.userType === "customer";
 };
