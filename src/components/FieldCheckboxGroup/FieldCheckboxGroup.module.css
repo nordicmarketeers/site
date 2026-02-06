@@ -6,6 +6,10 @@
 	border: none;
 }
 
+legend {
+	padding-bottom: 12px;
+}
+
 .list {
 	margin: 0;
 }
@@ -65,6 +69,17 @@ input:focus {
 	overflow: hidden;
 	text-align: left;
 	text-overflow: ellipsis;
+}
+
+@media screen and (max-width: 768px) {
+	.anchor {
+		padding: 7px 32px 7px 12px;
+		line-height: 1;
+	}
+	legend {
+		padding-bottom: 0;
+		margin-bottom: 6px;
+	}
 }
 
 .anchor::after {
