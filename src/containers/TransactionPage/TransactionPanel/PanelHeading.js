@@ -136,6 +136,13 @@ const PanelHeading = props => {
 							}}
 						/>
 					)}
+
+					{!customerNameLink && (
+						<FormattedMessage
+							id={`TransactionPage.${processName}.${transactionRole}.${processState}.title`}
+							values={{ customerName, providerName, breakline }}
+						/>
+					)}
 				</span>
 			</H1>
 			<H2 className={css.listingTitleMobile}>
