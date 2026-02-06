@@ -265,7 +265,7 @@ export const MainContent = props => {
 		setMounted(true);
 	}, []);
 
-	const {
+	let {
 		userShowError,
 		bio,
 		displayName,
@@ -281,7 +281,18 @@ export const MainContent = props => {
 		userTypeRoles,
 	} = props;
 
+	const userType = publicData.userType;
+	let fallbackMessage = null;
+	hideReviews = true;
+
 	const hasListings = listings.length > 0;
+
+	if (userType === "consultant") {
+		fallbackMessage = "Användaren har inte fyllt i sin profil ännu";
+	} else if (!hasListings) {
+		fallbackMessage = "Användaren har inga aktiva annonser just nu";
+	}
+
 	const hasMatchMedia = typeof window !== "undefined" && window?.matchMedia;
 	const isMobileLayout =
 		mounted && hasMatchMedia
@@ -325,6 +336,12 @@ export const MainContent = props => {
 					intl={intl}
 				/>
 			) : null}
+
+			{fallbackMessage && (
+				<div className={css.consultantNoProfile}>
+					<h3>{fallbackMessage}</h3>
+				</div>
+			)}
 
 			{hasListings ? (
 				<div className={listingsContainerClasses}>
@@ -399,8 +416,6 @@ export const ProfilePageComponent = props => {
 		...rest
 	} = props;
 
-	let isCustomerProfile = true;
-
 	if (user && isConsultant(user) && props.listings.length > 0) {
 		const latestListingID = props.listings[0].id.uuid;
 		return (
@@ -412,8 +427,6 @@ export const ProfilePageComponent = props => {
 				}}
 			/>
 		);
-	} else if (user && isConsultant(user)) {
-		isCustomerProfile = false;
 	}
 
 	const isVariant = pathParams.variant?.length > 0;
