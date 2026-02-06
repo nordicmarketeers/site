@@ -39,8 +39,6 @@ import {
 const MAX_MOBILE_SCREEN_WIDTH = 1024;
 
 const SEARCH_DISPLAY_ALWAYS = "always";
-const SEARCH_DISPLAY_NOT_LANDING_PAGE = "notLandingPage";
-const SEARCH_DISPLAY_ONLY_SEARCH_PAGE = "onlySearchPage";
 const MOBILE_MENU_BUTTON_ID = "mobileMenuButton";
 const MOBILE_SEARCH_BUTTON_ID = "mobileSearchButton";
 
@@ -335,20 +333,14 @@ const TopbarComponent = props => {
 
 	// Search form is shown conditionally depending on configuration and
 	// the current page.
-	const showSearchOnAllPages = searchFormDisplay === SEARCH_DISPLAY_ALWAYS;
-	const showSearchOnSearchPage =
-		searchFormDisplay === SEARCH_DISPLAY_ONLY_SEARCH_PAGE &&
-		["SearchPage", "SearchPageWithListingType"].includes(
-			resolvedCurrentPage
-		);
-	const showSearchNotOnLandingPage =
-		searchFormDisplay === SEARCH_DISPLAY_NOT_LANDING_PAGE &&
-		resolvedCurrentPage !== "LandingPage";
 
-	const showSearchForm =
-		showSearchOnAllPages ||
-		showSearchOnSearchPage ||
-		showSearchNotOnLandingPage;
+	// Only show search form when on searchPage
+	const showSearchOnSearchPage = [
+		"SearchPage",
+		"SearchPageWithListingType",
+	].includes(resolvedCurrentPage);
+
+	const showSearchForm = showSearchOnSearchPage;
 
 	const mobileSearchButtonMaybe = showSearchForm ? (
 		<Button
