@@ -215,7 +215,10 @@ export const EditListingPageComponent = props => {
 	const store = useStore();
 
 	useEffect(() => {
-		if (!shouldRedirectAfterPosting || isCustomer(currentUser)) return;
+		if (!shouldRedirectAfterPosting && isCustomer(currentUser)) {
+			setHasListing(true);
+			return;
+		}
 
 		setWaitingForCurrentUser(true);
 
