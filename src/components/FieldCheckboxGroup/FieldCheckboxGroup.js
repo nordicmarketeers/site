@@ -29,6 +29,8 @@ const FieldCheckboxRenderer = props => {
 
 	const [isOpen, setIsOpen] = useState(false);
 	const containerRef = useRef(null);
+	const buttonRef = useRef(null);
+	const searchRef = useRef(null);
 	const [optionSearch, setOptionSearch] = useState("");
 
 	const normalizedSearch = optionSearch.trim().toLowerCase();
@@ -52,10 +54,41 @@ const FieldCheckboxRenderer = props => {
 				setIsOpen(false);
 			}
 		};
-		document.addEventListener("mousedown", handleClickOutside);
-		return () =>
-			document.removeEventListener("mousedown", handleClickOutside);
+
+		document.addEventListener("click", handleClickOutside);
+		return () => document.removeEventListener("click", handleClickOutside);
 	}, []);
+
+	useEffect(() => {
+		if (isOpen) {
+			searchRef.current?.focus();
+		}
+	}, [isOpen]);
+
+	// Handle dropdown losing focus, for navigation with keyboard
+	useEffect(() => {
+		const handleFocusOut = e => {
+			if (!e.relatedTarget) return;
+			if (
+				isOpen &&
+				containerRef.current &&
+				!containerRef.current.contains(e.relatedTarget)
+			) {
+				setIsOpen(false);
+			}
+		};
+
+		const node = containerRef.current;
+		if (node) {
+			node.addEventListener("focusout", handleFocusOut);
+		}
+
+		return () => {
+			if (node) {
+				node.removeEventListener("focusout", handleFocusOut);
+			}
+		};
+	}, [isOpen]);
 
 	// Show labels in anchor, or amount if labels > 1
 	const selectedValues = fields.value || [];
@@ -77,34 +110,53 @@ const FieldCheckboxRenderer = props => {
 		return (
 			<Tag className={classes}>
 				{label && <legend>{label}</legend>}
-
 				<div
 					ref={containerRef}
+					data-field-checkbox-dropdown
 					className={classNames(
 						css.dropdownCheckList,
 						isOpen && css.visible
 					)}
-					tabIndex="0"
 					onKeyDown={e => {
-						if (e.key === "Escape") setIsOpen(false);
+						if (e.key === "Escape") {
+							setIsOpen(false);
+							buttonRef.current?.focus();
+						}
+
+						if (e.key === "Enter") {
+							const active = document.activeElement;
+							if (
+								active &&
+								active.tagName === "INPUT" &&
+								active.type === "checkbox"
+							) {
+								active.click();
+								e.preventDefault();
+							}
+						}
 					}}
 				>
-					<span
+					<button
+						ref={buttonRef}
+						type="button"
 						className={css.anchor}
 						onClick={() => setIsOpen(prev => !prev)}
-						role="button"
 						aria-expanded={isOpen}
+						aria-haspopup="listbox"
 					>
 						{displayText}
-					</span>
+					</button>
 
 					<ul
 						className={classNames(
 							css.items,
 							isOpen && css.itemsVisible
 						)}
+						role="listbox"
+						aria-multiselectable="true"
 					>
 						<input
+							ref={searchRef}
 							id="option-search"
 							type="text"
 							placeholder="Sök"
@@ -119,7 +171,12 @@ const FieldCheckboxRenderer = props => {
 							);
 
 							return (
-								<li key={fieldId} className={css.item}>
+								<li
+									key={fieldId}
+									className={css.item}
+									role="option"
+									aria-selected={isSelected}
+								>
 									<FieldCheckbox
 										id={fieldId}
 										name={fields.name}
@@ -137,7 +194,6 @@ const FieldCheckboxRenderer = props => {
 						})}
 					</ul>
 				</div>
-
 				<ValidationError fieldMeta={meta} />
 			</Tag>
 		);

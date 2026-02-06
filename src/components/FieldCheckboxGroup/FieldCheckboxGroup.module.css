@@ -46,23 +46,24 @@ input:focus {
 	position: relative;
 	display: inline-block;
 	width: 100%;
-	max-width: 563px;
 }
 
 .anchor {
 	display: block;
 	width: 100%;
-	padding: 10px 36px 10px 16px;
+	padding: 7px 36px 7px 16px;
 	border: 1px solid #ccc;
 	border-radius: 4px;
 	background: white;
 	cursor: pointer;
 	user-select: none;
 	position: relative;
-	font-size: 15px;
-	line-height: 1.4;
+	font-size: 16px;
+	font-weight: var(--fontWeightRegular);
+	line-height: 2;
 	white-space: nowrap;
 	overflow: hidden;
+	text-align: left;
 	text-overflow: ellipsis;
 }
 
