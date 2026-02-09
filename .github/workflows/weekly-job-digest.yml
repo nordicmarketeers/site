@@ -30,13 +30,16 @@ jobs:
                 method: "POST",
                 headers: {
                   Authorization: `Basic ${basic}`,
-                  "Content-Type": "application/json"
-                }
+                  "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: new URLSearchParams({
+                  grant_type: "client_credentials"
+                })
               });
 
               const text = await res.text();
               log("TOKEN STATUS:", res.status);
-              log("TOKEN BODY:", text.slice(0, 200));
+              log("TOKEN BODY:", text);
 
               if (!res.ok) throw new Error(`Token failed: ${res.status} ${text}`);
 
