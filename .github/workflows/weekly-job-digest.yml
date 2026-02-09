@@ -116,28 +116,34 @@ jobs:
         id: send_emails
         run: |
           echo "Sending emails to consultants..."
-          SP_TOKEN=$(curl -s -X POST "https://api.sendpulse.com/oauth/access_token" \
-            -H "Content-Type: application/json" \
-            -d "{\"grant_type\":\"client_credentials\",\"client_id\":\"${{ secrets.SENDPULSE_CLIENT_ID }}\",\"client_secret\":\"${{ secrets.SENDPULSE_CLIENT_SECRET }}\"}" \
-            | python -c "import sys, json; print(json.load(sys.stdin)['access_token'])")
-
-          if [ -z "$SP_TOKEN" ]; then
-            echo "Failed to fetch SendPulse token."
-            exit 1
-          fi
-
-          for email in $USER_EMAILS; do
-            curl -s -X POST "https://api.sendpulse.com/smtp/emails" \
-              -H "Authorization: Bearer $SP_TOKEN" \
+          
+          # Check if TEST_MODE is enabled
+          if [ "${{ secrets.TEST_MODE }}" == "true" ]; then
+            echo "[TEST MODE] Emails would be sent to: $USER_EMAILS"
+          else
+            SP_TOKEN=$(curl -s -X POST "https://api.sendpulse.com/oauth/access_token" \
               -H "Content-Type: application/json" \
-              -d "{
-                \"email\": {
-                  \"subject\": \"Weekly Job Digest\",
-                  \"html\": \"<p>Here are jobs matching your profile</p>\",
-                  \"from\": {\"name\": \"Job Alerts\", \"email\": \"${{ secrets.FROM_EMAIL }}\"},
-                  \"to\": [{\"email\": \"$email\"}]
-                }
-              }"
-          done
+              -d "{\"grant_type\":\"client_credentials\",\"client_id\":\"${{ secrets.SENDPULSE_CLIENT_ID }}\",\"client_secret\":\"${{ secrets.SENDPULSE_CLIENT_SECRET }}\"}" \
+              | python -c "import sys, json; print(json.load(sys.stdin)['access_token'])")
 
-          echo "Sent emails to: $USER_EMAILS"
+            if [ -z "$SP_TOKEN" ]; then
+              echo "Failed to fetch SendPulse token."
+              exit 1
+            fi
+
+            for email in $USER_EMAILS; do
+              curl -s -X POST "https://api.sendpulse.com/smtp/emails" \
+                -H "Authorization: Bearer $SP_TOKEN" \
+                -H "Content-Type: application/json" \
+                -d "{
+                  \"email\": {
+                    \"subject\": \"Weekly Job Digest\",
+                    \"html\": \"<p>Here are jobs matching your profile</p>\",
+                    \"from\": {\"name\": \"Job Alerts\", \"email\": \"${{ secrets.FROM_EMAIL }}\"},
+                    \"to\": [{\"email\": \"$email\"}]
+                  }
+                }"
+            done
+
+            echo "Sent emails to: $USER_EMAILS"
+          fi
