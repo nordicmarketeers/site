@@ -16,13 +16,14 @@ jobs:
           script: |
             const fetch = global.fetch;
             const TEST_MODE = process.env.TEST_MODE === "true";
+            const SHARETRIBE_BASE = "https://api.sharetribe.com/v1";
 
             function log(...args) {
               console.log(...args);
             }
 
             async function getSharetribeToken() {
-              const res = await fetch("https://flex-api.sharetribe.com/v1/auth/token", {
+              const res = await fetch(`${SHARETRIBE_BASE}/auth/token`, {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: new URLSearchParams({
@@ -87,7 +88,7 @@ jobs:
               let nextCursor = null;
 
               do {
-                const res = await fetch("https://flex-api.sharetribe.com/v1/listings/query", {
+                const res = await fetch(`${SHARETRIBE_BASE}/listings/query`, {
                   method: "POST",
                   headers: {
                     Authorization: `Bearer ${token}`,
@@ -116,7 +117,7 @@ jobs:
               let nextCursor = null;
 
               do {
-                const res = await fetch("https://flex-api.sharetribe.com/v1/users/query", {
+                const res = await fetch(`${SHARETRIBE_BASE}/users/query`, {
                   method: "POST",
                   headers: {
                     Authorization: `Bearer ${token}`,
@@ -156,7 +157,7 @@ jobs:
             }
 
             async function getListingById(token, listingId) {
-              const res = await fetch(`https://flex-api.sharetribe.com/v1/listings/${listingId}`, {
+              const res = await fetch(`${SHARETRIBE_BASE}/listings/${listingId}`, {
                 headers: { Authorization: `Bearer ${token}` }
               });
               const data = await res.json();
