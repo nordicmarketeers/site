@@ -23,14 +23,15 @@ jobs:
             }
 
             async function getSharetribeToken() {
+              const creds = `${process.env.SHARETRIBE_CLIENT_ID}:${process.env.SHARETRIBE_CLIENT_SECRET}`;
+              const basic = Buffer.from(creds).toString("base64");
+
               const res = await fetch(`${SHARETRIBE_BASE}/auth/token`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  grant_type: "client_credentials",
-                  client_id: process.env.SHARETRIBE_CLIENT_ID,
-                  client_secret: process.env.SHARETRIBE_CLIENT_SECRET
-                })
+                headers: {
+                  Authorization: `Basic ${basic}`,
+                  "Content-Type": "application/json"
+                }
               });
 
               const text = await res.text();
@@ -53,6 +54,7 @@ jobs:
                   client_secret: process.env.SENDPULSE_CLIENT_SECRET
                 })
               });
+
               const data = await res.json();
               if (!data.access_token) throw new Error("SendPulse token failed: " + JSON.stringify(data));
               return data.access_token;
