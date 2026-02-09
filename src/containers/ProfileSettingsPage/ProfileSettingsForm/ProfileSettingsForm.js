@@ -431,7 +431,8 @@ class ProfileSettingsFormComponent extends Component {
 								intl={intl}
 							/>
 
-							<div className={classNames(css.sectionContainer)}>
+							{/* Input for biography */}
+							{/* <div className={classNames(css.sectionContainer)}>
 								<H4 as="h2" className={css.sectionTitle}>
 									<FormattedMessage id="ProfileSettingsForm.bioHeading" />
 								</H4>
@@ -448,7 +449,7 @@ class ProfileSettingsFormComponent extends Component {
 										values={{ marketplaceName }}
 									/>
 								</p>
-							</div>
+							</div> */}
 							<div
 								className={classNames(
 									css.sectionContainer,
