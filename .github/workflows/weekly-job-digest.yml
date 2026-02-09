@@ -15,7 +15,6 @@ jobs:
         with:
           script: |
             const fetch = global.fetch;
-
             const BASE = "https://flex-api.sharetribe.com/v1/integration_api";
             const TEST_MODE = process.env.TEST_MODE === "true";
 
@@ -23,28 +22,19 @@ jobs:
               console.log(...args);
             }
 
-            function buildUrl(path, params = {}) {
-              const url = new URL(`${BASE}/${path}`);
-              Object.entries(params).forEach(([k, v]) => {
-                if (v === undefined || v === null) return;
-                url.searchParams.set(k, v);
-              });
-              return url.toString();
-            }
-
             async function getSharetribeToken() {
+              const creds = `${process.env.SHARETRIBE_CLIENT_ID}:${process.env.SHARETRIBE_CLIENT_SECRET}`;
+              const basic = Buffer.from(creds).toString("base64");
+
               const res = await fetch("https://flex-api.sharetribe.com/v1/auth/token", {
                 method: "POST",
                 headers: {
+                  Authorization: `Basic ${basic}`,
                   "Content-Type": "application/x-www-form-urlencoded; charset=utf-8",
                   Accept: "application/json"
                 },
                 body: new URLSearchParams({
-                  client_id: process.env.SHARETRIBE_CLIENT_ID,
-                  grant_type: "password",
-                  username: process.env.SHARETRIBE_USERNAME,
-                  password: process.env.SHARETRIBE_PASSWORD,
-                  scope: "user"
+                  grant_type: "client_credentials"
                 })
               });
 
@@ -54,6 +44,15 @@ jobs:
 
               if (!res.ok) throw new Error(`Token failed: ${res.status} ${text}`);
               return JSON.parse(text).access_token;
+            }
+
+            function buildUrl(path, params = {}) {
+              const url = new URL(`${BASE}/${path}`);
+              Object.entries(params).forEach(([k, v]) => {
+                if (v === undefined || v === null) return;
+                url.searchParams.set(k, v);
+              });
+              return url.toString();
             }
 
             async function fetchAllListings(token) {
@@ -172,7 +171,6 @@ jobs:
               log("Starting weekly digest...");
 
               const token = await getSharetribeToken();
-
               const jobs = await fetchAllListings(token);
               const consultants = await fetchAllUsers(token);
 
@@ -220,8 +218,7 @@ jobs:
 
         env:
           SHARETRIBE_CLIENT_ID: ${{ secrets.SHARETRIBE_CLIENT_ID }}
-          SHARETRIBE_USERNAME: ${{ secrets.SHARETRIBE_USERNAME }}
-          SHARETRIBE_PASSWORD: ${{ secrets.SHARETRIBE_PASSWORD }}
+          SHARETRIBE_CLIENT_SECRET: ${{ secrets.SHARETRIBE_CLIENT_SECRET }}
           SENDPULSE_CLIENT_ID: ${{ secrets.SENDPULSE_CLIENT_ID }}
           SENDPULSE_CLIENT_SECRET: ${{ secrets.SENDPULSE_CLIENT_SECRET }}
           FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
