@@ -23,15 +23,16 @@ jobs:
             }
 
             async function getSharetribeToken() {
-              const res = await fetch(`${SHARETRIBE_BASE}/auth/token`, {
+              const res = await fetch(`${SHARETRIBE_BASE}/oauth/token`, {
                 method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams({
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
                   grant_type: "client_credentials",
                   client_id: process.env.SHARETRIBE_CLIENT_ID,
                   client_secret: process.env.SHARETRIBE_CLIENT_SECRET
                 })
               });
+
               const data = await res.json();
               if (!data.access_token) throw new Error("Sharetribe token failed: " + JSON.stringify(data));
               return data.access_token;
@@ -80,8 +81,6 @@ jobs:
                 return jobRoles.some(r => roles.includes(r));
               });
             }
-
-            // -------- PAGINATION HELPERS --------
 
             async function paginateListings(token, body) {
               let results = [];
@@ -163,8 +162,6 @@ jobs:
               const data = await res.json();
               return data.data;
             }
-
-            // -------- MAIN --------
 
             log("Starting weekly digest...");
 
