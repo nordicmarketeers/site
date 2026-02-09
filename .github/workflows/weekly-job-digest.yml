@@ -1,0 +1,227 @@
+name: Weekly Job Digest
+
+on:
+  schedule:
+    - cron: "0 9 * * MON"
+  workflow_dispatch:
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Run weekly digest
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fetch = global.fetch;
+            const TEST_MODE = process.env.TEST_MODE === "true";
+            const SHARETRIBE_BASE = "https://flex-integ-api.sharetribe.com/v1";
+
+            function log(...args) {
+              console.log(...args);
+            }
+
+            async function getSharetribeToken() {
+              const res = await fetch(`${SHARETRIBE_BASE}/auth/token`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  grant_type: "client_credentials",
+                  client_id: process.env.SHARETRIBE_CLIENT_ID,
+                  client_secret: process.env.SHARETRIBE_CLIENT_SECRET
+                })
+              });
+
+              const text = await res.text();
+              log("TOKEN STATUS:", res.status);
+              log("TOKEN BODY:", text.slice(0, 200));
+
+              if (!res.ok) throw new Error(`Token failed: ${res.status} ${text}`);
+
+              const data = JSON.parse(text);
+              return data.access_token;
+            }
+
+            async function getSendPulseToken() {
+              const res = await fetch("https://api.sendpulse.com/oauth/access_token", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  grant_type: "client_credentials",
+                  client_id: process.env.SENDPULSE_CLIENT_ID,
+                  client_secret: process.env.SENDPULSE_CLIENT_SECRET
+                })
+              });
+              const data = await res.json();
+              if (!data.access_token) throw new Error("SendPulse token failed: " + JSON.stringify(data));
+              return data.access_token;
+            }
+
+            async function sendEmail(token, to, html, subject) {
+              const res = await fetch("https://api.sendpulse.com/smtp/emails", {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                  email: {
+                    subject,
+                    html,
+                    from: { name: "Job Alerts", email: process.env.FROM_EMAIL },
+                    to: [{ email: to }]
+                  }
+                })
+              });
+
+              const data = await res.json();
+              if (!res.ok) throw new Error("SendPulse email failed: " + JSON.stringify(data));
+            }
+
+            function matchJobsForConsultant(jobs, consultantRoles) {
+              const roles = consultantRoles || [];
+              return jobs.filter(job => {
+                const jobRoles = job.attributes.publicData?.roles || [];
+                return jobRoles.some(r => roles.includes(r));
+              });
+            }
+
+            async function paginateListings(token, body) {
+              let results = [];
+              let nextCursor = null;
+
+              do {
+                const res = await fetch(`${SHARETRIBE_BASE}/listings/query`, {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify({
+                    ...body,
+                    limit: 50,
+                    cursor: nextCursor
+                  })
+                });
+
+                const data = await res.json();
+                if (!data.data) throw new Error("Sharetribe listings query failed: " + JSON.stringify(data));
+
+                results = results.concat(data.data);
+                nextCursor = data.links?.next?.cursor || null;
+
+              } while (nextCursor);
+
+              return results;
+            }
+
+            async function paginateUsers(token, body) {
+              let results = [];
+              let nextCursor = null;
+
+              do {
+                const res = await fetch(`${SHARETRIBE_BASE}/users/query`, {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify({
+                    ...body,
+                    limit: 50,
+                    cursor: nextCursor
+                  })
+                });
+
+                const data = await res.json();
+                if (!data.data) throw new Error("Sharetribe users query failed: " + JSON.stringify(data));
+
+                results = results.concat(data.data);
+                nextCursor = data.links?.next?.cursor || null;
+
+              } while (nextCursor);
+
+              return results;
+            }
+
+            async function getJobs(token) {
+              const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+              return await paginateListings(token, {
+                listingType: "job",
+                createdAtStart: since,
+                states: ["published"]
+              });
+            }
+
+            async function getConsultants(token) {
+              return await paginateUsers(token, {
+                userType: "consultant"
+              });
+            }
+
+            async function getListingById(token, listingId) {
+              const res = await fetch(`${SHARETRIBE_BASE}/listings/${listingId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+              });
+              const data = await res.json();
+              return data.data;
+            }
+
+            log("Starting weekly digest...");
+
+            const stToken = await getSharetribeToken();
+            const jobs = await getJobs(stToken);
+            const consultants = await getConsultants(stToken);
+
+            if (jobs.length === 0) {
+              log("No jobs this week.");
+              return;
+            }
+
+            const spToken = await getSendPulseToken();
+            let sentCount = 0;
+
+            for (const c of consultants) {
+              const email = c.attributes.email;
+              const name = c.attributes.profile?.displayName || "Consultant";
+
+              const latestListingId = c.attributes.publicData?.latestListing;
+              if (!latestListingId) {
+                log("No latestListing for user:", email);
+                continue;
+              }
+
+              const profileListing = await getListingById(stToken, latestListingId);
+              const roles = profileListing.attributes.publicData?.roles || [];
+
+              const matches = matchJobsForConsultant(jobs, roles);
+              if (matches.length === 0) continue;
+
+              const subject = `${matches.length} new job(s) this week`;
+              const html = `
+                <p>Hi ${name},</p>
+                <p>Here are new jobs that match your profile:</p>
+                <ul>
+                  ${matches.map(j => `<li>${j.attributes.title}</li>`).join("")}
+                </ul>
+              `;
+
+              if (TEST_MODE) {
+                log("[TEST MODE] Would send to:", email, "matches:", matches.length);
+              } else {
+                await sendEmail(spToken, email, html, subject);
+                log("Email sent to:", email, "matches:", matches.length);
+              }
+
+              sentCount++;
+            }
+
+            log("Finished. Emails sent:", sentCount);
+        env:
+          SHARETRIBE_CLIENT_ID: ${{ secrets.SHARETRIBE_CLIENT_ID }}
+          SHARETRIBE_CLIENT_SECRET: ${{ secrets.SHARETRIBE_CLIENT_SECRET }}
+          SENDPULSE_CLIENT_ID: ${{ secrets.SENDPULSE_CLIENT_ID }}
+          SENDPULSE_CLIENT_SECRET: ${{ secrets.SENDPULSE_CLIENT_SECRET }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+          TEST_MODE: ${{ secrets.TEST_MODE }}
