@@ -2,8 +2,8 @@ name: Weekly Job Digest
 
 on:
   schedule:
-    - cron: "0 9 * * MON"   # every Monday at 09:00 UTC
-  workflow_dispatch:         # manual trigger
+    - cron: "0 9 * * MON"
+  workflow_dispatch:
 
 jobs:
   digest:
@@ -16,7 +16,7 @@ jobs:
           script: |
             const fetch = global.fetch;
 
-            const SHARETRIBE_BASE = "https://flex-api.sharetribe.com/v1";
+            const BASE = "https://flex-api.sharetribe.com/v1/integration_api";
             const TEST_MODE = process.env.TEST_MODE === "true";
 
             function log(...args) {
@@ -24,7 +24,7 @@ jobs:
             }
 
             async function getSharetribeToken() {
-              const res = await fetch(`${SHARETRIBE_BASE}/auth/token`, {
+              const res = await fetch("https://flex-api.sharetribe.com/v1/auth/token", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/x-www-form-urlencoded; charset=utf-8",
@@ -47,30 +47,28 @@ jobs:
               return JSON.parse(text).access_token;
             }
 
-            async function paginate(token, url, body) {
+            async function paginate(token, endpoint, body) {
               let results = [];
               let cursor = null;
 
               do {
-                const res = await fetch(url, {
+                const res = await fetch(`${BASE}/${endpoint}`, {
                   method: "POST",
                   headers: {
                     Authorization: `bearer ${token}`,
                     "Content-Type": "application/json"
                   },
-                  body: JSON.stringify({
-                    ...body,
-                    limit: 50,
-                    cursor
-                  })
+                  body: JSON.stringify({ ...body, limit: 50, cursor })
                 });
 
-                const data = await res.json();
-                if (!data.data) break;
+                const text = await res.text();
+                if (!res.ok) {
+                  throw new Error(`Sharetribe ${endpoint} failed: ${res.status} ${text}`);
+                }
 
-                results = results.concat(data.data);
+                const data = JSON.parse(text);
+                results = results.concat(data.data || []);
                 cursor = data.links?.next?.cursor || null;
-
               } while (cursor);
 
               return results;
@@ -78,7 +76,7 @@ jobs:
 
             async function getJobs(token) {
               const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-              return await paginate(token, `${SHARETRIBE_BASE}/listings/query`, {
+              return paginate(token, "listings/query", {
                 listingType: "job",
                 createdAtStart: since,
                 states: ["published"]
@@ -86,17 +84,19 @@ jobs:
             }
 
             async function getConsultants(token) {
-              return await paginate(token, `${SHARETRIBE_BASE}/users/query`, {
+              return paginate(token, "users/query", {
                 userType: "consultant"
               });
             }
 
             async function getListingById(token, id) {
-              const res = await fetch(`${SHARETRIBE_BASE}/listings/${id}`, {
+              const res = await fetch(`${BASE}/listings/${id}`, {
                 headers: { Authorization: `bearer ${token}` }
               });
-              const data = await res.json();
-              return data.data;
+
+              const text = await res.text();
+              if (!res.ok) throw new Error(`Get listing failed: ${res.status} ${text}`);
+              return JSON.parse(text).data;
             }
 
             async function getSendPulseToken() {
@@ -109,6 +109,7 @@ jobs:
                   client_secret: process.env.SENDPULSE_CLIENT_SECRET
                 })
               });
+
               const data = await res.json();
               if (!data.access_token) throw new Error("SendPulse token failed: " + JSON.stringify(data));
               return data.access_token;
@@ -118,7 +119,6 @@ jobs:
               if (TEST_MODE) {
                 log("[TEST MODE] Email would be sent to:", to);
                 log("[TEST MODE] Subject:", subject);
-                log("[TEST MODE] HTML:", html);
                 return;
               }
 
@@ -140,13 +140,6 @@ jobs:
 
               const data = await res.json();
               if (!res.ok) throw new Error("SendPulse email failed: " + JSON.stringify(data));
-            }
-
-            function matchJobs(consultantRoles, jobs) {
-              return jobs.filter(job => {
-                const jobRoles = job.attributes.publicData?.roles || [];
-                return jobRoles.some(r => consultantRoles.includes(r));
-              });
             }
 
             async function main() {
@@ -174,12 +167,16 @@ jobs:
                 const profileListing = await getListingById(token, latestListingId);
                 const roles = profileListing.attributes.publicData?.roles || [];
 
-                const matches = matchJobs(roles, jobs);
+                const matches = jobs.filter(job => {
+                  const jobRoles = job.attributes.publicData?.roles || [];
+                  return jobRoles.some(r => roles.includes(r));
+                });
+
                 if (!matches.length) continue;
 
                 const html = `
                   <p>Hi ${user.attributes.profile?.displayName || "Consultant"},</p>
-                  <p>Here are ${matches.length} matching jobs from this week:</p>
+                  <p>Here are ${matches.length} matching jobs this week:</p>
                   <ul>
                     ${matches.map(j => `<li>${j.attributes.title}</li>`).join("")}
                   </ul>
