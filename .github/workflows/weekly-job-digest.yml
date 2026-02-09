@@ -15,7 +15,7 @@ jobs:
         with:
           script: |
             const fetch = global.fetch;
-            const BASE = "https://flex-api.sharetribe.com/v1/integration_api";
+            const BASE = "https://flex-integ-api.sharetribe.com/v1/integration_api";
             const TEST_MODE = process.env.TEST_MODE === "true";
 
             function log(...args) {
@@ -55,27 +55,18 @@ jobs:
               return url.toString();
             }
 
-            async function fetchAllListings(token) {
+            async function fetchAll(path, params = {}) {
               let results = [];
               let cursor = null;
 
               do {
-                const url = buildUrl("listings/query", {
-                  listingType: "job",
-                  states: "published",
-                  limit: 50,
-                  cursor
-                });
-
+                const url = buildUrl(path, { ...params, cursor });
                 const res = await fetch(url, {
-                  headers: {
-                    Authorization: `bearer ${token}`,
-                    Accept: "application/json"
-                  }
+                  headers: { Authorization: `bearer ${token}`, Accept: "application/json" }
                 });
 
                 const text = await res.text();
-                if (!res.ok) throw new Error(`Sharetribe listings/query failed: ${res.status} ${text}`);
+                if (!res.ok) throw new Error(`${path} failed: ${res.status} ${text}`);
 
                 const data = JSON.parse(text);
                 results = results.concat(data.data || []);
@@ -85,36 +76,7 @@ jobs:
               return results;
             }
 
-            async function fetchAllUsers(token) {
-              let results = [];
-              let cursor = null;
-
-              do {
-                const url = buildUrl("users/query", {
-                  userType: "consultant",
-                  limit: 50,
-                  cursor
-                });
-
-                const res = await fetch(url, {
-                  headers: {
-                    Authorization: `bearer ${token}`,
-                    Accept: "application/json"
-                  }
-                });
-
-                const text = await res.text();
-                if (!res.ok) throw new Error(`Sharetribe users/query failed: ${res.status} ${text}`);
-
-                const data = JSON.parse(text);
-                results = results.concat(data.data || []);
-                cursor = data.links?.next?.cursor || null;
-              } while (cursor);
-
-              return results;
-            }
-
-            async function getListingById(token, id) {
+            async function getListingById(id) {
               const res = await fetch(`${BASE}/listings/${id}`, {
                 headers: { Authorization: `bearer ${token}`, Accept: "application/json" }
               });
@@ -143,7 +105,6 @@ jobs:
             async function sendEmail(token, to, subject, html) {
               if (TEST_MODE) {
                 log("[TEST MODE] Email would be sent to:", to);
-                log("[TEST MODE] Subject:", subject);
                 return;
               }
 
@@ -167,54 +128,47 @@ jobs:
               if (!res.ok) throw new Error("SendPulse email failed: " + JSON.stringify(data));
             }
 
-            async function main() {
-              log("Starting weekly digest...");
+            log("Starting weekly digest...");
 
-              const token = await getSharetribeToken();
-              const jobs = await fetchAllListings(token);
-              const consultants = await fetchAllUsers(token);
+            const token = await getSharetribeToken();
 
-              if (!jobs.length) {
-                log("No jobs this week.");
-                return;
-              }
+            const jobs = await fetchAll("listings/query", { listingType: "job", states: "published", limit: 50 });
+            const consultants = await fetchAll("users/query", { userType: "consultant", limit: 50 });
 
-              const spToken = await getSendPulseToken();
-              let sent = 0;
+            const spToken = await getSendPulseToken();
 
-              for (const user of consultants) {
-                const email = user.attributes.email;
-                if (!email) continue;
+            let sent = 0;
 
-                const latestListingId = user.attributes.publicData?.latestListing;
-                if (!latestListingId) continue;
+            for (const user of consultants) {
+              const email = user.attributes.email;
+              if (!email) continue;
 
-                const profileListing = await getListingById(token, latestListingId);
-                const roles = profileListing.attributes.publicData?.roles || [];
+              const latestListingId = user.attributes.publicData?.latestListing;
+              if (!latestListingId) continue;
 
-                const matches = jobs.filter(job => {
-                  const jobRoles = job.attributes.publicData?.roles || [];
-                  return jobRoles.some(r => roles.includes(r));
-                });
+              const profileListing = await getListingById(latestListingId);
+              const roles = profileListing.attributes.publicData?.roles || [];
 
-                if (!matches.length) continue;
+              const matches = jobs.filter(job => {
+                const jobRoles = job.attributes.publicData?.roles || [];
+                return jobRoles.some(r => roles.includes(r));
+              });
 
-                const html = `
-                  <p>Hi ${user.attributes.profile?.displayName || "Consultant"},</p>
-                  <p>Here are ${matches.length} matching jobs this week:</p>
-                  <ul>
-                    ${matches.map(j => `<li>${j.attributes.title}</li>`).join("")}
-                  </ul>
-                `;
+              if (!matches.length) continue;
 
-                await sendEmail(spToken, email, "Weekly Job Digest", html);
-                sent++;
-              }
+              const html = `
+                <p>Hi ${user.attributes.profile?.displayName || "Consultant"},</p>
+                <p>Here are ${matches.length} matching jobs this week:</p>
+                <ul>
+                  ${matches.map(j => `<li>${j.attributes.title}</li>`).join("")}
+                </ul>
+              `;
 
-              log("Finished. Emails sent:", sent);
+              await sendEmail(spToken, email, "Weekly Job Digest", html);
+              sent++;
             }
 
-            await main();
+            log("Finished. Emails sent:", sent);
 
         env:
           SHARETRIBE_CLIENT_ID: ${{ secrets.SHARETRIBE_CLIENT_ID }}
