@@ -1,57 +1,61 @@
 name: Weekly Job Digest
 
 on:
-  workflow_dispatch:      # Manual trigger
+  workflow_dispatch:
   schedule:
-    - cron: "0 0 * * 0"   # Weekly (Sunday 00:00 UTC)
+    - cron: "0 0 * * 0"  # Every Sunday
 
 jobs:
   digest:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Fetch Sharetribe token
+      - name: Fetch Sharetribe API Token
         id: token
         run: |
           TOKEN=$(curl -s -X POST "https://flex-api.sharetribe.com/v1/auth/token" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "grant_type=client_credentials&client_id=${{ secrets.SHARETRIBE_CLIENT_ID }}&client_secret=${{ secrets.SHARETRIBE_CLIENT_SECRET }}" \
             | python -c "import sys, json; print(json.load(sys.stdin)['access_token'])")
-
+          
           echo "TOKEN=$TOKEN" >> $GITHUB_ENV
 
-      - name: Fetch job listings
+      - name: Fetch job listings (last 7 days)
         id: jobs
         run: |
-          JOBS=$(curl -s "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query?listingType=job&limit=50" \
+          SEVEN_DAYS_AGO=$(date -u -d "7 days ago" +"%Y-%m-%dT%H:%M:%SZ")
+
+          JOBS=$(curl -s "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query?listingType=consultant_job&limit=100" \
             -H "Authorization: bearer $TOKEN")
+
+          # Filter only last 7 days
+          JOBS_FILTERED=$(echo "$JOBS" | jq --arg date "$SEVEN_DAYS_AGO" '
+            .data |= map(select(.attributes.createdAt >= $date))
+          ')
 
           echo "JOBS<<EOF" >> $GITHUB_ENV
-          echo "$JOBS" >> $GITHUB_ENV
+          echo "$JOBS_FILTERED" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-      - name: Fetch consultant profiles
+      - name: Fetch consultant profiles (approved only)
         id: consultants
         run: |
-          CONSULTANTS=$(curl -s "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query?listingType=consultant_profile&limit=50" \
+          CONSULTANTS=$(curl -s "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query?listingType=consultant_profile&limit=100" \
             -H "Authorization: bearer $TOKEN")
 
+          CONSULTANTS_APPROVED=$(echo "$CONSULTANTS" | jq '
+            .data |= map(select(.attributes.publicData.approved == "approved"))
+          ')
+
           echo "CONSULTANTS<<EOF" >> $GITHUB_ENV
-          echo "$CONSULTANTS" >> $GITHUB_ENV
+          echo "$CONSULTANTS_APPROVED" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-      - name: Match jobs to consultants
+      - name: Match jobs to consultants and get user emails
         id: match
         run: |
-          JOBS="$JOBS"
-          CONSULTANTS="$CONSULTANTS"
-
-          # Extract roles from jobs
-          # (This assumes your job listing roles are in publicData.role array)
-          # Adjust if your field name is different (e.g., publicData.roles)
           JOB_ROLES=$(echo "$JOBS" | jq -r '.data[] | .attributes.publicData.role[]' | sort | uniq)
 
-          # Create a JSON array of matched consultants
           MATCHED=$(echo "$CONSULTANTS" | jq --argjson roles "$(echo "$JOB_ROLES" | jq -R . | jq -s .)" '
             .data[] |
             select(
@@ -60,26 +64,30 @@ jobs:
             )
           ')
 
-          # Extract emails from matched consultants
-          # IMPORTANT: Your consultant listing must include the user email in publicData or relationships
-          # If emails are in user relationship, you need another API call.
-          EMAILS=$(echo "$MATCHED" | jq -r '.attributes.publicData.email // empty' | sort | uniq)
+          # For each matched consultant, look up user info and fetch email
+          USER_EMAILS=""
+          for consultant in $(echo "$MATCHED" | jq -r '.id'); do
+            USER_ID=$(echo "$consultant" | jq -r '.id')
+            USER_EMAIL=$(curl -s "https://flex-integ-api.sharetribe.com/v1/integration_api/users/show?id=$USER_ID" \
+              -H "Authorization: bearer $TOKEN" | jq -r '.data.attributes.profile.publicData.email')
 
-          echo "MATCHED<<EOF" >> $GITHUB_ENV
-          echo "$MATCHED" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+            # Add email to list if it exists
+            if [ "$USER_EMAIL" != "null" ]; then
+              USER_EMAILS="$USER_EMAILS $USER_EMAIL"
+            fi
+          done
 
-          echo "EMAILS=$EMAILS" >> $GITHUB_ENV
+          echo "USER_EMAILS=$USER_EMAILS" >> $GITHUB_ENV
 
       - name: Send emails (SendPulse)
-        if: ${{ env.EMAILS != '' }}
+        if: ${{ env.USER_EMAILS != '' }}
         run: |
           SP_TOKEN=$(curl -s -X POST "https://api.sendpulse.com/oauth/access_token" \
             -H "Content-Type: application/json" \
             -d "{\"grant_type\":\"client_credentials\",\"client_id\":\"${{ secrets.SENDPULSE_CLIENT_ID }}\",\"client_secret\":\"${{ secrets.SENDPULSE_CLIENT_SECRET }}\"}" \
             | python -c "import sys, json; print(json.load(sys.stdin)['access_token'])")
 
-          for email in $EMAILS; do
+          for email in $USER_EMAILS; do
             curl -s -X POST "https://api.sendpulse.com/smtp/emails" \
               -H "Authorization: Bearer $SP_TOKEN" \
               -H "Content-Type: application/json" \
@@ -93,5 +101,4 @@ jobs:
               }"
           done
 
-          echo "Sent emails to: $EMAILS"
-
+          echo "Sent emails to: $USER_EMAILS"
