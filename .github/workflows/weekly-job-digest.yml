@@ -23,6 +23,15 @@ jobs:
               console.log(...args);
             }
 
+            function buildUrl(path, params = {}) {
+              const url = new URL(`${BASE}/${path}`);
+              Object.entries(params).forEach(([k, v]) => {
+                if (v === undefined || v === null) return;
+                url.searchParams.set(k, v);
+              });
+              return url.toString();
+            }
+
             async function getSharetribeToken() {
               const res = await fetch("https://flex-api.sharetribe.com/v1/auth/token", {
                 method: "POST",
@@ -47,24 +56,27 @@ jobs:
               return JSON.parse(text).access_token;
             }
 
-            async function paginate(token, endpoint, body) {
+            async function fetchAllListings(token) {
               let results = [];
               let cursor = null;
 
               do {
-                const res = await fetch(`${BASE}/${endpoint}`, {
-                  method: "POST",
+                const url = buildUrl("listings/query", {
+                  listingType: "job",
+                  states: "published",
+                  limit: 50,
+                  cursor
+                });
+
+                const res = await fetch(url, {
                   headers: {
                     Authorization: `bearer ${token}`,
-                    "Content-Type": "application/json"
-                  },
-                  body: JSON.stringify({ ...body, limit: 50, cursor })
+                    Accept: "application/json"
+                  }
                 });
 
                 const text = await res.text();
-                if (!res.ok) {
-                  throw new Error(`Sharetribe ${endpoint} failed: ${res.status} ${text}`);
-                }
+                if (!res.ok) throw new Error(`Sharetribe listings/query failed: ${res.status} ${text}`);
 
                 const data = JSON.parse(text);
                 results = results.concat(data.data || []);
@@ -74,24 +86,38 @@ jobs:
               return results;
             }
 
-            async function getJobs(token) {
-              const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-              return paginate(token, "listings/query", {
-                listingType: "job",
-                createdAtStart: since,
-                states: ["published"]
-              });
-            }
+            async function fetchAllUsers(token) {
+              let results = [];
+              let cursor = null;
 
-            async function getConsultants(token) {
-              return paginate(token, "users/query", {
-                userType: "consultant"
-              });
+              do {
+                const url = buildUrl("users/query", {
+                  userType: "consultant",
+                  limit: 50,
+                  cursor
+                });
+
+                const res = await fetch(url, {
+                  headers: {
+                    Authorization: `bearer ${token}`,
+                    Accept: "application/json"
+                  }
+                });
+
+                const text = await res.text();
+                if (!res.ok) throw new Error(`Sharetribe users/query failed: ${res.status} ${text}`);
+
+                const data = JSON.parse(text);
+                results = results.concat(data.data || []);
+                cursor = data.links?.next?.cursor || null;
+              } while (cursor);
+
+              return results;
             }
 
             async function getListingById(token, id) {
               const res = await fetch(`${BASE}/listings/${id}`, {
-                headers: { Authorization: `bearer ${token}` }
+                headers: { Authorization: `bearer ${token}`, Accept: "application/json" }
               });
 
               const text = await res.text();
@@ -146,8 +172,9 @@ jobs:
               log("Starting weekly digest...");
 
               const token = await getSharetribeToken();
-              const jobs = await getJobs(token);
-              const consultants = await getConsultants(token);
+
+              const jobs = await fetchAllListings(token);
+              const consultants = await fetchAllUsers(token);
 
               if (!jobs.length) {
                 log("No jobs this week.");
