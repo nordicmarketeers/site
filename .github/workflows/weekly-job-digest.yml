@@ -1,104 +1,216 @@
 name: Weekly Job Digest
 
 on:
-  workflow_dispatch:
   schedule:
-    - cron: "0 0 * * 0"  # Every Sunday
+    - cron: "0 9 * * 1"  # 9 AM UTC every Monday
+  workflow_dispatch:
 
 jobs:
   digest:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Fetch Sharetribe API Token
-        id: token
-        run: |
-          TOKEN=$(curl -s -X POST "https://flex-api.sharetribe.com/v1/auth/token" \
-            -H "Content-Type: application/x-www-form-urlencoded" \
-            -d "grant_type=client_credentials&client_id=${{ secrets.SHARETRIBE_CLIENT_ID }}&client_secret=${{ secrets.SHARETRIBE_CLIENT_SECRET }}" \
-            | python -c "import sys, json; print(json.load(sys.stdin)['access_token'])")
-          
-          echo "TOKEN=$TOKEN" >> $GITHUB_ENV
+      - name: Run weekly digest
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fetch = global.fetch;
+            const TEST_MODE = process.env.TEST_MODE === "true";
+            const SHARETRIBE_BASE = "https://flex-integ-api.sharetribe.com/v1/integration_api";
+            
+            function log(...args) {
+              console.log(...args);
+            }
 
-      - name: Fetch job listings (last 7 days)
-        id: jobs
-        run: |
-          SEVEN_DAYS_AGO=$(date -u -d "7 days ago" +"%Y-%m-%dT%H:%M:%SZ")
+            async function getSharetribeToken() {
+              const res = await fetch("https://flex-api.sharetribe.com/v1/auth/token", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({
+                  grant_type: "client_credentials",
+                  client_id: process.env.SHARETRIBE_CLIENT_ID,
+                  client_secret: process.env.SHARETRIBE_CLIENT_SECRET
+                })
+              });
 
-          JOBS=$(curl -s "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query?listingType=consultant_job&limit=100" \
-            -H "Authorization: bearer $TOKEN")
+              const data = await res.json();
+              if (!data.access_token) throw new Error("Sharetribe token failed: " + JSON.stringify(data));
+              return data.access_token;
+            }
 
-          # Filter only last 7 days
-          JOBS_FILTERED=$(echo "$JOBS" | jq --arg date "$SEVEN_DAYS_AGO" '
-            .data |= map(select(.attributes.createdAt >= $date))
-          ')
+            async function getSendPulseToken() {
+              const res = await fetch("https://api.sendpulse.com/oauth/access_token", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  grant_type: "client_credentials",
+                  client_id: process.env.SENDPULSE_CLIENT_ID,
+                  client_secret: process.env.SENDPULSE_CLIENT_SECRET
+                })
+              });
+              const data = await res.json();
+              if (!data.access_token) throw new Error("SendPulse token failed: " + JSON.stringify(data));
+              return data.access_token;
+            }
 
-          echo "JOBS<<EOF" >> $GITHUB_ENV
-          echo "$JOBS_FILTERED" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+            async function sendEmail(token, to, html, subject) {
+              const res = await fetch("https://api.sendpulse.com/smtp/emails", {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                  email: {
+                    subject,
+                    html,
+                    from: { name: "Job Alerts", email: process.env.FROM_EMAIL },
+                    to: [{ email: to }]
+                  }
+                })
+              });
 
-      - name: Fetch consultant profiles (approved only)
-        id: consultants
-        run: |
-          CONSULTANTS=$(curl -s "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query?listingType=consultant_profile&limit=100" \
-            -H "Authorization: bearer $TOKEN")
+              const data = await res.json();
+              if (!res.ok) throw new Error("SendPulse email failed: " + JSON.stringify(data));
+            }
 
-          CONSULTANTS_APPROVED=$(echo "$CONSULTANTS" | jq '
-            .data |= map(select(.attributes.publicData.approved == "approved"))
-          ')
+            function matchJobsForConsultant(jobs, consultantRoles) {
+              const roles = consultantRoles || [];
+              return jobs.filter(job => {
+                const jobRoles = job.attributes.publicData?.role || [];
+                return jobRoles.some(r => roles.includes(r));
+              });
+            }
 
-          echo "CONSULTANTS<<EOF" >> $GITHUB_ENV
-          echo "$CONSULTANTS_APPROVED" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+            async function paginateListings(token, body) {
+              let results = [];
+              let nextCursor = null;
 
-      - name: Match jobs to consultants and get user emails
-        id: match
-        run: |
-          JOB_ROLES=$(echo "$JOBS" | jq -r '.data[] | .attributes.publicData.role[]' | sort | uniq)
+              do {
+                const res = await fetch(`${SHARETRIBE_BASE}/listings/query`, {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify({
+                    ...body,
+                    limit: 50,
+                    cursor: nextCursor
+                  })
+                });
 
-          MATCHED=$(echo "$CONSULTANTS" | jq --argjson roles "$(echo "$JOB_ROLES" | jq -R . | jq -s .)" '
-            .data[] |
-            select(
-              (.attributes.publicData.role // []) as $cRoles |
-              ($roles | any(. == $cRoles[]))
-            )
-          ')
+                const data = await res.json();
+                if (!data.data) throw new Error("Sharetribe listings query failed: " + JSON.stringify(data));
 
-          # For each matched consultant, look up user info and fetch email
-          USER_EMAILS=""
-          for consultant in $(echo "$MATCHED" | jq -r '.id'); do
-            USER_ID=$(echo "$consultant" | jq -r '.id')
-            USER_EMAIL=$(curl -s "https://flex-integ-api.sharetribe.com/v1/integration_api/users/show?id=$USER_ID" \
-              -H "Authorization: bearer $TOKEN" | jq -r '.data.attributes.profile.publicData.email')
+                results = results.concat(data.data);
+                nextCursor = data.links?.next?.cursor || null;
 
-            # Add email to list if it exists
-            if [ "$USER_EMAIL" != "null" ]; then
-              USER_EMAILS="$USER_EMAILS $USER_EMAIL"
-            fi
-          done
+              } while (nextCursor);
 
-          echo "USER_EMAILS=$USER_EMAILS" >> $GITHUB_ENV
+              return results;
+            }
 
-      - name: Send emails (SendPulse)
-        if: ${{ env.USER_EMAILS != '' }}
-        run: |
-          SP_TOKEN=$(curl -s -X POST "https://api.sendpulse.com/oauth/access_token" \
-            -H "Content-Type: application/json" \
-            -d "{\"grant_type\":\"client_credentials\",\"client_id\":\"${{ secrets.SENDPULSE_CLIENT_ID }}\",\"client_secret\":\"${{ secrets.SENDPULSE_CLIENT_SECRET }}\"}" \
-            | python -c "import sys, json; print(json.load(sys.stdin)['access_token'])")
+            async function paginateUsers(token, body) {
+              let results = [];
+              let nextCursor = null;
 
-          for email in $USER_EMAILS; do
-            curl -s -X POST "https://api.sendpulse.com/smtp/emails" \
-              -H "Authorization: Bearer $SP_TOKEN" \
-              -H "Content-Type: application/json" \
-              -d "{
-                \"email\": {
-                  \"subject\": \"Weekly Job Digest\",
-                  \"html\": \"<p>Here are jobs matching your profile</p>\",
-                  \"from\": {\"name\": \"Job Alerts\", \"email\": \"${{ secrets.FROM_EMAIL }}\"},
-                  \"to\": [{\"email\": \"$email\"}]
-                }
-              }"
-          done
+              do {
+                const res = await fetch(`${SHARETRIBE_BASE}/users/query`, {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify({
+                    ...body,
+                    limit: 50,
+                    cursor: nextCursor
+                  })
+                });
 
-          echo "Sent emails to: $USER_EMAILS"
+                const data = await res.json();
+                if (!data.data) throw new Error("Sharetribe users query failed: " + JSON.stringify(data));
+
+                results = results.concat(data.data);
+                nextCursor = data.links?.next?.cursor || null;
+
+              } while (nextCursor);
+
+              return results;
+            }
+
+            async function getJobs(token) {
+              const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+              return await paginateListings(token, {
+                listingType: "consultant_job",
+                createdAt[gte]: since,
+                limit: 100
+              });
+            }
+
+            async function getConsultants(token) {
+              return await paginateUsers(token, {
+                listingType: "consultant_profile",
+                publicData: { approved: "approved" },
+                limit: 100
+              });
+            }
+
+            log("Starting weekly digest...");
+
+            const stToken = await getSharetribeToken();
+            const jobs = await getJobs(stToken);
+            const consultants = await getConsultants(stToken);
+
+            if (jobs.length === 0) {
+              log("No jobs this week.");
+              return;
+            }
+
+            const spToken = await getSendPulseToken();
+            let sentCount = 0;
+
+            for (const c of consultants) {
+              const email = c.attributes.email;
+              const name = c.attributes.profile?.displayName || "Consultant";
+
+              const latestListingId = c.attributes.publicData?.latestListing;
+              if (!latestListingId) {
+                log("No latestListing for user:", email);
+                continue;
+              }
+
+              const profileListing = await getListingById(stToken, latestListingId);
+              const roles = profileListing.attributes.publicData?.roles || [];
+
+              const matches = matchJobsForConsultant(jobs, roles);
+              if (matches.length === 0) continue;
+
+              const subject = `${matches.length} new job(s) this week`;
+              const html = `
+                <p>Hi ${name},</p>
+                <p>Here are new jobs that match your profile:</p>
+                <ul>
+                  ${matches.map(j => `<li>${j.attributes.title}</li>`).join("")}
+                </ul>
+              `;
+
+              if (TEST_MODE) {
+                log("[TEST MODE] Would send to:", email, "matches:", matches.length);
+              } else {
+                await sendEmail(spToken, email, html, subject);
+                log("Email sent to:", email, "matches:", matches.length);
+              }
+
+              sentCount++;
+            }
+
+            log("Finished. Emails sent:", sentCount);
+        env:
+          SHARETRIBE_CLIENT_ID: ${{ secrets.SHARETRIBE_CLIENT_ID }}
+          SHARETRIBE_CLIENT_SECRET: ${{ secrets.SHARETRIBE_CLIENT_SECRET }}
+          SENDPULSE_CLIENT_ID: ${{ secrets.SENDPULSE_CLIENT_ID }}
+          SENDPULSE_CLIENT_SECRET: ${{ secrets.SENDPULSE_CLIENT_SECRET }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+          TEST_MODE: ${{ secrets.TEST_MODE }}
