@@ -1,78 +1,97 @@
-name: Weekly Digest Email
+name: Weekly Job Digest
 
 on:
-  workflow_dispatch: # Manually trigger for testing
+  workflow_dispatch:      # Manual trigger
   schedule:
-    - cron: '0 0 * * 0' # Every Sunday at midnight UTC (adjust as needed)
+    - cron: "0 0 * * 0"   # Weekly (Sunday 00:00 UTC)
 
 jobs:
-  send-digest-email:
+  digest:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        
-      - name: Get token and fetch jobs/consultants
-        id: fetch_data
+      - name: Fetch Sharetribe token
+        id: token
         run: |
-          # Step 1: Get the Sharetribe API Token
           TOKEN=$(curl -s -X POST "https://flex-api.sharetribe.com/v1/auth/token" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "grant_type=client_credentials&client_id=${{ secrets.SHARETRIBE_CLIENT_ID }}&client_secret=${{ secrets.SHARETRIBE_CLIENT_SECRET }}" \
             | python -c "import sys, json; print(json.load(sys.stdin)['access_token'])")
 
-          echo "Token fetched successfully!"
+          echo "TOKEN=$TOKEN" >> $GITHUB_ENV
 
-          # Step 2: Fetch Job Listings
-          JOB_LISTINGS=$(curl -s "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query?listingType=job&limit=50" \
-            -H "Authorization: bearer $TOKEN")
-          
-          # Step 3: Fetch Consultant Profiles
-          CONSULTANT_PROFILES=$(curl -s "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query?listingType=consultant_profile&limit=50" \
+      - name: Fetch job listings
+        id: jobs
+        run: |
+          JOBS=$(curl -s "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query?listingType=job&limit=50" \
             -H "Authorization: bearer $TOKEN")
 
-          echo "Job Listings: $JOB_LISTINGS"
-          echo "Consultant Profiles: $CONSULTANT_PROFILES"
-          
-          # Store the results to use in the next step
-          echo "::set-output name=job_listings::$JOB_LISTINGS"
-          echo "::set-output name=consultant_profiles::$CONSULTANT_PROFILES"
+          echo "JOBS<<EOF" >> $GITHUB_ENV
+          echo "$JOBS" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
-      - name: Match Jobs to Consultants
-        id: match_jobs
+      - name: Fetch consultant profiles
+        id: consultants
         run: |
-          # Step 4: Match Jobs to Consultant Profiles
-          JOB_LISTINGS="${{ steps.fetch_data.outputs.job_listings }}"
-          CONSULTANT_PROFILES="${{ steps.fetch_data.outputs.consultant_profiles }}"
+          CONSULTANTS=$(curl -s "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query?listingType=consultant_profile&limit=50" \
+            -H "Authorization: bearer $TOKEN")
 
-          # For simplicity, we will just use a placeholder matching logic here
-          # Replace this with your matching algorithm based on your actual data structure
-          MATCHED_CONSULTANTS=$(echo "$CONSULTANT_PROFILES" | jq '.data[] | select(.attributes.role == "desired_role")')  # Adjust role matching logic as needed
+          echo "CONSULTANTS<<EOF" >> $GITHUB_ENV
+          echo "$CONSULTANTS" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
-          # Example: Get emails of matched consultants
-          EMAILS=$(echo "$MATCHED_CONSULTANTS" | jq -r '.relationships.user.data.id' | sort | uniq)
-          
-          echo "Matched Consultant Emails: $EMAILS"
-          echo "::set-output name=emails::$EMAILS"
-
-      - name: Send Emails via SendPulse
-        id: send_email
+      - name: Match jobs to consultants
+        id: match
         run: |
-          # Step 5: Send emails using SendPulse
-          EMAILS="${{ steps.match_jobs.outputs.emails }}"
-          
-          # Format the emails for SendPulse (adjust as needed)
-          EMAILS_JSON="[\"$EMAILS\"]"  # Assume emails are in a simple array, adjust this based on actual format
+          JOBS="$JOBS"
+          CONSULTANTS="$CONSULTANTS"
 
-          curl -X POST "https://api.sendpulse.com/smtp/send" \
-            -H "Authorization: Bearer ${{ secrets.SENDPULSE_API_KEY }}" \
+          # Extract roles from jobs
+          # (This assumes your job listing roles are in publicData.role array)
+          # Adjust if your field name is different (e.g., publicData.roles)
+          JOB_ROLES=$(echo "$JOBS" | jq -r '.data[] | .attributes.publicData.role[]' | sort | uniq)
+
+          # Create a JSON array of matched consultants
+          MATCHED=$(echo "$CONSULTANTS" | jq --argjson roles "$(echo "$JOB_ROLES" | jq -R . | jq -s .)" '
+            .data[] |
+            select(
+              (.attributes.publicData.role // []) as $cRoles |
+              ($roles | any(. == $cRoles[]))
+            )
+          ')
+
+          # Extract emails from matched consultants
+          # IMPORTANT: Your consultant listing must include the user email in publicData or relationships
+          # If emails are in user relationship, you need another API call.
+          EMAILS=$(echo "$MATCHED" | jq -r '.attributes.publicData.email // empty' | sort | uniq)
+
+          echo "MATCHED<<EOF" >> $GITHUB_ENV
+          echo "$MATCHED" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+          echo "EMAILS=$EMAILS" >> $GITHUB_ENV
+
+      - name: Send emails (SendPulse)
+        if: ${{ env.EMAILS != '' }}
+        run: |
+          SP_TOKEN=$(curl -s -X POST "https://api.sendpulse.com/oauth/access_token" \
             -H "Content-Type: application/json" \
-            -d '{
-                  "email": {
-                    "to": '$EMAILS_JSON',
-                    "subject": "Weekly Job Listings",
-                    "text": "Here are the job listings that match your profile."
-                  }
-                }'
-          
-          echo "Emails sent to: $EMAILS"
+            -d "{\"grant_type\":\"client_credentials\",\"client_id\":\"${{ secrets.SENDPULSE_CLIENT_ID }}\",\"client_secret\":\"${{ secrets.SENDPULSE_CLIENT_SECRET }}\"}" \
+            | python -c "import sys, json; print(json.load(sys.stdin)['access_token'])")
+
+          for email in $EMAILS; do
+            curl -s -X POST "https://api.sendpulse.com/smtp/emails" \
+              -H "Authorization: Bearer $SP_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{
+                \"email\": {
+                  \"subject\": \"Weekly Job Digest\",
+                  \"html\": \"<p>Here are jobs matching your profile</p>\",
+                  \"from\": {\"name\": \"Job Alerts\", \"email\": \"${{ secrets.FROM_EMAIL }}\"},
+                  \"to\": [{\"email\": \"$email\"}]
+                }
+              }"
+          done
+
+          echo "Sent emails to: $EMAILS"
+
