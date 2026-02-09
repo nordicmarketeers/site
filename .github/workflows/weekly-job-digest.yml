@@ -82,35 +82,77 @@ jobs:
 
             // -------- PAGINATION HELPERS --------
 
-            async function paginateSharetribe(url, token) {
+            async function paginateListings(token, body) {
               let results = [];
-              let nextUrl = url;
+              let nextCursor = null;
 
-              while (nextUrl) {
-                const res = await fetch(nextUrl, {
-                  headers: { Authorization: `Bearer ${token}` }
+              do {
+                const res = await fetch("https://flex-api.sharetribe.com/v1/listings/query", {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify({
+                    ...body,
+                    limit: 50,
+                    cursor: nextCursor
+                  })
                 });
-                const data = await res.json();
 
-                if (!data.data) throw new Error("Sharetribe pagination failed: " + JSON.stringify(data));
+                const data = await res.json();
+                if (!data.data) throw new Error("Sharetribe listings query failed: " + JSON.stringify(data));
 
                 results = results.concat(data.data);
+                nextCursor = data.links?.next?.cursor || null;
 
-                nextUrl = data.links?.next || null;
-              }
+              } while (nextCursor);
+
+              return results;
+            }
+
+            async function paginateUsers(token, body) {
+              let results = [];
+              let nextCursor = null;
+
+              do {
+                const res = await fetch("https://flex-api.sharetribe.com/v1/users/query", {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify({
+                    ...body,
+                    limit: 50,
+                    cursor: nextCursor
+                  })
+                });
+
+                const data = await res.json();
+                if (!data.data) throw new Error("Sharetribe users query failed: " + JSON.stringify(data));
+
+                results = results.concat(data.data);
+                nextCursor = data.links?.next?.cursor || null;
+
+              } while (nextCursor);
 
               return results;
             }
 
             async function getJobs(token) {
               const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-              const url = `https://flex-api.sharetribe.com/v1/listings/query?listingType=job&createdAtStart=${since}&states=published`;
-              return await paginateSharetribe(url, token);
+              return await paginateListings(token, {
+                listingType: "job",
+                createdAtStart: since,
+                states: ["published"]
+              });
             }
 
             async function getConsultants(token) {
-              const url = "https://flex-api.sharetribe.com/v1/users/query?userType=consultant";
-              return await paginateSharetribe(url, token);
+              return await paginateUsers(token, {
+                userType: "consultant"
+              });
             }
 
             async function getListingById(token, listingId) {
