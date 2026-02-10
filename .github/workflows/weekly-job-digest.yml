@@ -246,20 +246,17 @@ jobs:
               -H "accept: application/json" \
               -H "api-key: ${{ secrets.BREVO_API_KEY }}" \
               -H "Content-Type: application/json" \
-              -d "$(cat <<EOF
-{
-  "sender": {
-    "name": "${{ secrets.FROM_NAME }}",
-    "email": "${{ secrets.FROM_EMAIL }}"
-  },
-  "to": [{
-    "email": "$email"
-  }],
-  "subject": "Weekly Job Opportunities Matching Your Profile",
-  "htmlContent": "<h2>New matching jobs this week</h2><p>We found the following jobs that match your roles:</p><ul>$escaped_html</ul><p><a href=\"https://your-platform.com/search/jobs\">Browse all opportunities →</a></p><p>Best regards,<br>Your Platform Team</p>"
-}
-EOF
-              )")
+              -d '{
+                "sender": {
+                  "name": "'"${{ secrets.FROM_NAME }}"'",
+                  "email": "'"${{ secrets.FROM_EMAIL }}"'"
+                },
+                "to": [{
+                  "email": "'"$email"'"
+                }],
+                "subject": "Weekly Job Opportunities Matching Your Profile",
+                "htmlContent": "<h2>New matching jobs this week</h2><p>We found the following jobs that match your roles:</p><ul>'"$escaped_html"'</ul><p><a href=\"https://your-platform.com/search/jobs\">Browse all opportunities →</a></p><p>Best regards,<br>Your Platform Team</p>"
+              }')
 
             echo "$RESPONSE" | jq . 2>/dev/null || echo "Brevo raw response: $RESPONSE"
 
