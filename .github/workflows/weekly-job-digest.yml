@@ -239,28 +239,31 @@ jobs:
             exit 0
           fi
 
-          # Brevo transactional email sending
+          # Brevo transactional email sending — safe heredoc + escaping
           while IFS='|' read -r email jobs_html; do
-            # Escape double quotes in jobs_html for safe JSON
-            escaped_html=$(printf '%s' "$jobs_html" | sed "s/\"/\\\\\"/g")
+            # Escape for JSON (backslashes, double quotes)
+            escaped_html=$(printf '%s' "$jobs_html" | sed 's/[\\/"]/\\&/g')
 
             RESPONSE=$(curl -s -X POST "https://api.brevo.com/v3/smtp/email" \
               -H "accept: application/json" \
               -H "api-key: ${{ secrets.BREVO_API_KEY }}" \
               -H "Content-Type: application/json" \
-              -d '{
+              -d @- <<EOF
+              {
                 "sender": {
-                  "name": "'"${{ secrets.FROM_NAME }}"'",
-                  "email": "'"${{ secrets.FROM_EMAIL }}"'"
+                  "name": "${{ secrets.FROM_NAME }}",
+                  "email": "${{ secrets.FROM_EMAIL }}"
                 },
                 "to": [{
-                  "email": "'"$email"'"
+                  "email": "$email"
                 }],
                 "subject": "Weekly Job Opportunities Matching Your Profile",
-                "htmlContent": "<h2>New matching jobs this week</h2><p>We found the following jobs that match your roles:</p><ul>"'"${escaped_html:-<li>No jobs this week — check back next time!</li>}"'"</ul><p><a href=\"https://your-platform.com/search/jobs\">Browse all opportunities →</a></p><p>Best regards,<br>Your Platform Team</p>"
-              }')
+                "htmlContent": "<h2>New matching jobs this week</h2><p>We found the following jobs that match your roles:</p><ul>$escaped_html</ul><p><a href=\"https://your-platform.com/search/jobs\">Browse all opportunities →</a></p><p>Best regards,<br>Your Platform Team</p>"
+              }
+              EOF
+                          )
 
-            echo "$RESPONSE" | jq . || echo "Brevo response (raw): $RESPONSE"
+            echo "$RESPONSE" | jq . 2>/dev/null || echo "Brevo raw response: $RESPONSE"
 
             if echo "$RESPONSE" | grep -q '"messageId"'; then
               echo "Sent successfully to $email"
