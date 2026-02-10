@@ -51,7 +51,7 @@ jobs:
         id: fetch_consultants
         run: |
           echo "Fetching approved consultant profiles..."
-          CONSULTANTS=$(curl -s "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query?listingType=consultant_profile&limit=100" \
+          CONSULTANTS=$(curl -s "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query?listingType=consultant_profile&publicData.approved=approved&limit=100" \
             -H "Authorization: bearer $TOKEN")
 
           if [ -z "$CONSULTANTS" ]; then
