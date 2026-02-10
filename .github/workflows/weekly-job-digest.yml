@@ -200,8 +200,8 @@ jobs:
           echo "Aggregated per-email jobs:"
           cat aggregated.csv || echo "(empty)"
 
-      # 5. Send or preview
-      - name: Send weekly job digest emails
+      # 5. Send or preview using Brevo
+      - name: Send weekly job digest emails (Brevo)
         if: always()
         env:
           RECIPIENTS_FILE: ${{ steps.match-and-prepare.outputs.recipients_file }}
@@ -221,7 +221,7 @@ jobs:
 
           if [[ "${{ secrets.TEST_MODE }}" == "true" ]]; then
             echo ""
-            echo "TEST MODE — preview:"
+            echo "TEST MODE — preview (Brevo):"
 
             while IFS='|' read -r email jobs_html; do
               echo "----------------------------------------"
@@ -239,33 +239,33 @@ jobs:
             exit 0
           fi
 
-          SP_TOKEN=$(curl -s -X POST "https://api.sendpulse.com/oauth/access_token" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "grant_type": "client_credentials",
-              "client_id": "${{ secrets.SENDPULSE_CLIENT_ID }}",
-              "client_secret": "${{ secrets.SENDPULSE_CLIENT_SECRET }}"
-            }' | jq -r '.access_token // empty')
-
-          if [[ -z "$SP_TOKEN" ]]; then
-            echo "Failed to get SendPulse token"
-            exit 1
-          fi
-
+          # Brevo transactional email sending (no token fetch needed — use api-key header)
           while IFS='|' read -r email jobs_html; do
-            curl -s -X POST "https://api.sendpulse.com/smtp/emails" \
-              -H "Authorization: Bearer $SP_TOKEN" \
+            RESPONSE=$(curl -s -X POST "https://api.brevo.com/v3/smtp/email" \
+              -H "accept: application/json" \
+              -H "api-key: ${{ secrets.BREVO_API_KEY }}" \
               -H "Content-Type: application/json" \
               -d '{
-                "email": {
-                  "subject": "Weekly Job Opportunities Matching Your Profile",
-                  "html": "<h2>New matching jobs this week</h2><p>We found the following jobs that match your roles:</p><ul>"'"${jobs_html:-<li>No jobs this week — check back next time!</li>}"'"</ul><p><a href=\"https://your-platform.com/search/jobs\">Browse all opportunities →</a></p><p>Best regards,<br>Your Platform Team</p>",
-                  "from": { "name": "Your Platform Jobs", "email": "${{ secrets.FROM_EMAIL }}" },
-                  "to": [{ "email": "'"$email"'" }]
-                }
-              }'
-            echo "Sent to $email"
-            sleep 1.2
+                "sender": {
+                  "name": "${{ secrets.FROM_NAME }}",
+                  "email": "${{ secrets.FROM_EMAIL }}"
+                },
+                "to": [{
+                  "email": "'"$email"'"
+                }],
+                "subject": "Weekly Job Opportunities Matching Your Profile",
+                "htmlContent": "<h2>New matching jobs this week</h2><p>We found the following jobs that match your roles:</p><ul>"'"${jobs_html:-<li>No jobs this week — check back next time!</li>}"'"</ul><p><a href=\"https://your-platform.com/search/jobs\">Browse all opportunities →</a></p><p>Best regards,<br>Your Platform Team</p>"
+              }')
+
+            echo "$RESPONSE" | jq . || echo "Brevo response: $RESPONSE"
+
+            if echo "$RESPONSE" | grep -q '"messageId"'; then
+              echo "Sent to $email (success)"
+            else
+              echo "Failed to send to $email — check response above"
+            fi
+
+            sleep 1.2  # Gentle rate limiting
           done < "$AGGREGATED_FILE"
 
-          echo "Email sending completed."
+          echo "Brevo email sending completed."
