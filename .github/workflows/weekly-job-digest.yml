@@ -45,13 +45,13 @@ jobs:
           COUNT=$(jq '.data | length' jobs_page1.json || echo 0)
           echo "Found $COUNT recent job listings"
 
-      # 3. Fetch all approved consultant profiles (fixed filter syntax)
+      # 3. Fetch all approved consultant profiles (fixed filter: pub_approved)
       - name: Fetch approved consultant profiles
         run: |
           curl -s --get "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query" \
             -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
             --data-urlencode "listingType=consultant_profile" \
-            --data-urlencode "pub_approved=approved"  # Fixed: use pub_<key> for publicData
+            --data-urlencode "pub_approved=approved" \
             --data-urlencode "limit=100" \
             --data-urlencode "include=user" \
             > consultants.json
@@ -59,9 +59,9 @@ jobs:
           COUNT=$(jq '.data | length' consultants.json || echo 0)
           echo "Found $COUNT approved consultant profiles"
 
-          # Extra debug: list profile IDs
-          echo "Approved consultant profile IDs:"
-          jq -r '.data[].id' consultants.json || echo "(none)"
+          # Debug: list IDs and their approved status
+          echo "Approved consultant profile IDs and approved status:"
+          jq -r '.data[] | "\(.id) - approved: \(.attributes.publicData.approved // "missing")"' consultants.json || echo "(none)"
 
           if (( COUNT == 0 )); then
             echo "No approved consultants → nothing to do"
@@ -153,7 +153,7 @@ jobs:
             done
           done
 
-          # Aggregate unique jobs per email (skip empty)
+          # Aggregate unique jobs per email (skip empty/invalid)
           sort -u matches.csv | awk -F'|' '
             {
               email = $1; jid = $2; title = $3; url = $4;
