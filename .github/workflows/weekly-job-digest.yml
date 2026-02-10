@@ -63,42 +63,54 @@ jobs:
           echo "$CONSULTANTS" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-      # Step 4: Match Jobs to Consultants Based on Roles and Profile Listings
+          # Step 4: Match Jobs to Consultants Based on Roles and Profile Listings
       - name: Match Jobs to Consultants
         id: match_jobs
         run: |
           echo "Matching jobs to consultants..."
           
-          # Extract unique job roles (flattened)
-          JOB_ROLES=$(echo "$JOBS" | jq -r '.data[] | .attributes.publicData.role[]' | sort | uniq)
-          
-          # Print job roles for debugging
-          echo "Job Roles: $JOB_ROLES"
-          
-          # Now match jobs with consultants based on roles and latestListing
-          MATCHED=$(echo "$CONSULTANTS" | jq --argjson roles "$(echo "$JOB_ROLES" | jq -R . | jq -s .)" '
-            .data[] |
-            select(
-              # Ensure consultant has any role that matches a job role
-              (.attributes.publicData.role // []) as $cRoles |
-              ($cRoles | map(select($roles | index(.) != null)) | length > 0) and
-              # Ensure consultant has a valid latestListing ID directly inside attributes
-              .attributes.publicData.latestListing != null
-            )
-          ')
+          # Iterate over each job listing and find matching consultants
+          MATCHED_JOBS_AND_CONSULTANTS=""
+          for job in $(echo "$JOBS" | jq -r '.data[] | @base64'); do
+            _jq() {
+              echo ${job} | base64 --decode | jq -r ${1}
+            }
       
-          # Debugging matched consultants
-          echo "Matched Consultants: $MATCHED"
+            JOB_ROLES=$(_jq '.attributes.publicData.role[]' | sort | uniq)
+            JOB_ID=$(_jq '.id')
+            
+            # Find matching consultants based on roles
+            MATCHED_CONSULTANTS=$(echo "$CONSULTANTS" | jq --argjson roles "$(echo "$JOB_ROLES" | jq -R . | jq -s .)" '
+              .data[] |
+              select(
+                # Ensure consultant has any role that matches a job role
+                (.attributes.publicData.role // []) as $cRoles |
+                ($cRoles | map(select($roles | index(.) != null)) | length > 0) and
+                # Ensure consultant has a valid latestListing ID directly inside attributes
+                .attributes.publicData.latestListing != null
+              )
+            ')
+      
+            if [ -n "$MATCHED_CONSULTANTS" ]; then
+              # Collect the job and matched consultants
+              MATCHED_JOBS_AND_CONSULTANTS=$(echo "$MATCHED_JOBS_AND_CONSULTANTS" | jq --arg job_id "$JOB_ID" --argjson matched_consultants "$MATCHED_CONSULTANTS" '
+                . + [{"job_id": $job_id, "consultants": $matched_consultants}]
+              ')
+            fi
+          done
+      
+          # Debugging matched jobs and consultants
+          echo "Matched Jobs and Consultants: $MATCHED_JOBS_AND_CONSULTANTS"
           
-          if [ -z "$MATCHED" ]; then
-            echo "No matching consultants found."
+          if [ -z "$MATCHED_JOBS_AND_CONSULTANTS" ]; then
+            echo "No matching jobs and consultants found."
             exit 1
           fi
-      
-          echo "MATCHED<<EOF" >> $GITHUB_ENV
-          echo "$MATCHED" >> $GITHUB_ENV
+          
+          echo "MATCHED_JOBS_AND_CONSULTANTS<<EOF" >> $GITHUB_ENV
+          echo "$MATCHED_JOBS_AND_CONSULTANTS" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
-
+    
       # Step 5: Fetch User Emails for Matched Consultants (based on their latestListing)
       - name: Fetch Emails for Matched Consultants
         id: fetch_emails
