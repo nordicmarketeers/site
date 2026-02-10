@@ -71,26 +71,33 @@ jobs:
           
           # Extract unique job roles (flattened)
           JOB_ROLES=$(echo "$JOBS" | jq -r '.data[] | .attributes.publicData.role[]' | sort | uniq)
-      
+          
+          # Print job roles for debugging
+          echo "Job Roles: $JOB_ROLES"
+          
           # Now match jobs with consultants based on roles and latestListing
           MATCHED=$(echo "$CONSULTANTS" | jq --argjson roles "$(echo "$JOB_ROLES" | jq -R . | jq -s .)" '
             .data[] |
             select(
-              # Check if consultant has any role matching the job role
+              # Ensure consultant has any role that matches a job role
               (.attributes.publicData.role // []) as $cRoles |
-              ($roles | any(. == $cRoles[])) and  # Match job role with consultant role
+              ($cRoles | map(select($roles | index(.) != null)) | length > 0) and  # Match job roles with consultant roles
               (.attributes.publicData.latestListing != null)  # Ensure the consultant has a valid profile
             )
           ')
-      
+
+          # Debugging matched consultants
+          echo "Matched Consultants: $MATCHED"
+          
           if [ -z "$MATCHED" ]; then
             echo "No matching consultants found."
             exit 1
           fi
-      
+
           echo "MATCHED<<EOF" >> $GITHUB_ENV
           echo "$MATCHED" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
+
 
 
       # Step 5: Fetch User Emails for Matched Consultants (based on their latestListing)
