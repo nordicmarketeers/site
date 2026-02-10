@@ -63,7 +63,7 @@ jobs:
           echo "$CONSULTANTS" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-      # Step 4: Match Jobs to Consultants Based on Roles
+      # Step 4: Match Jobs to Consultants Based on Roles and Profile Listings
       - name: Match Jobs to Consultants
         id: match_jobs
         run: |
@@ -74,7 +74,8 @@ jobs:
             .data[] |
             select(
               (.attributes.publicData.role // []) as $cRoles |
-              ($roles | any(. == $cRoles[]))
+              ($roles | any(. == $cRoles[])) and
+              (.attributes.publicData.latestListing != null)
             )
           ')
 
@@ -87,14 +88,21 @@ jobs:
           echo "$MATCHED" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-      # Step 5: Fetch User Emails for Matched Consultants
+      # Step 5: Fetch User Emails for Matched Consultants (based on their latestListing)
       - name: Fetch Emails for Matched Consultants
         id: fetch_emails
         run: |
           echo "Fetching emails for matched consultants..."
           USER_EMAILS=""
           for consultant in $(echo "$MATCHED" | jq -r '.id'); do
-            USER_ID=$(echo "$consultant" | jq -r '.id')
+            # Fetch the profile listing id from the consultant's latestListing field
+            PROFILE_ID=$(echo "$consultant" | jq -r '.attributes.publicData.latestListing')
+
+            # Fetch the user associated with the profile listing (Consultant)
+            USER_ID=$(curl -s "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/show?id=$PROFILE_ID" \
+              -H "Authorization: bearer $TOKEN" | jq -r '.data.attributes.user.id')
+
+            # Fetch the user's email
             USER_EMAIL=$(curl -s "https://flex-integ-api.sharetribe.com/v1/integration_api/users/show?id=$USER_ID" \
               -H "Authorization: bearer $TOKEN" | jq -r '.data.attributes.profile.publicData.email')
 
