@@ -94,7 +94,7 @@ jobs:
                 $cRoles | map(select(test("^(.*)$"; "i"))) as $normalized_cRoles |
                 any($normalized_cRoles[]; index($roles[])) != null and
                 # Ensure consultant has a valid latestListing ID directly inside attributes
-                .attributes.publicData.latestListing != null
+                (.attributes.publicData.latestListing != null)
               ')
             
             # Debug: Check if consultants are being matched
