@@ -83,9 +83,7 @@ jobs:
               (.attributes.publicData.role // []) as $cRoles |
               ($cRoles | map(select($roles | index(.) != null)) | length > 0) and
               # Ensure consultant has a valid latestListing ID directly inside attributes
-              .attributes.publicData.latestListing != null and
-              # Match job listing IDs to consultant's latestListing ID
-              .attributes.publicData.latestListing == $roles
+              .attributes.publicData.latestListing != null
             )
           ')
       
