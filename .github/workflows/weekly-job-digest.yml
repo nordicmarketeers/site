@@ -81,14 +81,14 @@ jobs:
             select(
               # Ensure consultant has any role that matches a job role
               (.attributes.publicData.role // []) as $cRoles |
-              ($cRoles | map(select($roles | index(.) != null)) | length > 0) and  # Match job roles with consultant roles
+              ($cRoles | map(select($roles | index(.) != null)) | length > 0) and  
               # Ensure consultant's user has a valid latestListing ID
               (.relationships.latestListing.data.id != null) and
               # Match job listing IDs to consultant's latestListing ID
               ($roles | index(.relationships.latestListing.data.id) != null)
             )
           ')
-
+      
           # Debugging matched consultants
           echo "Matched Consultants: $MATCHED"
           
@@ -96,7 +96,7 @@ jobs:
             echo "No matching consultants found."
             exit 1
           fi
-
+      
           echo "MATCHED<<EOF" >> $GITHUB_ENV
           echo "$MATCHED" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
