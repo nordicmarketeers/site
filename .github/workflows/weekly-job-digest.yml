@@ -73,7 +73,7 @@ jobs:
           jq -c '.data[]' jobs_page1.json | while read -r job; do
             job_id=$(jq -r '.id' <<< "$job")
             job_title=$(jq -r '.attributes.title // "Job opportunity"' <<< "$job")
-            job_url="https://your-platform.com/listing/${job_id}"   # ← CHANGE THIS
+            job_url="https://your-platform.com/listing/${job_id}"   # ← CHANGE THIS TO YOUR REAL URL PATTERN
 
             mapfile -t job_roles < <(jq -r '.attributes.publicData.role // [] | .[]' <<< "$job" | sort)
 
@@ -86,9 +86,16 @@ jobs:
 
             jq -c '.data[]' consultants.json | while read -r consultant; do
               profile_id=$(jq -r '.attributes.publicData.latestListing // null' <<< "$consultant")
-              if [[ "$profile_id" == "null" ]]; then continue; fi
+              if [[ "$profile_id" == "null" ]]; then 
+                echo "DEBUG: Skipping consultant — no latestListing"
+                continue; 
+              fi
 
               mapfile -t cons_roles < <(jq -r '.attributes.publicData.role // [] | .[]' <<< "$consultant" | sort)
+
+              # ─────────────── DEBUG OUTPUT ───────────────
+              echo "DEBUG: Consultant profile $profile_id → roles: ${cons_roles[*]:-EMPTY}"
+              echo "DEBUG: Comparing to job roles: ${job_roles[*]}"
 
               match_found=false
               for r in "${job_roles[@]}"; do
@@ -99,6 +106,8 @@ jobs:
               done
 
               if $match_found; then
+                echo "DEBUG: MATCH FOUND for consultant $profile_id on job $job_id"
+
                 # Try to get email from included user data
                 email=$(jq -r --arg pid "$profile_id" '
                   (.included // [] | .[] | select(.type=="user") 
@@ -106,24 +115,35 @@ jobs:
                   | .attributes.email // null
                 ' consultants.json)
 
+                echo "DEBUG: Email from included query: ${email:-(not found in included)}"
+
                 if [[ -z "$email" || "$email" == "null" ]]; then
-                  # Fallback: fetch listing → user → email
+                  echo "DEBUG: Falling back to direct API calls for profile $profile_id"
+                  
                   user_resp=$(curl -s -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
                     "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/show?id=$profile_id")
 
                   user_id=$(echo "$user_resp" | jq -r '.data.attributes.author.id // null')
 
+                  echo "DEBUG: Fetched user ID from listing: ${user_id:-(none)}"
+
                   if [[ -n "$user_id" && "$user_id" != "null" ]]; then
                     email=$(curl -s -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
                       "https://flex-integ-api.sharetribe.com/v1/integration_api/users/show?id=$user_id" \
                       | jq -r '.data.attributes.email // null')
+
+                    echo "DEBUG: Email from users/show: ${email:-(not found)}"
                   fi
                 fi
 
                 if [[ -n "$email" && "$email" != "null" ]]; then
                   echo "$email|$job_id|$job_title|$job_url" >> matches.csv
-                  echo "Match → $email for $job_title"
+                  echo "MATCH RECORDED → $email for $job_title"
+                else
+                  echo "DEBUG: No valid email found — skipping record"
                 fi
+              else
+                echo "DEBUG: No match for consultant $profile_id"
               fi
             done
           done
@@ -144,15 +164,17 @@ jobs:
 
           NUM=$(wc -l < unique_emails.txt || echo 0)
 
-          # Set step outputs (this is what was missing)
+          # Set step outputs
           echo "recipients_file=unique_emails.txt" >> $GITHUB_OUTPUT
           echo "aggregated_file=aggregated.csv" >> $GITHUB_OUTPUT
           echo "recipient_count=$NUM" >> $GITHUB_OUTPUT
 
           echo "Found $NUM unique recipients"
 
-          # Debug: show what was aggregated
-          echo "Aggregated matches:"
+          # Final debug
+          echo "Contents of matches.csv:"
+          cat matches.csv || echo "(empty)"
+          echo "Contents of aggregated.csv:"
           cat aggregated.csv || echo "(empty)"
 
       # 5. Send emails or show preview in test mode
@@ -199,7 +221,7 @@ jobs:
             exit 0
           fi
 
-          # ── Real sending ──────────────────────────────────────
+          # Real sending
           SP_TOKEN=$(curl -s -X POST "https://api.sendpulse.com/oauth/access_token" \
             -H "Content-Type: application/json" \
             -d '{
