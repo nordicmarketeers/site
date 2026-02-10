@@ -73,7 +73,7 @@ jobs:
           jq -c '.data[]' jobs_page1.json | while read -r job; do
             job_id=$(jq -r '.id' <<< "$job")
             job_title=$(jq -r '.attributes.title // "Job opportunity"' <<< "$job" | sed 's/"/\\"/g')
-            job_url="https://your-platform.com/listing/${job_id}"   # ← CHANGE TO YOUR REAL LISTING URL
+            job_url="https://your-platform.com/listing/${job_id}"   # ← CHANGE TO YOUR REAL LISTING URL PATTERN
 
             mapfile -t job_roles < <(jq -r '.attributes.publicData.role // [] | .[]' <<< "$job" | tr '[:upper:]' '[:lower:]' | sort | uniq)
 
@@ -107,10 +107,13 @@ jobs:
                 listing_resp=$(curl -s -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
                   "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/show?id=$profile_id")
 
-                author_id=$(echo "$listing_resp" | jq -r '.data.attributes.author.id // null')
+                # Correct jq path for author ID
+                author_id=$(echo "$listing_resp" | jq -r '.data.relationships.author.data.id // null')
 
                 if [[ -z "$author_id" || "$author_id" == "null" ]]; then
-                  echo "DEBUG: No author found for profile $profile_id → skipping"
+                  echo "DEBUG: No author ID found in relationships for profile $profile_id → skipping"
+                  # Optional extra debug (uncomment if needed):
+                  # echo "DEBUG: Raw relationships.author: $(echo "$listing_resp" | jq '.data.relationships.author // "MISSING"')"
                   continue
                 fi
 
@@ -173,7 +176,7 @@ jobs:
           echo "Raw matches.csv:"
           cat matches.csv || echo "(empty)"
           echo ""
-          echo "Aggregated:"
+          echo "Aggregated per-email jobs:"
           cat aggregated.csv || echo "(empty)"
 
       # 5. Send or preview in test mode
@@ -184,7 +187,10 @@ jobs:
           AGGREGATED_FILE: ${{ steps.match-and-prepare.outputs.aggregated_file }}
           RECIPIENT_COUNT: ${{ steps.match-and-prepare.outputs.recipient_count }}
         run: |
-          echo "Outputs: file=$RECIPIENTS_FILE aggregated=$AGGREGATED_FILE count=$RECIPIENT_COUNT"
+          echo "Outputs:"
+          echo "recipients_file = $RECIPIENTS_FILE"
+          echo "aggregated_file = $AGGREGATED_FILE"
+          echo "count = $RECIPIENT_COUNT"
 
           if [[ -z "$RECIPIENTS_FILE" || ! -f "$RECIPIENTS_FILE" || ! -s "$RECIPIENTS_FILE" ]]; then
             echo "No valid consultant owners to notify"
