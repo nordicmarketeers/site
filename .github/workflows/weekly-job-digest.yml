@@ -76,9 +76,10 @@ jobs:
           MATCHED=$(echo "$CONSULTANTS" | jq --argjson roles "$(echo "$JOB_ROLES" | jq -R . | jq -s .)" '
             .data[] |
             select(
+              # Check if consultant has any role matching the job role
               (.attributes.publicData.role // []) as $cRoles |
               ($roles | any(. == $cRoles[])) and  # Match job role with consultant role
-              (.attributes.publicData.latestListing != null)  # Ensure the consultant has a profile
+              (.attributes.publicData.latestListing != null)  # Ensure the consultant has a valid profile
             )
           ')
       
@@ -90,6 +91,7 @@ jobs:
           echo "MATCHED<<EOF" >> $GITHUB_ENV
           echo "$MATCHED" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
+
 
       # Step 5: Fetch User Emails for Matched Consultants (based on their latestListing)
       - name: Fetch Emails for Matched Consultants
