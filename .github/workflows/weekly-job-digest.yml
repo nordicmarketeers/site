@@ -45,7 +45,7 @@ jobs:
           COUNT=$(jq '.data | length' jobs_page1.json || echo 0)
           echo "Found $COUNT recent job listings"
 
-      # 3. Fetch all approved consultant profiles (fixed filter: pub_approved)
+      # 3. Fetch all approved consultant profiles (using pub_approved)
       - name: Fetch approved consultant profiles
         run: |
           curl -s --get "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query" \
@@ -59,9 +59,8 @@ jobs:
           COUNT=$(jq '.data | length' consultants.json || echo 0)
           echo "Found $COUNT approved consultant profiles"
 
-          # Debug: list IDs and their approved status
           echo "Approved consultant profile IDs and approved status:"
-          jq -r '.data[] | "\(.id) - approved: \(.attributes.publicData.approved // "missing")"' consultants.json || echo "(none)"
+          jq -r '.data[] | "\(.id) - approved: \(.attributes.publicData.approved // "missing") - state: \(.attributes.state)"' consultants.json || echo "(none)"
 
           if (( COUNT == 0 )); then
             echo "No approved consultants → nothing to do"
@@ -107,13 +106,16 @@ jobs:
               if $match_found; then
                 echo "DEBUG: MATCH FOUND for consultant profile $profile_id on job $job_id"
 
+                # Fetch listing with include=author to ensure relationship is expanded if needed
                 listing_resp=$(curl -s -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
-                  "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/show?id=$profile_id")
+                  "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/show?id=$profile_id&include=author")
 
                 author_id=$(echo "$listing_resp" | jq -r '.data.relationships.author.data.id // null')
 
                 if [[ -z "$author_id" || "$author_id" == "null" ]]; then
                   echo "DEBUG: No author ID found for profile $profile_id → skipping"
+                  echo "DEBUG: Raw relationships.author: $(echo "$listing_resp" | jq '.data.relationships.author // "MISSING RELATIONSHIP"')"
+                  echo "DEBUG: Raw response excerpt: $(echo "$listing_resp" | jq '.data | {id: .id, type: .type, state: .attributes.state, relationships: .relationships}')"
                   continue
                 fi
 
@@ -153,7 +155,7 @@ jobs:
             done
           done
 
-          # Aggregate unique jobs per email (skip empty/invalid)
+          # Aggregate unique jobs per email
           sort -u matches.csv | awk -F'|' '
             {
               email = $1; jid = $2; title = $3; url = $4;
