@@ -78,7 +78,7 @@ jobs:
               echo ${job} | base64 --decode | jq -r ${1}
             }
       
-            JOB_ROLES=$(echo "$(_jq '.attributes.publicData.role[]')" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr '[:upper:]' '[:lower:]' | sort | uniq)
+            JOB_ROLES=$(echo "$(_jq '.attributes.publicData.role[]')" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
             JOB_ID=$(_jq '.id')
       
             # Debug: Check the roles being extracted from job
@@ -89,9 +89,8 @@ jobs:
             MATCHED_CONSULTANTS=$(echo "$CONSULTANTS" | jq --arg roles "$JOB_ROLES" '
               .data[] |
               select(
-                # Normalize consultant roles (trim spaces, lowercase, and check for match)
-                (.attributes.publicData.role // []) as $cRoles |
-                any($cRoles[]; test($roles; "i")) and
+                # Directly match the roles without normalization
+                (.attributes.publicData.role // []) | index($roles) != null and
                 # Ensure consultant has a valid latestListing ID directly inside attributes
                 (.attributes.publicData.latestListing != null)
               ')
