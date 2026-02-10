@@ -68,22 +68,25 @@ jobs:
         id: match_jobs
         run: |
           echo "Matching jobs to consultants..."
-          JOB_ROLES=$(echo "$JOBS" | jq -r '.data[] | .attributes.publicData.role[]' | sort | uniq)
           
+          # Extract unique job roles (flattened)
+          JOB_ROLES=$(echo "$JOBS" | jq -r '.data[] | .attributes.publicData.role[]' | sort | uniq)
+      
+          # Now match jobs with consultants based on roles and latestListing
           MATCHED=$(echo "$CONSULTANTS" | jq --argjson roles "$(echo "$JOB_ROLES" | jq -R . | jq -s .)" '
             .data[] |
             select(
               (.attributes.publicData.role // []) as $cRoles |
-              ($roles | any(. == $cRoles[])) and
-              (.attributes.publicData.latestListing != null)
+              ($roles | any(. == $cRoles[])) and  # Match job role with consultant role
+              (.attributes.publicData.latestListing != null)  # Ensure the consultant has a profile
             )
           ')
-
+      
           if [ -z "$MATCHED" ]; then
             echo "No matching consultants found."
             exit 1
           fi
-
+      
           echo "MATCHED<<EOF" >> $GITHUB_ENV
           echo "$MATCHED" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
