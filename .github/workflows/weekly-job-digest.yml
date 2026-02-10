@@ -81,11 +81,11 @@ jobs:
             select(
               # Ensure consultant has any role that matches a job role
               (.attributes.publicData.role // []) as $cRoles |
-              ($cRoles | map(select($roles | index(.) != null)) | length > 0) &&
-              # Ensure consultant's user has a valid latestListing ID
-              (.relationships.latestListing.data.id != null) &&
+              ($cRoles | map(select($roles | index(.) != null)) | length > 0) and
+              # Ensure consultant has a valid latestListing ID directly inside attributes
+              .attributes.publicData.latestListing != null and
               # Match job listing IDs to consultant's latestListing ID
-              (.relationships.latestListing.data.id == $roles)
+              .attributes.publicData.latestListing == $roles
             )
           ')
       
