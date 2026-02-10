@@ -82,7 +82,10 @@ jobs:
               # Ensure consultant has any role that matches a job role
               (.attributes.publicData.role // []) as $cRoles |
               ($cRoles | map(select($roles | index(.) != null)) | length > 0) and  # Match job roles with consultant roles
-              (.attributes.publicData.latestListing != null)  # Ensure the consultant has a valid profile
+              # Ensure consultant's user has a valid latestListing ID
+              (.relationships.latestListing.data.id != null) and
+              # Match job listing IDs to consultant's latestListing ID
+              ($roles | index(.relationships.latestListing.data.id) != null)
             )
           ')
 
@@ -97,8 +100,6 @@ jobs:
           echo "MATCHED<<EOF" >> $GITHUB_ENV
           echo "$MATCHED" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
-
-
 
       # Step 5: Fetch User Emails for Matched Consultants (based on their latestListing)
       - name: Fetch Emails for Matched Consultants
