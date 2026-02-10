@@ -92,7 +92,7 @@ jobs:
                 # Normalize consultant roles (trim spaces, lowercase, and check for match)
                 (.attributes.publicData.role // []) as $cRoles |
                 $cRoles | map(select(test("^(.*)$"; "i"))) as $normalized_cRoles |
-                any($normalized_cRoles[]; index($roles | split(",")[])) != null and
+                any($normalized_cRoles[]; index($roles | split(" ")[])) != null and
                 # Ensure consultant has a valid latestListing ID directly inside attributes
                 (.attributes.publicData.latestListing != null)
               ')
