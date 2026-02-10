@@ -45,13 +45,13 @@ jobs:
           COUNT=$(jq '.data | length' jobs_page1.json || echo 0)
           echo "Found $COUNT recent job listings"
 
-      # 3. Fetch all approved consultant profiles
+      # 3. Fetch all approved consultant profiles (fixed filter syntax)
       - name: Fetch approved consultant profiles
         run: |
           curl -s --get "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query" \
             -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
             --data-urlencode "listingType=consultant_profile" \
-            --data-urlencode "publicData.approved=approved" \
+            --data-urlencode "pub_approved=approved"  # Fixed: use pub_<key> for publicData
             --data-urlencode "limit=100" \
             --data-urlencode "include=user" \
             > consultants.json
@@ -59,12 +59,16 @@ jobs:
           COUNT=$(jq '.data | length' consultants.json || echo 0)
           echo "Found $COUNT approved consultant profiles"
 
+          # Extra debug: list profile IDs
+          echo "Approved consultant profile IDs:"
+          jq -r '.data[].id' consultants.json || echo "(none)"
+
           if (( COUNT == 0 )); then
             echo "No approved consultants → nothing to do"
             exit 0
           fi
 
-      # 4. Match jobs → consultant profiles → only the true owner user
+      # 4. Match jobs → consultant profiles → owner user (only consultants)
       - name: Match jobs and prepare digest data
         id: match-and-prepare
         run: |
@@ -103,27 +107,23 @@ jobs:
               if $match_found; then
                 echo "DEBUG: MATCH FOUND for consultant profile $profile_id on job $job_id"
 
-                # Fetch the listing details to get its AUTHOR (owner)
                 listing_resp=$(curl -s -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
                   "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/show?id=$profile_id")
 
-                # Correct jq path for author ID
                 author_id=$(echo "$listing_resp" | jq -r '.data.relationships.author.data.id // null')
 
                 if [[ -z "$author_id" || "$author_id" == "null" ]]; then
-                  echo "DEBUG: No author ID found in relationships for profile $profile_id → skipping"
-                  # Optional extra debug (uncomment if needed):
-                  # echo "DEBUG: Raw relationships.author: $(echo "$listing_resp" | jq '.data.relationships.author // "MISSING"')"
+                  echo "DEBUG: No author ID found for profile $profile_id → skipping"
                   continue
                 fi
 
-                echo "DEBUG: Profile $profile_id owner (author) ID: $author_id"
+                echo "DEBUG: Profile $profile_id owner ID: $author_id"
 
-                # Fetch the owner user details
                 user_resp=$(curl -s -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
                   "https://flex-integ-api.sharetribe.com/v1/integration_api/users/show?id=$author_id")
 
-                email=$(echo "$user_resp" | jq -r '.data.attributes.email // null')
+                email=$(echo "$user_resp" | jq -r '.data.attributes.profile.email // .data.attributes.email // null')
+
                 user_type=$(echo "$user_resp" | jq -r '
                   .data.attributes.profile.publicData.userType // 
                   .data.attributes.publicData.userType // 
@@ -131,17 +131,21 @@ jobs:
                   "unknown"
                 ')
 
-                echo "DEBUG: Owner user → email=$email | userType='$user_type'"
+                echo "DEBUG: Owner user → email='$email' | userType='$user_type'"
 
-                if [[ "$user_type" == "consultant" ]]; then   # ← CHANGE IF YOUR CONSULTANT TYPE ID IS DIFFERENT
+                if [[ "$email" == "null" || -z "$email" ]]; then
+                  echo "DEBUG: Email missing - raw user email part: $(echo "$user_resp" | jq '.data.attributes | {profile: .profile, email: .email} // "no attributes"')"
+                fi
+
+                if [[ "$user_type" == "consultant" ]]; then
                   if [[ -n "$email" && "$email" != "null" ]]; then
                     echo "$email|$job_id|$job_title|$job_url" >> matches.csv
-                    echo "MATCH RECORDED → $email (owner of profile $profile_id) for \"$job_title\""
+                    echo "MATCH RECORDED → $email for \"$job_title\""
                   else
                     echo "DEBUG: No valid email for owner → skipped"
                   fi
                 else
-                  echo "DEBUG: SKIPPED owner — userType='$user_type' (not consultant)"
+                  echo "DEBUG: SKIPPED — userType='$user_type' (not consultant)"
                 fi
               else
                 echo "DEBUG: No role match for profile $profile_id"
@@ -149,10 +153,11 @@ jobs:
             done
           done
 
-          # Aggregate unique jobs per email
+          # Aggregate unique jobs per email (skip empty)
           sort -u matches.csv | awk -F'|' '
             {
               email = $1; jid = $2; title = $3; url = $4;
+              if (email == "" || jid == "") next;
               key = email "|" jid;
               if (!(key in seen)) {
                 seen[key] = 1;
@@ -171,7 +176,7 @@ jobs:
           echo "aggregated_file=aggregated.csv" >> $GITHUB_OUTPUT
           echo "recipient_count=$NUM" >> $GITHUB_OUTPUT
 
-          echo "Found $NUM unique consultant recipients (owners only)"
+          echo "Found $NUM unique consultant recipients"
 
           echo "Raw matches.csv:"
           cat matches.csv || echo "(empty)"
@@ -179,7 +184,7 @@ jobs:
           echo "Aggregated per-email jobs:"
           cat aggregated.csv || echo "(empty)"
 
-      # 5. Send or preview in test mode
+      # 5. Send or preview
       - name: Send weekly job digest emails
         if: always()
         env:
@@ -187,13 +192,10 @@ jobs:
           AGGREGATED_FILE: ${{ steps.match-and-prepare.outputs.aggregated_file }}
           RECIPIENT_COUNT: ${{ steps.match-and-prepare.outputs.recipient_count }}
         run: |
-          echo "Outputs:"
-          echo "recipients_file = $RECIPIENTS_FILE"
-          echo "aggregated_file = $AGGREGATED_FILE"
-          echo "count = $RECIPIENT_COUNT"
+          echo "Outputs: recipients_file=$RECIPIENTS_FILE aggregated_file=$AGGREGATED_FILE count=$RECIPIENT_COUNT"
 
           if [[ -z "$RECIPIENTS_FILE" || ! -f "$RECIPIENTS_FILE" || ! -s "$RECIPIENTS_FILE" ]]; then
-            echo "No valid consultant owners to notify"
+            echo "No recipients found — check matches above"
             ls -la *.csv *.txt || true
             exit 0
           fi
@@ -203,7 +205,7 @@ jobs:
 
           if [[ "${{ secrets.TEST_MODE }}" == "true" ]]; then
             echo ""
-            echo "TEST MODE — email previews:"
+            echo "TEST MODE — preview:"
 
             while IFS='|' read -r email jobs_html; do
               echo "----------------------------------------"
@@ -213,7 +215,7 @@ jobs:
               echo "HTML:"
               echo "<h2>New matching jobs this week</h2>"
               echo "<p>We found the following jobs that match your roles:</p>"
-              echo "<ul>$jobs_html</ul>"
+              echo "<ul>${jobs_html:-<li>No jobs this week — check back next time!</li>}</ul>"
               echo "<p><a href=\"https://your-platform.com/search/jobs\">View all jobs →</a></p>"
               echo ""
             done < "$AGGREGATED_FILE"
@@ -230,7 +232,7 @@ jobs:
             }' | jq -r '.access_token // empty')
 
           if [[ -z "$SP_TOKEN" ]]; then
-            echo "Failed SendPulse token"
+            echo "Failed to get SendPulse token"
             exit 1
           fi
 
@@ -241,7 +243,7 @@ jobs:
               -d '{
                 "email": {
                   "subject": "Weekly Job Opportunities Matching Your Profile",
-                  "html": "<h2>New matching jobs this week</h2><p>We found the following jobs that match your roles:</p><ul>"'"${jobs_html}"'"</ul><p><a href=\"https://your-platform.com/search/jobs\">Browse all opportunities →</a></p><p>Best regards,<br>Your Platform Team</p>",
+                  "html": "<h2>New matching jobs this week</h2><p>We found the following jobs that match your roles:</p><ul>"'"${jobs_html:-<li>No jobs this week — check back next time!</li>}"'"</ul><p><a href=\"https://your-platform.com/search/jobs\">Browse all opportunities →</a></p><p>Best regards,<br>Your Platform Team</p>",
                   "from": { "name": "Your Platform Jobs", "email": "${{ secrets.FROM_EMAIL }}" },
                   "to": [{ "email": "'"$email"'" }]
                 }
@@ -250,4 +252,4 @@ jobs:
             sleep 1.2
           done < "$AGGREGATED_FILE"
 
-          echo "Sending done."
+          echo "Email sending completed."
