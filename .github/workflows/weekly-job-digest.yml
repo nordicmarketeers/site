@@ -86,13 +86,13 @@ jobs:
             echo "Job Roles: $JOB_ROLES"
       
             # Find matching consultants based on roles
-            MATCHED_CONSULTANTS=$(echo "$CONSULTANTS" | jq --argjson roles "$(echo "$JOB_ROLES" | jq -R . | jq -s .)" '
+            MATCHED_CONSULTANTS=$(echo "$CONSULTANTS" | jq --arg roles "$JOB_ROLES" '
               .data[] |
               select(
                 # Normalize consultant roles (trim spaces, lowercase, and check for match)
                 (.attributes.publicData.role // []) as $cRoles |
                 $cRoles | map(select(test("^(.*)$"; "i"))) as $normalized_cRoles |
-                any($normalized_cRoles[]; index($roles[])) != null and
+                any($normalized_cRoles[]; index($roles | split(",")[])) != null and
                 # Ensure consultant has a valid latestListing ID directly inside attributes
                 (.attributes.publicData.latestListing != null)
               ')
