@@ -10,178 +10,199 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Fetch Sharetribe API Token
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ────────────────────────────────────────────────
+      # 1. Get Sharetribe Integration API token
+      # ────────────────────────────────────────────────
       - name: Fetch Sharetribe API Token
-        id: fetch_token
+        id: get-token
         run: |
-          echo "Fetching Sharetribe API token..."
           TOKEN=$(curl -s -X POST "https://flex-api.sharetribe.com/v1/auth/token" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "grant_type=client_credentials&client_id=${{ secrets.SHARETRIBE_CLIENT_ID }}&client_secret=${{ secrets.SHARETRIBE_CLIENT_SECRET }}" \
-            | python -c "import sys, json; print(json.load(sys.stdin)['access_token'])")
-          
-          if [ -z "$TOKEN" ]; then
-            echo "Failed to fetch Sharetribe token."
-            exit 1
-          fi
-          
-          echo "TOKEN=$TOKEN" >> $GITHUB_ENV
+            | jq -r '.access_token')
 
-      # Step 2: Fetch Jobs from Sharetribe (Last 7 Days)
-      - name: Fetch Jobs from Sharetribe (Last 7 Days)
-        id: fetch_jobs
-        run: |
-          echo "Fetching jobs from Sharetribe..."
-          SEVEN_DAYS_AGO=$(date -u -d "7 days ago" +"%Y-%m-%dT%H:%M:%SZ")
-
-          JOBS=$(curl -s "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query?listingType=consultant_job&createdAtStart=$SEVEN_DAYS_AGO&limit=100" \
-            -H "Authorization: bearer $TOKEN")
-          
-          if [ -z "$JOBS" ]; then
-            echo "No jobs found."
+          if [[ -z "$TOKEN" || "$TOKEN" == "null" ]]; then
+            echo "Failed to obtain Sharetribe token"
             exit 1
           fi
 
-          echo "JOBS<<EOF" >> $GITHUB_ENV
-          echo "$JOBS" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          echo "SHARETRIBE_TOKEN=$TOKEN" >> $GITHUB_ENV
 
-      # Step 3: Fetch Approved Consultant Profiles from Sharetribe
-      - name: Fetch Approved Consultant Profiles
-        id: fetch_consultants
+      # ────────────────────────────────────────────────
+      # 2. Fetch all relevant job listings from last 7 days
+      # ────────────────────────────────────────────────
+      - name: Fetch recent job listings
         run: |
-          echo "Fetching approved consultant profiles..."
-          CONSULTANTS=$(curl -s "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query?listingType=consultant_profile&publicData.approved=approved&limit=100" \
-            -H "Authorization: bearer $TOKEN")
+          SINCE=$(date -u -d "7 days ago" '+%Y-%m-%dT00:00:00Z')
 
-          if [ -z "$CONSULTANTS" ]; then
-            echo "No consultants found."
-            exit 1
+          # We'll collect all pages
+          curl -s --get "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query" \
+            -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
+            --data-urlencode "listingType=consultant_job" \
+            --data-urlencode "createdAtStart=$SINCE" \
+            --data-urlencode "limit=100" \
+            --data-urlencode "include=user" \
+            > jobs_page1.json
+
+          # Very basic pagination – improve if you expect >>100 jobs/week
+          jq -r '.data | length' jobs_page1.json > /dev/null  # just to fail early if broken
+
+          echo "JOBS_FILE=jobs_page1.json" >> $GITHUB_ENV
+
+      # ────────────────────────────────────────────────
+      # 3. Fetch all approved consultant profiles
+      #    (also paginated – this version takes only first 100)
+      # ────────────────────────────────────────────────
+      - name: Fetch approved consultant profiles
+        run: |
+          curl -s --get "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query" \
+            -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
+            --data-urlencode "listingType=consultant_profile" \
+            --data-urlencode "publicData.approved=approved" \
+            --data-urlencode "limit=100" \
+            --data-urlencode "include=user" \
+            > consultants.json
+
+          COUNT=$(jq '.data | length' consultants.json)
+          echo "Found $COUNT approved consultant profiles"
+
+          if (( COUNT == 0 )); then
+            echo "No approved consultants → nothing to do"
+            exit 0   # soft exit — no error
           fi
 
-          echo "CONSULTANTS<<EOF" >> $GITHUB_ENV
-          echo "$CONSULTANTS" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
-      # Step 4: Match Jobs to Consultants Based on Roles and Profile Listings
-      - name: Match Jobs to Consultants
-        id: match_jobs
+      # ────────────────────────────────────────────────
+      # 4. Match jobs ↔ consultants + collect emails
+      # ────────────────────────────────────────────────
+      - name: Match jobs and collect recipient emails
+        id: match-and-emails
         run: |
-          echo "Matching jobs to consultants..."
-      
-          # Initialize as an empty array to hold matched jobs and consultants
-          MATCHED_JOBS_AND_CONSULTANTS="[]"
-      
-          # Iterate over each job listing and find matching consultants
-          for job in $(echo "$JOBS" | jq -r '.data[] | @base64'); do
-            _jq() {
-              echo ${job} | base64 --decode | jq -r ${1}
-            }
-      
-            JOB_ROLES=$(echo "$(_jq '.attributes.publicData.role[]')" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-            JOB_ID=$(_jq '.id')
-      
-            # Debug: Check the roles being extracted from job
-            echo "Job ID: $JOB_ID"
-            echo "Job Roles: $JOB_ROLES"
-      
-            # Find matching consultants based on roles
-            MATCHED_CONSULTANTS=$(echo "$CONSULTANTS" | jq --arg roles "$JOB_ROLES" '
-              .data[] |
-              select(
-                # Directly match the roles without normalization
-                (.attributes.publicData.role // []) | index($roles) != null and
-                # Ensure consultant has a valid latestListing ID directly inside attributes
-                (.attributes.publicData.latestListing != null)
-              ')
-            
-            # Debug: Check if consultants are being matched
-            echo "Matched Consultants for Job $JOB_ID: $MATCHED_CONSULTANTS"
-      
-            if [ -n "$MATCHED_CONSULTANTS" ]; then
-              # Collect the job and matched consultants
-              MATCHED_JOBS_AND_CONSULTANTS=$(echo "$MATCHED_JOBS_AND_CONSULTANTS" | jq --arg job_id "$JOB_ID" --argjson matched_consultants "$MATCHED_CONSULTANTS" '
-                . + [{"job_id": $job_id, "consultants": $matched_consultants}]
-              ')
+          # We'll write emails to this file (one per line)
+          echo "" > recipients.txt
+
+          # For each job
+          jq -c '.data[]' jobs_page1.json | while read -r job; do
+            job_id=$(jq -r '.id' <<< "$job")
+            job_title=$(jq -r '.attributes.title // "Untitled job"' <<< "$job")
+
+            # Get job roles as array (or empty array)
+            mapfile -t job_roles < <(jq -r '.attributes.publicData.role // [] | .[]' <<< "$job" | sort)
+
+            if [[ ${#job_roles[@]} -eq 0 ]]; then
+              echo "Job $job_id has no roles → skipping"
+              continue
             fi
+
+            echo "Processing job $job_id: ${job_roles[*]}"
+
+            # Look for consultants whose role array contains ANY of the job roles
+            while read -r consultant; do
+              consultant_id=$(jq -r '.id' <<< "$consultant")
+              profile_id=$(jq -r '.attributes.publicData.latestListing // null' <<< "$consultant")
+
+              if [[ "$profile_id" == "null" ]]; then
+                continue
+              fi
+
+              mapfile -t cons_roles < <(jq -r '.attributes.publicData.role // [] | .[]' <<< "$consultant" | sort)
+
+              # Check for any intersection
+              match_found=false
+              for r in "${job_roles[@]}"; do
+                if [[ " ${cons_roles[*]} " =~ " $r " ]]; then
+                  match_found=true
+                  break
+                fi
+              done
+
+              if $match_found; then
+                # Get the real user email from the included user (if present)
+                # or fall back to separate /users/show call
+                email=$(jq -r --arg pid "$profile_id" '
+                  (.included // [] | .[] | select(.type=="user" and (.relationships.listings.data // [] | map(.id) | index($pid))) )?.attributes.email // null
+                ' consultants.json)
+
+                if [[ "$email" == "null" || -z "$email" ]]; then
+                  user_id=$(jq -r --arg pid "$profile_id" '
+                    .data[] | select(.id == $pid) | .attributes.user.id // null
+                  ' consultants.json)
+
+                  if [[ -n "$user_id" && "$user_id" != "null" ]]; then
+                    email=$(curl -s -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
+                      "https://flex-integ-api.sharetribe.com/v1/integration_api/users/show?id=$user_id" \
+                      | jq -r '.data.attributes.email // null')
+                  fi
+                fi
+
+                if [[ -n "$email" && "$email" != "null" ]]; then
+                  echo "$email|$job_id|$job_title" >> recipients.txt
+                  echo "→ Match! $email for job $job_id"
+                fi
+              fi
+            done < <(jq -c '.data[]' consultants.json)
           done
-      
-          # Debugging matched jobs and consultants
-          echo "Matched Jobs and Consultants: $MATCHED_JOBS_AND_CONSULTANTS"
-      
-          if [ -z "$MATCHED_JOBS_AND_CONSULTANTS" ]; then
-            echo "No matching jobs and consultants found."
+
+          # Deduplicate emails (one email can match multiple jobs → send once)
+          sort -u recipients.txt | cut -d'|' -f1 | sort -u > unique_emails.txt
+
+          echo "RECIPIENTS_FILE=unique_emails.txt" >> $GITHUB_ENV
+          echo "Found $(wc -l < unique_emails.txt) unique recipients"
+
+      # ────────────────────────────────────────────────
+      # 5. Send emails via SendPulse (or SendGrid / Resend / ...)
+      # ────────────────────────────────────────────────
+      - name: Send weekly job digest emails
+        if: steps.match-and-emails.outputs.RECIPIENTS_FILE != ''
+        env:
+          RECIPIENTS: ${{ steps.match-and-emails.outputs.RECIPIENTS_FILE }}
+        run: |
+          if [[ ! -s "$RECIPIENTS" ]]; then
+            echo "No recipients → skipping email step"
+            exit 0
+          fi
+
+          if [[ "${{ secrets.TEST_MODE }}" == "true" ]]; then
+            echo "TEST MODE — would send to:"
+            cat "$RECIPIENTS"
+            exit 0
+          fi
+
+          # Get SendPulse token
+          SP_TOKEN=$(curl -s -X POST "https://api.sendpulse.com/oauth/access_token" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "grant_type": "client_credentials",
+              "client_id": "${{ secrets.SENDPULSE_CLIENT_ID }}",
+              "client_secret": "${{ secrets.SENDPULSE_CLIENT_SECRET }}"
+            }' | jq -r '.access_token')
+
+          if [[ -z "$SP_TOKEN" || "$SP_TOKEN" == "null" ]]; then
+            echo "Failed to get SendPulse token"
             exit 1
           fi
-      
-          echo "MATCHED_JOBS_AND_CONSULTANTS<<EOF" >> $GITHUB_ENV
-          echo "$MATCHED_JOBS_AND_CONSULTANTS" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-    
-      # Step 5: Fetch User Emails for Matched Consultants (based on their latestListing)
-      - name: Fetch Emails for Matched Consultants
-        id: fetch_emails
-        run: |
-          echo "Fetching emails for matched consultants..."
-          USER_EMAILS=""
-          for consultant in $(echo "$MATCHED" | jq -r '.id'); do
-            # Fetch the profile listing id from the consultant's latestListing field
-            PROFILE_ID=$(echo "$consultant" | jq -r '.attributes.publicData.latestListing')
 
-            # Fetch the user associated with the profile listing (Consultant)
-            USER_ID=$(curl -s "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/show?id=$PROFILE_ID" \
-              -H "Authorization: bearer $TOKEN" | jq -r '.data.attributes.user.id')
-
-            # Fetch the user's email
-            USER_EMAIL=$(curl -s "https://flex-integ-api.sharetribe.com/v1/integration_api/users/show?id=$USER_ID" \
-              -H "Authorization: bearer $TOKEN" | jq -r '.data.attributes.profile.publicData.email')
-
-            if [ "$USER_EMAIL" != "null" ]; then
-              USER_EMAILS="$USER_EMAILS $USER_EMAIL"
-            fi
-          done
-
-          if [ -z "$USER_EMAILS" ]; then
-            echo "No user emails found."
-            exit 1
-          fi
-
-          echo "USER_EMAILS=$USER_EMAILS" >> $GITHUB_ENV
-
-      # Step 6: Send Emails to Consultants (using SendPulse)
-      - name: Send Emails to Consultants
-        if: ${{ env.USER_EMAILS != '' }}
-        id: send_emails
-        run: |
-          echo "Sending emails to consultants..."
-          
-          # Check if TEST_MODE is enabled
-          if [ "${{ secrets.TEST_MODE }}" == "true" ]; then
-            echo "[TEST MODE] Emails would be sent to: $USER_EMAILS"
-          else
-            SP_TOKEN=$(curl -s -X POST "https://api.sendpulse.com/oauth/access_token" \
+          # For simplicity we send one email per recipient (no batch)
+          # In production → use SendPulse campaign / batch send
+          while read -r email; do
+            curl -s -X POST "https://api.sendpulse.com/smtp/emails" \
+              -H "Authorization: Bearer $SP_TOKEN" \
               -H "Content-Type: application/json" \
-              -d "{\"grant_type\":\"client_credentials\",\"client_id\":\"${{ secrets.SENDPULSE_CLIENT_ID }}\",\"client_secret\":\"${{ secrets.SENDPULSE_CLIENT_SECRET }}\"}" \
-              | python -c "import sys, json; print(json.load(sys.stdin)['access_token'])")
+              -d '{
+                "email": {
+                  "subject": "Weekly Job Opportunities Matching Your Profile",
+                  "html": "<h2>New jobs this week</h2><p>We found job listing(s) that match your roles.</p><p>Check them out on the platform!</p><p><a href=\"https://your-platform.com\">View jobs →</a></p>",
+                  "from": {
+                    "name": "Your Platform Jobs",
+                    "email": "${{ secrets.FROM_EMAIL }}"
+                  },
+                  "to": [{"email": "'"$email"'"}]
+                }
+              }'
+            echo "Sent to $email"
+            sleep 0.8   # very basic rate limit avoidance
+          done < "$RECIPIENTS"
 
-            if [ -z "$SP_TOKEN" ]; then
-              echo "Failed to fetch SendPulse token."
-              exit 1
-            fi
-
-            for email in $USER_EMAILS; do
-              curl -s -X POST "https://api.sendpulse.com/smtp/emails" \
-                -H "Authorization: Bearer $SP_TOKEN" \
-                -H "Content-Type: application/json" \
-                -d "{
-                  \"email\": {
-                    \"subject\": \"Weekly Job Digest\",
-                    \"html\": \"<p>Here are jobs matching your profile</p>\",
-                    \"from\": {\"name\": \"Job Alerts\", \"email\": \"${{ secrets.FROM_EMAIL }}\"},
-                    \"to\": [{\"email\": \"$email\"}]
-                  }
-                }"
-            done
-
-            echo "Sent emails to: $USER_EMAILS"
-          fi
+          echo "Email sending completed."
