@@ -63,12 +63,12 @@ jobs:
           echo "$CONSULTANTS" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-          # Step 4: Match Jobs to Consultants Based on Roles and Profile Listings
+      # Step 4: Match Jobs to Consultants Based on Roles and Profile Listings
       - name: Match Jobs to Consultants
         id: match_jobs
         run: |
           echo "Matching jobs to consultants..."
-          
+      
           # Iterate over each job listing and find matching consultants
           MATCHED_JOBS_AND_CONSULTANTS=""
           for job in $(echo "$JOBS" | jq -r '.data[] | @base64'); do
@@ -78,18 +78,25 @@ jobs:
       
             JOB_ROLES=$(_jq '.attributes.publicData.role[]' | sort | uniq)
             JOB_ID=$(_jq '.id')
-            
+      
+            # Debug: Check the roles being extracted from job
+            echo "Job ID: $JOB_ID"
+            echo "Job Roles: $JOB_ROLES"
+      
             # Find matching consultants based on roles
             MATCHED_CONSULTANTS=$(echo "$CONSULTANTS" | jq --argjson roles "$(echo "$JOB_ROLES" | jq -R . | jq -s .)" '
               .data[] |
               select(
                 # Ensure consultant has any role that matches a job role
                 (.attributes.publicData.role // []) as $cRoles |
-                ($cRoles | map(select($roles | index(.) != null)) | length > 0) and
+                any($cRoles[]; index($roles[])) != null and
                 # Ensure consultant has a valid latestListing ID directly inside attributes
                 .attributes.publicData.latestListing != null
               )
             ')
+      
+            # Debug: Check if consultants are being matched
+            echo "Matched Consultants for Job $JOB_ID: $MATCHED_CONSULTANTS"
       
             if [ -n "$MATCHED_CONSULTANTS" ]; then
               # Collect the job and matched consultants
@@ -101,15 +108,16 @@ jobs:
       
           # Debugging matched jobs and consultants
           echo "Matched Jobs and Consultants: $MATCHED_JOBS_AND_CONSULTANTS"
-          
+      
           if [ -z "$MATCHED_JOBS_AND_CONSULTANTS" ]; then
             echo "No matching jobs and consultants found."
             exit 1
           fi
-          
+      
           echo "MATCHED_JOBS_AND_CONSULTANTS<<EOF" >> $GITHUB_ENV
           echo "$MATCHED_JOBS_AND_CONSULTANTS" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
+
     
       # Step 5: Fetch User Emails for Matched Consultants (based on their latestListing)
       - name: Fetch Emails for Matched Consultants
