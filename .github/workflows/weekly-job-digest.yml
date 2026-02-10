@@ -69,14 +69,16 @@ jobs:
         run: |
           echo "Matching jobs to consultants..."
       
+          # Initialize as an empty array to hold matched jobs and consultants
+          MATCHED_JOBS_AND_CONSULTANTS="[]"
+      
           # Iterate over each job listing and find matching consultants
-          MATCHED_JOBS_AND_CONSULTANTS=""
           for job in $(echo "$JOBS" | jq -r '.data[] | @base64'); do
             _jq() {
               echo ${job} | base64 --decode | jq -r ${1}
             }
       
-            JOB_ROLES=$(_jq '.attributes.publicData.role[]' | sort | uniq)
+            JOB_ROLES=$(echo "$(_jq '.attributes.publicData.role[]')" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr '[:upper:]' '[:lower:]' | sort | uniq)
             JOB_ID=$(_jq '.id')
       
             # Debug: Check the roles being extracted from job
@@ -87,14 +89,14 @@ jobs:
             MATCHED_CONSULTANTS=$(echo "$CONSULTANTS" | jq --argjson roles "$(echo "$JOB_ROLES" | jq -R . | jq -s .)" '
               .data[] |
               select(
-                # Ensure consultant has any role that matches a job role
+                # Normalize consultant roles (trim spaces, lowercase, and check for match)
                 (.attributes.publicData.role // []) as $cRoles |
-                any($cRoles[]; index($roles[])) != null and
+                $cRoles | map(select(test("^(.*)$"; "i"))) as $normalized_cRoles |
+                any($normalized_cRoles[]; index($roles[])) != null and
                 # Ensure consultant has a valid latestListing ID directly inside attributes
                 .attributes.publicData.latestListing != null
-              )
-            ')
-      
+              ')
+            
             # Debug: Check if consultants are being matched
             echo "Matched Consultants for Job $JOB_ID: $MATCHED_CONSULTANTS"
       
@@ -117,7 +119,6 @@ jobs:
           echo "MATCHED_JOBS_AND_CONSULTANTS<<EOF" >> $GITHUB_ENV
           echo "$MATCHED_JOBS_AND_CONSULTANTS" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
-
     
       # Step 5: Fetch User Emails for Matched Consultants (based on their latestListing)
       - name: Fetch Emails for Matched Consultants
