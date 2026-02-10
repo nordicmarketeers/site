@@ -45,7 +45,11 @@ jobs:
           COUNT=$(jq '.data | length' jobs_page1.json || echo 0)
           echo "Found $COUNT recent job listings"
 
-      # 3. Fetch all approved consultant profiles (using pub_approved)
+          # Debug: show types of fetched "jobs"
+          echo "Fetched job listing types:"
+          jq -r '.data[] | "\(.id) - type: \(.attributes.publicData.listingType // "missing") - state: \(.attributes.state)"' jobs_page1.json || echo "(none)"
+
+      # 3. Fetch all approved consultant profiles
       - name: Fetch approved consultant profiles
         run: |
           curl -s --get "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query" \
@@ -73,8 +77,24 @@ jobs:
         run: |
           echo "" > matches.csv
 
+          # Get list of consultant profile IDs to exclude from jobs
+          consultant_ids=$(jq -r '.data[].id' consultants.json | tr '\n' ' ' | sed 's/ $//')
+
           jq -c '.data[]' jobs_page1.json | while read -r job; do
             job_id=$(jq -r '.id' <<< "$job")
+
+            # Skip if this "job" ID is actually a consultant profile
+            if echo "$consultant_ids" | grep -q "$job_id"; then
+              echo "DEBUG: Skipping job $job_id — it is a consultant profile ID"
+              continue
+            fi
+
+            job_listing_type=$(jq -r '.attributes.publicData.listingType // "unknown"' <<< "$job")
+            if [[ "$job_listing_type" == "consultant_profile" ]]; then
+              echo "DEBUG: Skipping job $job_id — listingType is consultant_profile"
+              continue
+            fi
+
             job_title=$(jq -r '.attributes.title // "Job opportunity"' <<< "$job" | sed 's/"/\\"/g')
             job_url="https://your-platform.com/listing/${job_id}"   # ← CHANGE TO YOUR REAL LISTING URL PATTERN
 
@@ -85,7 +105,7 @@ jobs:
               continue
             fi
 
-            echo "Processing job $job_id: ${job_roles[*]}"
+            echo "Processing job $job_id: ${job_roles[*]} (type: $job_listing_type)"
 
             jq -c '.data[]' consultants.json | while read -r consultant; do
               profile_id=$(jq -r '.id' <<< "$consultant")
@@ -106,7 +126,6 @@ jobs:
               if $match_found; then
                 echo "DEBUG: MATCH FOUND for consultant profile $profile_id on job $job_id"
 
-                # Fetch listing with include=author to ensure relationship is expanded if needed
                 listing_resp=$(curl -s -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
                   "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/show?id=$profile_id&include=author")
 
@@ -115,7 +134,6 @@ jobs:
                 if [[ -z "$author_id" || "$author_id" == "null" ]]; then
                   echo "DEBUG: No author ID found for profile $profile_id → skipping"
                   echo "DEBUG: Raw relationships.author: $(echo "$listing_resp" | jq '.data.relationships.author // "MISSING RELATIONSHIP"')"
-                  echo "DEBUG: Raw response excerpt: $(echo "$listing_resp" | jq '.data | {id: .id, type: .type, state: .attributes.state, relationships: .relationships}')"
                   continue
                 fi
 
@@ -134,10 +152,6 @@ jobs:
                 ')
 
                 echo "DEBUG: Owner user → email='$email' | userType='$user_type'"
-
-                if [[ "$email" == "null" || -z "$email" ]]; then
-                  echo "DEBUG: Email missing - raw user email part: $(echo "$user_resp" | jq '.data.attributes | {profile: .profile, email: .email} // "no attributes"')"
-                fi
 
                 if [[ "$user_type" == "consultant" ]]; then
                   if [[ -n "$email" && "$email" != "null" ]]; then
