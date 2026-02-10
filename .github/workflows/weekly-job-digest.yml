@@ -64,7 +64,7 @@ jobs:
             exit 0
           fi
 
-      # 4. Match jobs → consultants → consultant users + prepare digest
+      # 4. Match jobs → consultant profiles → consultant-type users only
       - name: Match jobs and prepare digest data
         id: match-and-prepare
         run: |
@@ -72,8 +72,8 @@ jobs:
 
           jq -c '.data[]' jobs_page1.json | while read -r job; do
             job_id=$(jq -r '.id' <<< "$job")
-            job_title=$(jq -r '.attributes.title // "Job opportunity"' <<< "$job" | sed 's/"/\\"/g')  # escape quotes for HTML/JSON
-            job_url="https://your-platform.com/listing/${job_id}"   # ← CHANGE TO YOUR ACTUAL LISTING URL PATTERN
+            job_title=$(jq -r '.attributes.title // "Job opportunity"' <<< "$job" | sed 's/"/\\"/g')
+            job_url="https://your-platform.com/listing/${job_id}"   # ← CHANGE TO YOUR REAL LISTING URL
 
             mapfile -t job_roles < <(jq -r '.attributes.publicData.role // [] | .[]' <<< "$job" | tr '[:upper:]' '[:lower:]' | sort | uniq)
 
@@ -89,7 +89,7 @@ jobs:
 
               mapfile -t cons_roles < <(jq -r '.attributes.publicData.role // [] | .[]' <<< "$consultant" | tr '[:upper:]' '[:lower:]' | sort | uniq)
 
-              # DEBUG: show roles for troubleshooting
+              # DEBUG
               echo "DEBUG: Consultant profile $profile_id → roles: ${cons_roles[*]:-EMPTY}"
               echo "DEBUG: Job requires any of: ${job_roles[*]}"
 
@@ -112,23 +112,33 @@ jobs:
                 user_count=$(echo "$users_resp" | jq '.data | length')
                 echo "DEBUG: Found $user_count user(s) linked to profile $profile_id"
 
+                if (( user_count == 0 )); then
+                  echo "DEBUG: No users linked → skipping profile"
+                  continue
+                fi
+
                 jq -c '.data[]' <<< "$users_resp" | while read -r user; do
                   email=$(jq -r '.attributes.email // null' <<< "$user")
-                  # Adjust path if your userType is stored elsewhere (check your user object structure)
-                  user_type=$(jq -r '.attributes.profile.publicData.userType // .attributes.userType // "unknown"' <<< "$user")
+                  # Try multiple possible paths for userType (common locations in Sharetribe)
+                  user_type=$(jq -r '
+                    .attributes.profile.publicData.userType // 
+                    .attributes.publicData.userType // 
+                    .attributes.userType // 
+                    "unknown"
+                  ' <<< "$user")
 
-                  echo "DEBUG:   User → email=$email | userType=$user_type"
+                  echo "DEBUG:   User → email=$email | userType='$user_type'"
 
-                  # ONLY keep consultant users
-                  if [[ "$user_type" == "consultant" ]]; then   # ← CHANGE THIS STRING if your consultant type ID is different
+                  # STRICT FILTER: only consultant user type
+                  if [[ "$user_type" == "consultant" ]]; then   # ← CHANGE THIS if your consultant type ID is different (e.g. "provider", "freelancer")
                     if [[ -n "$email" && "$email" != "null" ]]; then
                       echo "$email|$job_id|$job_title|$job_url" >> matches.csv
-                      echo "MATCH RECORDED → $email for \"$job_title\""
+                      echo "MATCH RECORDED → $email (consultant) for \"$job_title\""
                     else
                       echo "DEBUG:   No valid email → skipped"
                     fi
                   else
-                    echo "DEBUG:   Skipped — userType is '$user_type' (not consultant)"
+                    echo "DEBUG:   SKIPPED — userType='$user_type' (not consultant)"
                   fi
                 done
               else
@@ -151,7 +161,7 @@ jobs:
               for (e in jobs) print e "|" jobs[e]
             }' > aggregated.csv
 
-          # Unique emails
+          # Unique consultant emails only
           cut -d'|' -f1 aggregated.csv | sort -u > unique_emails.txt
 
           NUM=$(wc -l < unique_emails.txt || echo 0)
@@ -162,14 +172,14 @@ jobs:
 
           echo "Found $NUM unique consultant recipients"
 
-          # Final debug output
-          echo "Contents of matches.csv (raw matches):"
+          # Debug final files
+          echo "Raw matches.csv:"
           cat matches.csv || echo "(empty)"
           echo ""
-          echo "Contents of aggregated.csv (per-email job lists):"
+          echo "Aggregated per-email jobs:"
           cat aggregated.csv || echo "(empty)"
 
-      # 5. Send emails or show preview in test mode
+      # 5. Send or preview
       - name: Send weekly job digest emails
         if: always()
         env:
@@ -177,32 +187,32 @@ jobs:
           AGGREGATED_FILE: ${{ steps.match-and-prepare.outputs.aggregated_file }}
           RECIPIENT_COUNT: ${{ steps.match-and-prepare.outputs.recipient_count }}
         run: |
-          echo "Step outputs received:"
-          echo "recipients_file  = $RECIPIENTS_FILE"
-          echo "aggregated_file  = $AGGREGATED_FILE"
-          echo "recipient_count  = $RECIPIENT_COUNT"
+          echo "Outputs:"
+          echo "recipients_file = $RECIPIENTS_FILE"
+          echo "aggregated_file = $AGGREGATED_FILE"
+          echo "count = $RECIPIENT_COUNT"
 
           if [[ -z "$RECIPIENTS_FILE" || ! -f "$RECIPIENTS_FILE" || ! -s "$RECIPIENTS_FILE" ]]; then
-            echo "No recipients file or file is empty — nothing to send"
+            echo "No consultant recipients — nothing to send"
             ls -la *.csv *.txt || true
-            cat matches.csv 2>/dev/null || echo "(matches.csv missing)"
-            cat aggregated.csv 2>/dev/null || echo "(aggregated.csv missing)"
+            cat matches.csv 2>/dev/null || echo "(matches missing)"
+            cat aggregated.csv 2>/dev/null || echo "(aggregated missing)"
             exit 0
           fi
 
-          echo "Recipients:"
+          echo "Recipients (consultants only):"
           cat "$RECIPIENTS_FILE"
 
           if [[ "${{ secrets.TEST_MODE }}" == "true" ]]; then
             echo ""
-            echo "TEST MODE — preview of emails:"
+            echo "TEST MODE PREVIEW:"
 
             while IFS='|' read -r email jobs_html; do
               echo "----------------------------------------"
               echo "To: $email"
               echo "Subject: Weekly Job Opportunities Matching Your Profile"
               echo ""
-              echo "HTML preview:"
+              echo "HTML:"
               echo "<h2>New matching jobs this week</h2>"
               echo "<p>We found the following jobs that match your roles:</p>"
               echo "<ul>$jobs_html</ul>"
@@ -213,7 +223,7 @@ jobs:
             exit 0
           fi
 
-          # ── Real sending ──────────────────────────────────────
+          # Real SendPulse sending
           SP_TOKEN=$(curl -s -X POST "https://api.sendpulse.com/oauth/access_token" \
             -H "Content-Type: application/json" \
             -d '{
@@ -243,4 +253,4 @@ jobs:
             sleep 1.2
           done < "$AGGREGATED_FILE"
 
-          echo "Email sending completed."
+          echo "Sending completed."
