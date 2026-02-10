@@ -38,6 +38,7 @@ jobs:
             -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
             --data-urlencode "listingType=consultant_job" \
             --data-urlencode "createdAtStart=$SINCE" \
+            --data-urlencode "state=published" \
             --data-urlencode "limit=100" \
             --data-urlencode "include=user" \
             > jobs_page1.json
@@ -45,29 +46,36 @@ jobs:
           COUNT=$(jq '.data | length' jobs_page1.json || echo 0)
           echo "Found $COUNT recent job listings"
 
-          # Debug: show types of fetched "jobs"
           echo "Fetched job listing types:"
           jq -r '.data[] | "\(.id) - type: \(.attributes.publicData.listingType // "missing") - state: \(.attributes.state)"' jobs_page1.json || echo "(none)"
 
-      # 3. Fetch all approved consultant profiles
+      # 3. Fetch approved consultant profiles + strict post-filter
       - name: Fetch approved consultant profiles
         run: |
           curl -s --get "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query" \
             -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
             --data-urlencode "listingType=consultant_profile" \
             --data-urlencode "pub_approved=approved" \
+            --data-urlencode "state=published" \
             --data-urlencode "limit=100" \
             --data-urlencode "include=user" \
-            > consultants.json
+            > consultants_raw.json
+
+          # Post-filter to ensure only true consultant profiles with approved
+          jq '.data |= map(select(
+            .attributes.publicData.listingType == "consultant_profile" and 
+            .attributes.publicData.approved == "approved" and 
+            .attributes.state == "published"
+          ))' consultants_raw.json > consultants.json
 
           COUNT=$(jq '.data | length' consultants.json || echo 0)
-          echo "Found $COUNT approved consultant profiles"
+          echo "Found $COUNT valid approved consultant profiles (after strict filter)"
 
-          echo "Approved consultant profile IDs and approved status:"
-          jq -r '.data[] | "\(.id) - approved: \(.attributes.publicData.approved // "missing") - state: \(.attributes.state)"' consultants.json || echo "(none)"
+          echo "Valid consultant profile IDs and details:"
+          jq -r '.data[] | "\(.id) - approved: \(.attributes.publicData.approved // "missing") - type: \(.attributes.publicData.listingType // "missing") - state: \(.attributes.state)"' consultants.json || echo "(none)"
 
           if (( COUNT == 0 )); then
-            echo "No approved consultants → nothing to do"
+            echo "No valid approved consultants → nothing to do"
             exit 0
           fi
 
@@ -77,21 +85,13 @@ jobs:
         run: |
           echo "" > matches.csv
 
-          # Get list of consultant profile IDs to exclude from jobs
-          consultant_ids=$(jq -r '.data[].id' consultants.json | tr '\n' ' ' | sed 's/ $//')
-
           jq -c '.data[]' jobs_page1.json | while read -r job; do
             job_id=$(jq -r '.id' <<< "$job")
-
-            # Skip if this "job" ID is actually a consultant profile
-            if echo "$consultant_ids" | grep -q "$job_id"; then
-              echo "DEBUG: Skipping job $job_id — it is a consultant profile ID"
-              continue
-            fi
-
             job_listing_type=$(jq -r '.attributes.publicData.listingType // "unknown"' <<< "$job")
+
+            # Skip if this "job" is actually a profile
             if [[ "$job_listing_type" == "consultant_profile" ]]; then
-              echo "DEBUG: Skipping job $job_id — listingType is consultant_profile"
+              echo "DEBUG: Skipping job-like entry $job_id — it has listingType=consultant_profile"
               continue
             fi
 
