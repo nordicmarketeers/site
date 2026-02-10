@@ -13,9 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ────────────────────────────────────────────────
       # 1. Get Sharetribe Integration API token
-      # ────────────────────────────────────────────────
       - name: Fetch Sharetribe API Token
         id: get-token
         run: |
@@ -31,14 +29,11 @@ jobs:
 
           echo "SHARETRIBE_TOKEN=$TOKEN" >> $GITHUB_ENV
 
-      # ────────────────────────────────────────────────
-      # 2. Fetch all relevant job listings from last 7 days
-      # ────────────────────────────────────────────────
+      # 2. Fetch recent job listings (last 7 days)
       - name: Fetch recent job listings
         run: |
           SINCE=$(date -u -d "7 days ago" '+%Y-%m-%dT00:00:00Z')
 
-          # We'll collect all pages
           curl -s --get "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query" \
             -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
             --data-urlencode "listingType=consultant_job" \
@@ -47,15 +42,10 @@ jobs:
             --data-urlencode "include=user" \
             > jobs_page1.json
 
-          # Very basic pagination – improve if you expect >>100 jobs/week
-          jq -r '.data | length' jobs_page1.json > /dev/null  # just to fail early if broken
+          COUNT=$(jq '.data | length' jobs_page1.json || echo 0)
+          echo "Found $COUNT recent job listings"
 
-          echo "JOBS_FILE=jobs_page1.json" >> $GITHUB_ENV
-
-      # ────────────────────────────────────────────────
       # 3. Fetch all approved consultant profiles
-      #    (also paginated – this version takes only first 100)
-      # ────────────────────────────────────────────────
       - name: Fetch approved consultant profiles
         run: |
           curl -s --get "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query" \
@@ -66,35 +56,33 @@ jobs:
             --data-urlencode "include=user" \
             > consultants.json
 
-          COUNT=$(jq '.data | length' consultants.json)
+          COUNT=$(jq '.data | length' consultants.json || echo 0)
           echo "Found $COUNT approved consultant profiles"
 
           if (( COUNT == 0 )); then
             echo "No approved consultants → nothing to do"
-            exit 0   # soft exit — no error
+            exit 0
           fi
-          
-      # ────────────────────────────────────────────────
-      # 4. Match jobs → consultants + collect data for email
-      #    Now collects job titles per recipient so we can list them
-      # ────────────────────────────────────────────────
+
+      # 4. Match jobs to consultants + prepare per-recipient job lists
       - name: Match jobs and prepare digest data
         id: match-and-prepare
         run: |
-          # Output file: email|job_id|job_title|job_url (one line per match)
           echo "" > matches.csv
 
           jq -c '.data[]' jobs_page1.json | while read -r job; do
             job_id=$(jq -r '.id' <<< "$job")
             job_title=$(jq -r '.attributes.title // "Job opportunity"' <<< "$job")
-            # Optional: construct real link (adjust your frontend URL)
-            job_url="https://your-platform.com/listing/${job_id}"
+            job_url="https://your-platform.com/listing/${job_id}"   # ← CHANGE THIS
 
             mapfile -t job_roles < <(jq -r '.attributes.publicData.role // [] | .[]' <<< "$job" | sort)
 
-            if [[ ${#job_roles[@]} -eq 0 ]]; then continue; fi
+            if [[ ${#job_roles[@]} -eq 0 ]]; then
+              echo "Skipping job $job_id — no roles"
+              continue
+            fi
 
-            echo "Job $job_id (${job_roles[*]})"
+            echo "Processing job $job_id: ${job_roles[*]}"
 
             jq -c '.data[]' consultants.json | while read -r consultant; do
               profile_id=$(jq -r '.attributes.publicData.latestListing // null' <<< "$consultant")
@@ -111,16 +99,19 @@ jobs:
               done
 
               if $match_found; then
-                # Try included user first
+                # Try to get email from included user data
                 email=$(jq -r --arg pid "$profile_id" '
-                  (.included // [] | .[] | select(.type=="user") | select(.relationships.listings.data // [] | map(.id) | index($pid)) | .attributes.email // null
+                  (.included // [] | .[] | select(.type=="user") 
+                  | select(.relationships.listings.data // [] | map(.id) | index($pid)) 
+                  | .attributes.email // null
                 ' consultants.json)
 
                 if [[ -z "$email" || "$email" == "null" ]]; then
-                  # Fallback fetch user
-                  user_id=$(curl -s -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
-                    "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/show?id=$profile_id" \
-                    | jq -r '.data.attributes.author.id // null')
+                  # Fallback: fetch listing → user → email
+                  user_resp=$(curl -s -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
+                    "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/show?id=$profile_id")
+
+                  user_id=$(echo "$user_resp" | jq -r '.data.attributes.author.id // null')
 
                   if [[ -n "$user_id" && "$user_id" != "null" ]]; then
                     email=$(curl -s -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
@@ -131,15 +122,19 @@ jobs:
 
                 if [[ -n "$email" && "$email" != "null" ]]; then
                   echo "$email|$job_id|$job_title|$job_url" >> matches.csv
-                  echo "Match → $email  for  $job_title"
+                  echo "Match → $email for $job_title"
                 fi
               fi
             done
           done
 
-          # Aggregate per email: list of jobs
+          # Aggregate jobs per email
           awk -F'|' '
-            { jobs[$1] = jobs[$1] ? jobs[$1] ", <li><a href=\"" $4 "\">" $3 "</a></li>" : "<li><a href=\"" $4 "\">" $3 "</a></li>" }
+            {
+              if ($1 != "") {
+                jobs[$1] = jobs[$1] ? jobs[$1] ", <li><a href=\"" $4 "\">" $3 "</a></li>" : "<li><a href=\"" $4 "\">" $3 "</a></li>"
+              }
+            }
             END {
               for (e in jobs) print e "|" jobs[e]
             }' matches.csv > aggregated.csv
@@ -147,33 +142,47 @@ jobs:
           # Unique emails
           cut -d'|' -f1 aggregated.csv | sort -u > unique_emails.txt
 
-          echo "RECIPIENTS_FILE=unique_emails.txt" >> $GITHUB_ENV
-          echo "AGGREGATED_FILE=aggregated.csv" >> $GITHUB_ENV
+          NUM=$(wc -l < unique_emails.txt || echo 0)
 
-          NUM=$(wc -l < unique_emails.txt)
+          # Set step outputs (this is what was missing)
+          echo "recipients_file=unique_emails.txt" >> $GITHUB_OUTPUT
+          echo "aggregated_file=aggregated.csv" >> $GITHUB_OUTPUT
+          echo "recipient_count=$NUM" >> $GITHUB_OUTPUT
+
           echo "Found $NUM unique recipients"
 
-      # ────────────────────────────────────────────────
-      # 5. Send weekly job digest (template or raw HTML)
-      # ────────────────────────────────────────────────
+          # Debug: show what was aggregated
+          echo "Aggregated matches:"
+          cat aggregated.csv || echo "(empty)"
+
+      # 5. Send emails or show preview in test mode
       - name: Send weekly job digest emails
-        if: always()  # run even if previous step failed — for debugging
+        if: always()
         env:
-          RECIPIENTS: ${{ steps.match-and-prepare.outputs.RECIPIENTS_FILE }}
-          AGGREGATED: ${{ steps.match-and-prepare.outputs.AGGREGATED_FILE }}
+          RECIPIENTS_FILE: ${{ steps.match-and-prepare.outputs.recipients_file }}
+          AGGREGATED_FILE: ${{ steps.match-and-prepare.outputs.aggregated_file }}
+          RECIPIENT_COUNT: ${{ steps.match-and-prepare.outputs.recipient_count }}
         run: |
-          if [[ ! -s "$RECIPIENTS" ]]; then
-            echo "No recipients found — nothing to send"
+          echo "Step outputs received:"
+          echo "recipients_file  = $RECIPIENTS_FILE"
+          echo "aggregated_file  = $AGGREGATED_FILE"
+          echo "recipient_count  = $RECIPIENT_COUNT"
+
+          if [[ -z "$RECIPIENTS_FILE" || ! -f "$RECIPIENTS_FILE" || ! -s "$RECIPIENTS_FILE" ]]; then
+            echo "No recipients file or file is empty — nothing to send"
+            ls -la *.csv *.txt || true
+            cat matches.csv || echo "(matches.csv missing)"
+            cat aggregated.csv || echo "(aggregated.csv missing)"
             exit 0
           fi
 
           echo "Recipients:"
-          cat "$RECIPIENTS"
+          cat "$RECIPIENTS_FILE"
 
-          # Always show what would be sent in test mode
           if [[ "${{ secrets.TEST_MODE }}" == "true" ]]; then
             echo ""
             echo "TEST MODE — preview of emails:"
+
             while IFS='|' read -r email jobs_html; do
               echo "----------------------------------------"
               echo "To: $email"
@@ -185,12 +194,12 @@ jobs:
               echo "<ul>$jobs_html</ul>"
               echo "<p><a href=\"https://your-platform.com/search/jobs\">View all jobs →</a></p>"
               echo ""
-            done < "$AGGREGATED"
+            done < "$AGGREGATED_FILE"
+
             exit 0
           fi
 
           # ── Real sending ──────────────────────────────────────
-
           SP_TOKEN=$(curl -s -X POST "https://api.sendpulse.com/oauth/access_token" \
             -H "Content-Type: application/json" \
             -d '{
@@ -204,7 +213,6 @@ jobs:
             exit 1
           fi
 
-          # Option A: Raw HTML (current — no template)
           while IFS='|' read -r email jobs_html; do
             curl -s -X POST "https://api.sendpulse.com/smtp/emails" \
               -H "Authorization: Bearer $SP_TOKEN" \
@@ -212,24 +220,13 @@ jobs:
               -d '{
                 "email": {
                   "subject": "Weekly Job Opportunities Matching Your Profile",
-                  "html": "<h2>New matching jobs this week</h2><p>We found the following jobs that match your roles:</p><ul>"'"$jobs_html"'</ul><p><a href=\"https://your-platform.com/search/jobs\">Browse all opportunities →</a></p><p>Best regards,<br>Your Platform Team</p>",
+                  "html": "<h2>New matching jobs this week</h2><p>We found the following jobs that match your roles:</p><ul>"'"${jobs_html}"'"</ul><p><a href=\"https://your-platform.com/search/jobs\">Browse all opportunities →</a></p><p>Best regards,<br>Your Platform Team</p>",
                   "from": { "name": "Your Platform Jobs", "email": "${{ secrets.FROM_EMAIL }}" },
                   "to": [{ "email": "'"$email"'" }]
                 }
               }'
             echo "Sent to $email"
-            sleep 1.2   # gentle rate limiting
-          done < "$AGGREGATED"
+            sleep 1.2
+          done < "$AGGREGATED_FILE"
 
-          # Option B: Use template (recommended — see below)
-          # Replace the curl block above with:
-          # ...
-          #   "html": null,
-          #   "template": {
-          #     "id": YOUR_TEMPLATE_ID_HERE,
-          #     "variables": {
-          #       "jobs_list": "'"$jobs_html"'",
-          #       "platform_url": "https://your-platform.com"
-          #     }
-          #   },
-          # ...
+          echo "Email sending completed."
