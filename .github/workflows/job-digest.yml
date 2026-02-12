@@ -1,8 +1,8 @@
-name: Weekly Job Digest
+name: Job Digest
 
 on:
   schedule:
-    - cron: "0 8 * * 1"  # 8 AM UTC every Monday
+    - cron: "0 8 */2 * *"  # 8 AM UTC every other day
   workflow_dispatch:
 
 jobs:
@@ -29,10 +29,10 @@ jobs:
 
           echo "SHARETRIBE_TOKEN=$TOKEN" >> $GITHUB_ENV
 
-      # 2. Fetch recent job listings (last 7 days)
+      # 2. Fetch recent job listings (last 2 days, since every-other-day run)
       - name: Fetch recent job listings
         run: |
-          SINCE=$(date -u -d "7 days ago" '+%Y-%m-%dT00:00:00Z')
+          SINCE=$(date -u -d "2 days ago" '+%Y-%m-%dT00:00:00Z')
 
           curl -s --get "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query" \
             -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
@@ -79,7 +79,7 @@ jobs:
             exit 0
           fi
 
-      # 4. Match jobs → consultant profiles → owner user (only consultants)
+      # 4. Match jobs → consultant profiles → owner user (only consultants + job_digest=true)
       - name: Match jobs and prepare digest data
         id: match-and-prepare
         run: |
@@ -96,7 +96,7 @@ jobs:
             fi
 
             job_title=$(jq -r '.attributes.title // "Job opportunity"' <<< "$job" | sed 's/"/\\"/g')
-            job_url="https://your-platform.com/listing/${job_id}"   # ← CHANGE TO YOUR REAL LISTING URL PATTERN
+            job_url="https://nordic-marketeers.onrender.com/l/slug/${job_id}"
 
             mapfile -t job_roles < <(jq -r '.attributes.publicData.role // [] | .[]' <<< "$job" | tr '[:upper:]' '[:lower:]' | sort | uniq)
 
@@ -151,17 +151,23 @@ jobs:
                   "unknown"
                 ')
 
-                echo "DEBUG: Owner user → email='$email' | userType='$user_type'"
+                job_digest=$(echo "$user_resp" | jq -r '
+                  .data.attributes.profile.privateData.job_digest // 
+                  .data.attributes.privateData.job_digest // 
+                  "false"
+                ')
 
-                if [[ "$user_type" == "consultant" ]]; then
+                echo "DEBUG: Owner user → email='$email' | userType='$user_type' | job_digest='$job_digest'"
+
+                if [[ "$user_type" == "consultant" && "$job_digest" == "true" ]]; then
                   if [[ -n "$email" && "$email" != "null" ]]; then
                     echo "$email|$job_id|$job_title|$job_url" >> matches.csv
-                    echo "MATCH RECORDED → $email for \"$job_title\""
+                    echo "MATCH RECORDED → $email for \"$job_title\" (job_digest=true)"
                   else
                     echo "DEBUG: No valid email for owner → skipped"
                   fi
                 else
-                  echo "DEBUG: SKIPPED — userType='$user_type' (not consultant)"
+                  echo "DEBUG: SKIPPED — userType='$user_type' or job_digest='$job_digest' (not consultant or opt-out)"
                 fi
               else
                 echo "DEBUG: No role match for profile $profile_id"
@@ -201,7 +207,7 @@ jobs:
           cat aggregated.csv || echo "(empty)"
 
       # 5. Send or preview using Brevo
-      - name: Send weekly job digest emails (Brevo)
+      - name: Send job digest emails (Brevo)
         if: always()
         env:
           RECIPIENTS_FILE: ${{ steps.match-and-prepare.outputs.recipients_file }}
@@ -226,13 +232,13 @@ jobs:
             while IFS='|' read -r email jobs_html; do
               echo "----------------------------------------"
               echo "To: $email"
-              echo "Subject: Weekly Job Opportunities Matching Your Profile"
+              echo "Subject: Job Opportunities Matching Your Profile"
               echo ""
               echo "HTML:"
-              echo "<h2>New matching jobs this week</h2>"
+              echo "<h2>New matching jobs</h2>"
               echo "<p>We found the following jobs that match your roles:</p>"
-              echo "<ul>${jobs_html:-<li>No jobs this week — check back next time!</li>}</ul>"
-              echo "<p><a href=\"https://your-platform.com/search/jobs\">View all jobs →</a></p>"
+              echo "<ul>${jobs_html:-<li>No new jobs — check back soon!</li>}</ul>"
+              echo "<p><a href=\"https://nordic-marketeers.onrender.com/search/jobs\">View all jobs →</a></p>"
               echo ""
             done < "$AGGREGATED_FILE"
 
@@ -254,8 +260,8 @@ jobs:
                 "to": [{
                   "email": "'"$email"'"
                 }],
-                "subject": "Weekly Job Opportunities Matching Your Profile",
-                "htmlContent": "<h2>New matching jobs this week</h2><p>We found the following jobs that match your roles:</p><ul>'"$escaped_html"'</ul><p><a href=\"https://your-platform.com/search/jobs\">Browse all opportunities →</a></p><p>Best regards,<br>Your Platform Team</p>"
+                "subject": "Job Opportunities Matching Your Profile",
+                "htmlContent": "<h2>New matching jobs</h2><p>We found the following jobs that match your roles:</p><ul>'"$escaped_html"'</ul><p><a href=\"https://nordic-marketeers.onrender.com/search/jobs\">Browse all opportunities →</a></p><p>Best regards,<br>Your Platform Team</p>"
               }')
 
             echo "$RESPONSE" | jq . 2>/dev/null || echo "Brevo raw response: $RESPONSE"
