@@ -76,11 +76,17 @@ const SearchResultsPanel = props => {
 		}
 	};
 
+	const listingType = search.pub_listingType;
+
 	return (
 		<div className={classes}>
 			<div
 				className={
-					isMapVariant ? css.listingCardsMapVariant : css.listingCards
+					isMapVariant
+						? css.listingCardsMapVariant
+						: listingType === "consultant_job"
+						? css.jobListingCards
+						: css.listingCards
 				}
 			>
 				{listings.map(l => (
