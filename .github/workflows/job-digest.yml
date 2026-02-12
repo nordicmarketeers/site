@@ -49,21 +49,22 @@ jobs:
           echo "Fetched job listing types:"
           jq -r '.data[] | "\(.id) - type: \(.attributes.publicData.listingType // "missing") - state: \(.attributes.state)"' jobs_page1.json || echo "(none)"
 
-      # 3. Fetch users who opted into job digest + validate their latest consultant profile
+      # 3. Fetch users opted into job digest (priv_job_digest=true) + validate latest profile
       - name: Fetch opted-in users and their approved consultant profiles
         run: |
           curl -s --get "https://flex-integ-api.sharetribe.com/v1/integration_api/users/query" \
             -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
-            --data-urlencode "privateData.job_digest=true" \
+            --data-urlencode "priv_job_digest=true" \
             --data-urlencode "limit=100" \
             > opted_users_raw.json
 
-          # Post-filter users + fetch their latest profile if it's approved consultant_profile
+          # Post-filter: keep only users with valid approved consultant_profile as latestListing
           jq -c '.data[]' opted_users_raw.json | while read -r user; do
             user_id=$(jq -r '.id' <<< "$user")
             latest_listing_id=$(jq -r '.attributes.publicData.latestListing // null' <<< "$user")
 
             if [[ "$latest_listing_id" == "null" ]]; then
+              echo "DEBUG: User $user_id has no latestListing → skipping"
               continue
             fi
 
@@ -75,9 +76,11 @@ jobs:
             state=$(echo "$profile_resp" | jq -r '.data.attributes.state // "unknown"')
 
             if [[ "$listing_type" == "consultant_profile" && "$approved" == "approved" && "$state" == "published" ]]; then
-              # Keep this user + profile
+              # Keep user + profile
               echo "$user" | jq --argjson profile "$profile_resp" '. + {profile: $profile.data}' >> opted_consultants.jsonl
               echo "DEBUG: Valid opted-in user $user_id with approved profile $latest_listing_id"
+            else
+              echo "DEBUG: User $user_id latestListing $latest_listing_id invalid (type=$listing_type, approved=$approved, state=$state) → skipping"
             fi
           done
 
@@ -146,7 +149,7 @@ jobs:
               if $match_found; then
                 echo "DEBUG: MATCH FOUND for consultant profile $profile_id on job $job_id"
 
-                # Get email from the parent user object
+                # Get email from parent user (in opted_consultants.json)
                 email=$(jq -r --arg pid "$profile_id" '
                   .[] | select(.profile.data.id == $pid) | .attributes.email // .attributes.profile.email // null
                 ' opted_consultants.json)
