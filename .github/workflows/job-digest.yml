@@ -29,7 +29,7 @@ jobs:
 
           echo "SHARETRIBE_TOKEN=$TOKEN" >> $GITHUB_ENV
 
-      # 2. Fetch recent job listings (last 2 days, since every-other-day run)
+      # 2. Fetch recent job listings (last 2 days)
       - name: Fetch recent job listings
         run: |
           SINCE=$(date -u -d "2 days ago" '+%Y-%m-%dT00:00:00Z')
@@ -49,37 +49,58 @@ jobs:
           echo "Fetched job listing types:"
           jq -r '.data[] | "\(.id) - type: \(.attributes.publicData.listingType // "missing") - state: \(.attributes.state)"' jobs_page1.json || echo "(none)"
 
-      # 3. Fetch approved consultant profiles + strict post-filter
-      - name: Fetch approved consultant profiles
+      # 3. Fetch users who opted into job digest + validate their latest consultant profile
+      - name: Fetch opted-in users and their approved consultant profiles
         run: |
-          curl -s --get "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query" \
+          curl -s --get "https://flex-integ-api.sharetribe.com/v1/integration_api/users/query" \
             -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
-            --data-urlencode "listingType=consultant_profile" \
-            --data-urlencode "pub_approved=approved" \
-            --data-urlencode "state=published" \
+            --data-urlencode "privateData.job_digest=true" \
             --data-urlencode "limit=100" \
-            --data-urlencode "include=user" \
-            > consultants_raw.json
+            > opted_users_raw.json
 
-          # Post-filter to ensure only true consultant profiles with approved
-          jq '.data |= map(select(
-            .attributes.publicData.listingType == "consultant_profile" and 
-            .attributes.publicData.approved == "approved" and 
-            .attributes.state == "published"
-          ))' consultants_raw.json > consultants.json
+          # Post-filter users + fetch their latest profile if it's approved consultant_profile
+          jq -c '.data[]' opted_users_raw.json | while read -r user; do
+            user_id=$(jq -r '.id' <<< "$user")
+            latest_listing_id=$(jq -r '.attributes.publicData.latestListing // null' <<< "$user")
 
-          COUNT=$(jq '.data | length' consultants.json || echo 0)
-          echo "Found $COUNT valid approved consultant profiles (after strict filter)"
+            if [[ "$latest_listing_id" == "null" ]]; then
+              continue
+            fi
 
-          echo "Valid consultant profile IDs and details:"
-          jq -r '.data[] | "\(.id) - approved: \(.attributes.publicData.approved // "missing") - type: \(.attributes.publicData.listingType // "missing") - state: \(.attributes.state)"' consultants.json || echo "(none)"
+            profile_resp=$(curl -s -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
+              "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/show?id=$latest_listing_id")
+
+            listing_type=$(echo "$profile_resp" | jq -r '.data.attributes.publicData.listingType // "unknown"')
+            approved=$(echo "$profile_resp" | jq -r '.data.attributes.publicData.approved // "missing"')
+            state=$(echo "$profile_resp" | jq -r '.data.attributes.state // "unknown"')
+
+            if [[ "$listing_type" == "consultant_profile" && "$approved" == "approved" && "$state" == "published" ]]; then
+              # Keep this user + profile
+              echo "$user" | jq --argjson profile "$profile_resp" '. + {profile: $profile.data}' >> opted_consultants.jsonl
+              echo "DEBUG: Valid opted-in user $user_id with approved profile $latest_listing_id"
+            fi
+          done
+
+          # Convert jsonl to json array
+          if [[ -f opted_consultants.jsonl ]]; then
+            jq -s '.' opted_consultants.jsonl > opted_consultants.json
+            COUNT=$(jq '. | length' opted_consultants.json || echo 0)
+          else
+            echo "[]" > opted_consultants.json
+            COUNT=0
+          fi
+
+          echo "Found $COUNT opted-in users with valid approved consultant profiles"
+
+          echo "Opted-in consultant user IDs and profile IDs:"
+          jq -r '.[] | "User \(.id) - profile: \(.profile.id) - approved: \(.profile.attributes.publicData.approved // "missing")"' opted_consultants.json || echo "(none)"
 
           if (( COUNT == 0 )); then
-            echo "No valid approved consultants → nothing to do"
+            echo "No opted-in consultants → nothing to do"
             exit 0
           fi
 
-      # 4. Match jobs → consultant profiles → owner user (only consultants + job_digest=true)
+      # 4. Match jobs → opted-in consultant profiles → email
       - name: Match jobs and prepare digest data
         id: match-and-prepare
         run: |
@@ -89,7 +110,6 @@ jobs:
             job_id=$(jq -r '.id' <<< "$job")
             job_listing_type=$(jq -r '.attributes.publicData.listingType // "unknown"' <<< "$job")
 
-            # Skip if this "job" is actually a profile
             if [[ "$job_listing_type" == "consultant_profile" ]]; then
               echo "DEBUG: Skipping job-like entry $job_id — it has listingType=consultant_profile"
               continue
@@ -107,10 +127,10 @@ jobs:
 
             echo "Processing job $job_id: ${job_roles[*]} (type: $job_listing_type)"
 
-            jq -c '.data[]' consultants.json | while read -r consultant; do
-              profile_id=$(jq -r '.id' <<< "$consultant")
+            jq -c '.[].profile.data' opted_consultants.json | while read -r profile; do
+              profile_id=$(jq -r '.id' <<< "$profile")
 
-              mapfile -t cons_roles < <(jq -r '.attributes.publicData.role // [] | .[]' <<< "$consultant" | tr '[:upper:]' '[:lower:]' | sort | uniq)
+              mapfile -t cons_roles < <(jq -r '.attributes.publicData.role // [] | .[]' <<< "$profile" | tr '[:upper:]' '[:lower:]' | sort | uniq)
 
               echo "DEBUG: Consultant profile $profile_id → roles: ${cons_roles[*]:-EMPTY}"
               echo "DEBUG: Job requires any of: ${job_roles[*]}"
@@ -126,48 +146,16 @@ jobs:
               if $match_found; then
                 echo "DEBUG: MATCH FOUND for consultant profile $profile_id on job $job_id"
 
-                listing_resp=$(curl -s -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
-                  "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/show?id=$profile_id&include=author")
+                # Get email from the parent user object
+                email=$(jq -r --arg pid "$profile_id" '
+                  .[] | select(.profile.data.id == $pid) | .attributes.email // .attributes.profile.email // null
+                ' opted_consultants.json)
 
-                author_id=$(echo "$listing_resp" | jq -r '.data.relationships.author.data.id // null')
-
-                if [[ -z "$author_id" || "$author_id" == "null" ]]; then
-                  echo "DEBUG: No author ID found for profile $profile_id → skipping"
-                  echo "DEBUG: Raw relationships.author: $(echo "$listing_resp" | jq '.data.relationships.author // "MISSING RELATIONSHIP"')"
-                  continue
-                fi
-
-                echo "DEBUG: Profile $profile_id owner ID: $author_id"
-
-                user_resp=$(curl -s -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
-                  "https://flex-integ-api.sharetribe.com/v1/integration_api/users/show?id=$author_id")
-
-                email=$(echo "$user_resp" | jq -r '.data.attributes.profile.email // .data.attributes.email // null')
-
-                user_type=$(echo "$user_resp" | jq -r '
-                  .data.attributes.profile.publicData.userType // 
-                  .data.attributes.publicData.userType // 
-                  .data.attributes.userType // 
-                  "unknown"
-                ')
-
-                job_digest=$(echo "$user_resp" | jq -r '
-                  .data.attributes.profile.privateData.job_digest // 
-                  .data.attributes.privateData.job_digest // 
-                  "false"
-                ')
-
-                echo "DEBUG: Owner user → email='$email' | userType='$user_type' | job_digest='$job_digest'"
-
-                if [[ "$user_type" == "consultant" && "$job_digest" == "true" ]]; then
-                  if [[ -n "$email" && "$email" != "null" ]]; then
-                    echo "$email|$job_id|$job_title|$job_url" >> matches.csv
-                    echo "MATCH RECORDED → $email for \"$job_title\" (job_digest=true)"
-                  else
-                    echo "DEBUG: No valid email for owner → skipped"
-                  fi
+                if [[ -n "$email" && "$email" != "null" ]]; then
+                  echo "$email|$job_id|$job_title|$job_url" >> matches.csv
+                  echo "MATCH RECORDED → $email for \"$job_title\""
                 else
-                  echo "DEBUG: SKIPPED — userType='$user_type' or job_digest='$job_digest' (not consultant or opt-out)"
+                  echo "DEBUG: No email for profile $profile_id → skipped"
                 fi
               else
                 echo "DEBUG: No role match for profile $profile_id"
@@ -198,7 +186,7 @@ jobs:
           echo "aggregated_file=aggregated.csv" >> $GITHUB_OUTPUT
           echo "recipient_count=$NUM" >> $GITHUB_OUTPUT
 
-          echo "Found $NUM unique consultant recipients"
+          echo "Found $NUM unique opted-in consultant recipients"
 
           echo "Raw matches.csv:"
           cat matches.csv || echo "(empty)"
