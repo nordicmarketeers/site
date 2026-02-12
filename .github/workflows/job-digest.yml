@@ -1,4 +1,4 @@
-name: Weekly Job Digest
+name: Job Digest
 
 on:
   schedule:
