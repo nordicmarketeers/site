@@ -25,7 +25,9 @@ const FieldTextInputComponent = props => {
 		...rest
 	} = props;
 
-	const isDateInput = input.name.includes("starting_date");
+	const isDateInput =
+		input.name.includes("starting_date") ||
+		input.name.includes("apply_last_date");
 
 	// Make certain custom text boxes smaller
 	input.type = isDateInput ? "text" : input.type;
