@@ -98,6 +98,9 @@ jobs:
             job_title=$(jq -r '.attributes.title // "Job opportunity"' <<< "$job" | sed 's/"/\\"/g')
             job_url="https://nordic-marketeers.onrender.com/l/slug/${job_id}"
 
+            starting_date=$(jq -r '.attributes.publicData.starting_date // "Not specified"' <<< "$job")
+            apply_last_date=$(jq -r '.attributes.publicData.apply_last_date // "Not specified"' <<< "$job")
+
             mapfile -t job_roles < <(jq -r '.attributes.publicData.role // [] | .[]' <<< "$job" | tr '[:upper:]' '[:lower:]' | sort | uniq)
 
             if [[ ${#job_roles[@]} -eq 0 ]]; then
@@ -161,7 +164,8 @@ jobs:
 
                 if [[ "$user_type" == "consultant" && "$job_digest" == "true" ]]; then
                   if [[ -n "$email" && "$email" != "null" ]]; then
-                    echo "$email|$job_id|$job_title|$job_url" >> matches.csv
+                    # Include dates in the match record for later HTML
+                    echo "$email|$job_id|$job_title|$job_url|$starting_date|$apply_last_date" >> matches.csv
                     echo "MATCH RECORDED → $email for \"$job_title\" (job_digest=true)"
                   else
                     echo "DEBUG: No valid email for owner → skipped"
@@ -175,15 +179,16 @@ jobs:
             done
           done
 
-          # Aggregate unique jobs per email
+          # Aggregate unique jobs per email, now including dates
           sort -u matches.csv | awk -F'|' '
             {
-              email = $1; jid = $2; title = $3; url = $4;
+              email = $1; jid = $2; title = $3; url = $4; start = $5; last = $6;
               if (email == "" || jid == "") next;
               key = email "|" jid;
               if (!(key in seen)) {
                 seen[key] = 1;
-                jobs[email] = jobs[email] ? jobs[email] ", <li><a href=\"" url "\">" title "</a></li>" : "<li><a href=\"" url "\">" title "</a></li>";
+                line = "<li><a href=\"" url "\">" title "</a> (Starts: " start " | Apply by: " last ")</li>";
+                jobs[email] = jobs[email] ? jobs[email] ", " line : line;
               }
             }
             END {
