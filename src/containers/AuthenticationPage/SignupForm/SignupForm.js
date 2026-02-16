@@ -154,9 +154,16 @@ const SignupFormComponent = props => (
 								id={formId ? `${formId}.email` : "email"}
 								name="email"
 								autoComplete="email"
-								label={intl.formatMessage({
-									id: "SignupForm.emailLabel",
-								})}
+								label={
+									<>
+										{intl.formatMessage({
+											id: "SignupForm.emailLabel",
+										})}{" "}
+										<span aria-label="required" role="img">
+											*
+										</span>
+									</>
+								}
 								placeholder={intl.formatMessage({
 									id: "SignupForm.emailPlaceholder",
 								})}
@@ -172,9 +179,19 @@ const SignupFormComponent = props => (
 									id={formId ? `${formId}.fname` : "fname"}
 									name="fname"
 									autoComplete="given-name"
-									label={intl.formatMessage({
-										id: "SignupForm.firstNameLabel",
-									})}
+									label={
+										<>
+											{intl.formatMessage({
+												id: "SignupForm.firstNameLabel",
+											})}{" "}
+											<span
+												aria-label="required"
+												role="img"
+											>
+												*
+											</span>
+										</>
+									}
 									placeholder={intl.formatMessage({
 										id: "SignupForm.firstNamePlaceholder",
 									})}
@@ -190,9 +207,19 @@ const SignupFormComponent = props => (
 									id={formId ? `${formId}.lname` : "lname"}
 									name="lname"
 									autoComplete="family-name"
-									label={intl.formatMessage({
-										id: "SignupForm.lastNameLabel",
-									})}
+									label={
+										<>
+											{intl.formatMessage({
+												id: "SignupForm.lastNameLabel",
+											})}{" "}
+											<span
+												aria-label="required"
+												role="img"
+											>
+												*
+											</span>
+										</>
+									}
 									placeholder={intl.formatMessage({
 										id: "SignupForm.lastNamePlaceholder",
 									})}
@@ -217,9 +244,16 @@ const SignupFormComponent = props => (
 								id={formId ? `${formId}.password` : "password"}
 								name="password"
 								autoComplete="new-password"
-								label={intl.formatMessage({
-									id: "SignupForm.passwordLabel",
-								})}
+								label={
+									<>
+										{intl.formatMessage({
+											id: "SignupForm.passwordLabel",
+										})}{" "}
+										<span aria-label="required" role="img">
+											*
+										</span>
+									</>
+								}
 								placeholder={intl.formatMessage({
 									id: "SignupForm.passwordPlaceholder",
 								})}

@@ -19,7 +19,7 @@ const CustomJobsSection = props => {
 			>
 				<div
 					style={{
-						maxWidth: "1200px",
+						maxWidth: "100%",
 						margin: "0 auto",
 						padding: "40px 20px",
 					}}
@@ -58,8 +58,8 @@ const CustomJobsSection = props => {
 							<div
 								key={listing.id?.uuid || listing.id}
 								style={{
-									flex: "1 1 400px",
-									maxWidth: "550px",
+									flex: "1 1 100%",
+									maxWidth: "70%",
 									minWidth: "320px",
 								}}
 							>

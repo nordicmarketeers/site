@@ -25,6 +25,13 @@ const FieldTextInputComponent = props => {
 		...rest
 	} = props;
 
+	const isDateInput =
+		input.name.includes("starting_date") ||
+		input.name.includes("apply_last_date");
+
+	// Make certain custom text boxes smaller
+	input.type = isDateInput ? "text" : input.type;
+
 	if (label && !id) {
 		throw new Error("id required when a label is given");
 	}
@@ -88,6 +95,12 @@ const FieldTextInputComponent = props => {
 			) : null}
 			{isTextarea ? (
 				<ExpandingTextarea {...inputProps} />
+			) : isDateInput ? (
+				<input
+					{...inputProps}
+					pattern="^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-(20\d{2})$"
+					placeholder="dd-mm-yyyy"
+				/>
 			) : (
 				<input {...inputProps} />
 			)}

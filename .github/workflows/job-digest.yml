@@ -1,287 +1,290 @@
 name: Job Digest
 
 on:
-  schedule:
-    - cron: "0 8 */2 * *"  # 8 AM UTC every other day
-  workflow_dispatch:
+    schedule:
+        - cron: "0 8 */2 * *" # 8 AM UTC every other day
+    workflow_dispatch:
 
 jobs:
-  digest:
-    runs-on: ubuntu-latest
+    digest:
+        runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
 
-      # 1. Get Sharetribe Integration API token
-      - name: Fetch Sharetribe API Token
-        id: get-token
-        run: |
-          TOKEN=$(curl -s -X POST "https://flex-api.sharetribe.com/v1/auth/token" \
-            -H "Content-Type: application/x-www-form-urlencoded" \
-            -d "grant_type=client_credentials&client_id=${{ secrets.SHARETRIBE_CLIENT_ID }}&client_secret=${{ secrets.SHARETRIBE_CLIENT_SECRET }}" \
-            | jq -r '.access_token')
+            # 1. Get Sharetribe Integration API token
+            - name: Fetch Sharetribe API Token
+              id: get-token
+              run: |
+                  TOKEN=$(curl -s -X POST "https://flex-api.sharetribe.com/v1/auth/token" \
+                    -H "Content-Type: application/x-www-form-urlencoded" \
+                    -d "grant_type=client_credentials&client_id=${{ secrets.SHARETRIBE_CLIENT_ID }}&client_secret=${{ secrets.SHARETRIBE_CLIENT_SECRET }}" \
+                    | jq -r '.access_token')
 
-          if [[ -z "$TOKEN" || "$TOKEN" == "null" ]]; then
-            echo "Failed to obtain Sharetribe token"
-            exit 1
-          fi
-
-          echo "SHARETRIBE_TOKEN=$TOKEN" >> $GITHUB_ENV
-
-      # 2. Fetch recent job listings (last 2 days)
-      - name: Fetch recent job listings
-        run: |
-          SINCE=$(date -u -d "2 days ago" '+%Y-%m-%dT00:00:00Z')
-
-          curl -s --get "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query" \
-            -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
-            --data-urlencode "listingType=consultant_job" \
-            --data-urlencode "createdAtStart=$SINCE" \
-            --data-urlencode "state=published" \
-            --data-urlencode "limit=100" \
-            --data-urlencode "include=user" \
-            > jobs_page1.json
-
-          COUNT=$(jq '.data | length' jobs_page1.json || echo 0)
-          echo "Found $COUNT recent job listings"
-
-          echo "Fetched job listing types:"
-          jq -r '.data[] | "\(.id) - type: \(.attributes.publicData.listingType // "missing") - state: \(.attributes.state)"' jobs_page1.json || echo "(none)"
-
-      # 3. Fetch approved consultant profiles + strict post-filter
-      - name: Fetch approved consultant profiles
-        run: |
-          curl -s --get "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query" \
-            -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
-            --data-urlencode "listingType=consultant_profile" \
-            --data-urlencode "pub_approved=approved" \
-            --data-urlencode "state=published" \
-            --data-urlencode "limit=100" \
-            --data-urlencode "include=user" \
-            > consultants_raw.json
-
-          # Post-filter to ensure only true consultant profiles with approved
-          jq '.data |= map(select(
-            .attributes.publicData.listingType == "consultant_profile" and 
-            .attributes.publicData.approved == "approved" and 
-            .attributes.state == "published"
-          ))' consultants_raw.json > consultants.json
-
-          COUNT=$(jq '.data | length' consultants.json || echo 0)
-          echo "Found $COUNT valid approved consultant profiles (after strict filter)"
-
-          echo "Valid consultant profile IDs and details:"
-          jq -r '.data[] | "\(.id) - approved: \(.attributes.publicData.approved // "missing") - type: \(.attributes.publicData.listingType // "missing") - state: \(.attributes.state)"' consultants.json || echo "(none)"
-
-          if (( COUNT == 0 )); then
-            echo "No valid approved consultants → nothing to do"
-            exit 0
-          fi
-
-      # 4. Match jobs → consultant profiles → owner user (only consultants + job_digest=true)
-      - name: Match jobs and prepare digest data
-        id: match-and-prepare
-        run: |
-          echo "" > matches.csv
-
-          jq -c '.data[]' jobs_page1.json | while read -r job; do
-            job_id=$(jq -r '.id' <<< "$job")
-            job_listing_type=$(jq -r '.attributes.publicData.listingType // "unknown"' <<< "$job")
-
-            # Skip if this "job" is actually a profile
-            if [[ "$job_listing_type" == "consultant_profile" ]]; then
-              echo "DEBUG: Skipping job-like entry $job_id — it has listingType=consultant_profile"
-              continue
-            fi
-
-            job_title=$(jq -r '.attributes.title // "Job opportunity"' <<< "$job" | sed 's/"/\\"/g')
-            job_url="https://nordic-marketeers.onrender.com/l/slug/${job_id}"
-
-            starting_date=$(jq -r '.attributes.publicData.starting_date // "Not specified"' <<< "$job")
-            apply_last_date=$(jq -r '.attributes.publicData.apply_last_date // "Not specified"' <<< "$job")
-
-            mapfile -t job_roles < <(jq -r '.attributes.publicData.role // [] | .[]' <<< "$job" | tr '[:upper:]' '[:lower:]' | sort | uniq)
-
-            if [[ ${#job_roles[@]} -eq 0 ]]; then
-              echo "Skipping job $job_id — no roles"
-              continue
-            fi
-
-            echo "Processing job $job_id: ${job_roles[*]} (type: $job_listing_type)"
-
-            jq -c '.data[]' consultants.json | while read -r consultant; do
-              profile_id=$(jq -r '.id' <<< "$consultant")
-
-              mapfile -t cons_roles < <(jq -r '.attributes.publicData.role // [] | .[]' <<< "$consultant" | tr '[:upper:]' '[:lower:]' | sort | uniq)
-
-              echo "DEBUG: Consultant profile $profile_id → roles: ${cons_roles[*]:-EMPTY}"
-              echo "DEBUG: Job requires any of: ${job_roles[*]}"
-
-              match_found=false
-              for r in "${job_roles[@]}"; do
-                if [[ " ${cons_roles[*]} " == *" $r "* ]]; then
-                  match_found=true
-                  break
-                fi
-              done
-
-              if $match_found; then
-                echo "DEBUG: MATCH FOUND for consultant profile $profile_id on job $job_id"
-
-                listing_resp=$(curl -s -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
-                  "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/show?id=$profile_id&include=author")
-
-                author_id=$(echo "$listing_resp" | jq -r '.data.relationships.author.data.id // null')
-
-                if [[ -z "$author_id" || "$author_id" == "null" ]]; then
-                  echo "DEBUG: No author ID found for profile $profile_id → skipping"
-                  echo "DEBUG: Raw relationships.author: $(echo "$listing_resp" | jq '.data.relationships.author // "MISSING RELATIONSHIP"')"
-                  continue
-                fi
-
-                echo "DEBUG: Profile $profile_id owner ID: $author_id"
-
-                user_resp=$(curl -s -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
-                  "https://flex-integ-api.sharetribe.com/v1/integration_api/users/show?id=$author_id")
-
-                email=$(echo "$user_resp" | jq -r '.data.attributes.profile.email // .data.attributes.email // null')
-
-                user_type=$(echo "$user_resp" | jq -r '
-                  .data.attributes.profile.publicData.userType // 
-                  .data.attributes.publicData.userType // 
-                  .data.attributes.userType // 
-                  "unknown"
-                ')
-
-                job_digest=$(echo "$user_resp" | jq -r '
-                  .data.attributes.profile.privateData.job_digest // 
-                  .data.attributes.privateData.job_digest // 
-                  "false"
-                ')
-
-                echo "DEBUG: Owner user → email='$email' | userType='$user_type' | job_digest='$job_digest'"
-
-                if [[ "$user_type" == "consultant" && "$job_digest" == "true" ]]; then
-                  if [[ -n "$email" && "$email" != "null" ]]; then
-                    echo "$email|$job_id|$job_title|$job_url|$starting_date|$apply_last_date" >> matches.csv
-                    echo "MATCH RECORDED → $email for \"$job_title\" (job_digest=true)"
-                  else
-                    echo "DEBUG: No valid email for owner → skipped"
+                  if [[ -z "$TOKEN" || "$TOKEN" == "null" ]]; then
+                    echo "Failed to obtain Sharetribe token"
+                    exit 1
                   fi
-                else
-                  echo "DEBUG: SKIPPED — userType='$user_type' or job_digest='$job_digest' (not consultant or opt-out)"
-                fi
-              else
-                echo "DEBUG: No role match for profile $profile_id"
-              fi
-            done
-          done
 
-          # Aggregate unique jobs per email with styled divs + dates
-          sort -u matches.csv | awk -F'|' '
-            {
-              email = $1; jid = $2; title = $3; url = $4; start = $5; last = $6;
-              if (email == "" || jid == "") next;
-              key = email "|" jid;
-              if (!(key in seen)) {
-                seen[key] = 1;
-                line = "<div style=\"background:#f5f5f5; padding:20px; margin:15px 0; text-align:center; border-radius:8px;\">";
-                line = line "<a href=\"" url "\" style=\"font-weight:bold;\">" title "</a><br>";
-                line = line "Starting date: " start "<br>";
-                line = line "Apply by: " last;
-                line = line "</div>";
-                jobs[email] = jobs[email] ? jobs[email] line : line;
-              }
-            }
-            END {
-              for (e in jobs) print e "|" jobs[e]
-            }' > aggregated.csv
+                  echo "SHARETRIBE_TOKEN=$TOKEN" >> $GITHUB_ENV
 
-          cut -d'|' -f1 aggregated.csv | sort -u > unique_emails.txt
+            # 2. Fetch recent job listings (last 2 days)
+            - name: Fetch recent job listings
+              run: |
+                  SINCE=$(date -u -d "2 days ago" '+%Y-%m-%dT00:00:00Z')
 
-          NUM=$(wc -l < unique_emails.txt || echo 0)
+                  curl -s --get "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query" \
+                    -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
+                    --data-urlencode "listingType=consultant_job" \
+                    --data-urlencode "createdAtStart=$SINCE" \
+                    --data-urlencode "state=published" \
+                    --data-urlencode "limit=100" \
+                    --data-urlencode "include=user" \
+                    > jobs_page1.json
 
-          echo "recipients_file=unique_emails.txt" >> $GITHUB_OUTPUT
-          echo "aggregated_file=aggregated.csv" >> $GITHUB_OUTPUT
-          echo "recipient_count=$NUM" >> $GITHUB_OUTPUT
+                  COUNT=$(jq '.data | length' jobs_page1.json || echo 0)
+                  echo "Found $COUNT recent job listings"
 
-          echo "Found $NUM unique consultant recipients"
+                  echo "Fetched job listing types:"
+                  jq -r '.data[] | "\(.id) - type: \(.attributes.publicData.listingType // "missing") - state: \(.attributes.state)"' jobs_page1.json || echo "(none)"
 
-          echo "Raw matches.csv:"
-          cat matches.csv || echo "(empty)"
-          echo ""
-          echo "Aggregated per-email jobs:"
-          cat aggregated.csv || echo "(empty)"
+            # 3. Fetch approved consultant profiles + strict post-filter
+            - name: Fetch approved consultant profiles
+              run: |
+                  curl -s --get "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query" \
+                    -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
+                    --data-urlencode "listingType=consultant_profile" \
+                    --data-urlencode "pub_approved=approved" \
+                    --data-urlencode "state=published" \
+                    --data-urlencode "limit=100" \
+                    --data-urlencode "include=user" \
+                    > consultants_raw.json
 
-      # 5. Send or preview using Brevo
-      - name: Send job digest emails (Brevo)
-        if: always()
-        env:
-          RECIPIENTS_FILE: ${{ steps.match-and-prepare.outputs.recipients_file }}
-          AGGREGATED_FILE: ${{ steps.match-and-prepare.outputs.aggregated_file }}
-          RECIPIENT_COUNT: ${{ steps.match-and-prepare.outputs.recipient_count }}
-        run: |
-          echo "Outputs: recipients_file=$RECIPIENTS_FILE aggregated_file=$AGGREGATED_FILE count=$RECIPIENT_COUNT"
+                  # Post-filter to ensure only true consultant profiles with approved
+                  jq '.data |= map(select(
+                    .attributes.publicData.listingType == "consultant_profile" and
+                    .attributes.publicData.approved == "approved" and
+                    .attributes.state == "published"
+                  ))' consultants_raw.json > consultants.json
 
-          if [[ -z "$RECIPIENTS_FILE" || ! -f "$RECIPIENTS_FILE" || ! -s "$RECIPIENTS_FILE" ]]; then
-            echo "No recipients found — check matches above"
-            ls -la *.csv *.txt || true
-            exit 0
-          fi
+                  COUNT=$(jq '.data | length' consultants.json || echo 0)
+                  echo "Found $COUNT valid approved consultant profiles (after strict filter)"
 
-          echo "Recipients:"
-          cat "$RECIPIENTS_FILE"
+                  echo "Valid consultant profile IDs and details:"
+                  jq -r '.data[] | "\(.id) - approved: \(.attributes.publicData.approved // "missing") - type: \(.attributes.publicData.listingType // "missing") - state: \(.attributes.state)"' consultants.json || echo "(none)"
 
-          if [[ "${{ secrets.TEST_MODE }}" == "true" ]]; then
-            echo ""
-            echo "TEST MODE — preview (Brevo):"
+                  if (( COUNT == 0 )); then
+                    echo "No valid approved consultants → nothing to do"
+                    exit 0
+                  fi
 
-            while IFS='|' read -r email jobs_html; do
-              echo "----------------------------------------"
-              echo "To: $email"
-              echo "Subject: Job Opportunities Matching Your Profile"
-              echo ""
-              echo "HTML:"
-              echo "<h1>Header</h1>"
-              echo "<p>We found the following jobs that match your roles:</p>"
-              echo "$jobs_html"
-              echo "<p><a href=\"https://nordic-marketeers.onrender.com/search/jobs\">View all jobs →</a></p>"
-              echo "<p>Footer</p>"
-              echo ""
-            done < "$AGGREGATED_FILE"
+            # 4. Match jobs → consultant profiles → owner user (only consultants + job_digest=true)
+            - name: Match jobs and prepare digest data
+              id: match-and-prepare
+              run: |
+                  echo "" > matches.csv
 
-            exit 0
-          fi
+                  jq -c '.data[]' jobs_page1.json | while read -r job; do
+                    job_id=$(jq -r '.id' <<< "$job")
+                    job_listing_type=$(jq -r '.attributes.publicData.listingType // "unknown"' <<< "$job")
 
-          while IFS='|' read -r email jobs_html; do
-            escaped_html=$(printf '%s' "$jobs_html" | sed 's/[\\/"]/\\&/g')
+                    # Skip if this "job" is actually a profile
+                    if [[ "$job_listing_type" == "consultant_profile" ]]; then
+                      echo "DEBUG: Skipping job-like entry $job_id — it has listingType=consultant_profile"
+                      continue
+                    fi
 
-            RESPONSE=$(curl -s -X POST "https://api.brevo.com/v3/smtp/email" \
-              -H "accept: application/json" \
-              -H "api-key: ${{ secrets.BREVO_API_KEY }}" \
-              -H "Content-Type: application/json" \
-              -d '{
-                "sender": {
-                  "name": "'"${{ secrets.FROM_NAME }}"'",
-                  "email": "'"${{ secrets.FROM_EMAIL }}"'"
-                },
-                "to": [{
-                  "email": "'"$email"'"
-                }],
-                "subject": "Job Opportunities Matching Your Profile",
-                "htmlContent": "<h1>Header</h1><p>We found the following jobs that match your roles:</p>'"$escaped_html"'<p><a href=\"https://nordic-marketeers.onrender.com/search/jobs\">Browse all opportunities →</a></p><p>Footer</p>"
-              }')
+                    job_title=$(jq -r '.attributes.title // "Job opportunity"' <<< "$job" | sed 's/"/\\"/g')
+                    job_url="https://nordic-marketeers.onrender.com/l/slug/${job_id}"
 
-            echo "$RESPONSE" | jq . 2>/dev/null || echo "Brevo raw response: $RESPONSE"
+                    starting_date=$(jq -r '.attributes.publicData.starting_date // "Not specified"' <<< "$job")
+                    apply_last_date=$(jq -r '.attributes.publicData.apply_last_date // "Not specified"' <<< "$job")
 
-            if echo "$RESPONSE" | grep -q '"messageId"'; then
-              echo "Sent successfully to $email"
-            else
-              echo "Failed to send to $email — check response above"
-            fi
+                    mapfile -t job_roles < <(jq -r '.attributes.publicData.role // [] | .[]' <<< "$job" | tr '[:upper:]' '[:lower:]' | sort | uniq)
 
-            sleep 1.2
-          done < "$AGGREGATED_FILE"
+                    if [[ ${#job_roles[@]} -eq 0 ]]; then
+                      echo "Skipping job $job_id — no roles"
+                      continue
+                    fi
 
-          echo "Brevo email sending completed."
+                    echo "Processing job $job_id: ${job_roles[*]} (type: $job_listing_type)"
+
+                    jq -c '.data[]' consultants.json | while read -r consultant; do
+                      profile_id=$(jq -r '.id' <<< "$consultant")
+
+                      mapfile -t cons_roles < <(jq -r '.attributes.publicData.role // [] | .[]' <<< "$consultant" | tr '[:upper:]' '[:lower:]' | sort | uniq)
+
+                      echo "DEBUG: Consultant profile $profile_id → roles: ${cons_roles[*]:-EMPTY}"
+                      echo "DEBUG: Job requires any of: ${job_roles[*]}"
+
+                      match_found=false
+                      for r in "${job_roles[@]}"; do
+                        if [[ " ${cons_roles[*]} " == *" $r "* ]]; then
+                          match_found=true
+                          break
+                        fi
+                      done
+
+                      if $match_found; then
+                        echo "DEBUG: MATCH FOUND for consultant profile $profile_id on job $job_id"
+
+                        listing_resp=$(curl -s -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
+                          "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/show?id=$profile_id&include=author")
+
+                        author_id=$(echo "$listing_resp" | jq -r '.data.relationships.author.data.id // null')
+
+                        if [[ -z "$author_id" || "$author_id" == "null" ]]; then
+                          echo "DEBUG: No author ID found for profile $profile_id → skipping"
+                          echo "DEBUG: Raw relationships.author: $(echo "$listing_resp" | jq '.data.relationships.author // "MISSING RELATIONSHIP"')"
+                          continue
+                        fi
+
+                        echo "DEBUG: Profile $profile_id owner ID: $author_id"
+
+                        user_resp=$(curl -s -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
+                          "https://flex-integ-api.sharetribe.com/v1/integration_api/users/show?id=$author_id")
+
+                        email=$(echo "$user_resp" | jq -r '.data.attributes.profile.email // .data.attributes.email // null')
+
+                        user_type=$(echo "$user_resp" | jq -r '
+                          .data.attributes.profile.publicData.userType //
+                          .data.attributes.publicData.userType //
+                          .data.attributes.userType //
+                          "unknown"
+                        ')
+
+                        job_digest=$(echo "$user_resp" | jq -r '
+                          .data.attributes.profile.privateData.job_digest //
+                          .data.attributes.privateData.job_digest //
+                          "false"
+                        ')
+
+                        echo "DEBUG: Owner user → email='$email' | userType='$user_type' | job_digest='$job_digest'"
+
+                        if [[ "$user_type" == "consultant" && "$job_digest" == "true" ]]; then
+                          if [[ -n "$email" && "$email" != "null" ]]; then
+                            echo "$email|$job_id|$job_title|$job_url|$starting_date|$apply_last_date" >> matches.csv
+                            echo "MATCH RECORDED → $email for \"$job_title\" (job_digest=true)"
+                          else
+                            echo "DEBUG: No valid email for owner → skipped"
+                          fi
+                        else
+                          echo "DEBUG: SKIPPED — userType='$user_type' or job_digest='$job_digest' (not consultant or opt-out)"
+                        fi
+                      else
+                        echo "DEBUG: No role match for profile $profile_id"
+                      fi
+                    done
+                  done
+
+                  # Aggregate unique jobs per email with styled divs + dates
+                  sort -u matches.csv | awk -F'|' '
+                    {
+                      email = $1; jid = $2; title = $3; url = $4; start = $5; last = $6;
+                      if (email == "" || jid == "") next;
+                      key = email "|" jid;
+                      if (!(key in seen)) {
+                        seen[key] = 1;
+                        line = "<div style=\"background:#f5f5f5; padding:20px; margin:15px 0; text-align:center; border-radius:8px;\">";
+                        line = line "<a href=\"" url "\" style=\"font-weight:bold;\">" title "</a><br>";
+                        line = line "Starting date: " start "<br>";
+                        line = line "Apply by: " last;
+                        line = line "</div>";
+                        jobs[email] = jobs[email] ? jobs[email] line : line;
+                      }
+                    }
+                    END {
+                      for (e in jobs) print e "|" jobs[e]
+                    }' > aggregated.csv
+
+                  cut -d'|' -f1 aggregated.csv | sort -u > unique_emails.txt
+
+                  NUM=$(wc -l < unique_emails.txt || echo 0)
+
+                  echo "recipients_file=unique_emails.txt" >> $GITHUB_OUTPUT
+                  echo "aggregated_file=aggregated.csv" >> $GITHUB_OUTPUT
+                  echo "recipient_count=$NUM" >> $GITHUB_OUTPUT
+
+                  echo "Found $NUM unique consultant recipients"
+
+                  echo "Raw matches.csv:"
+                  cat matches.csv || echo "(empty)"
+                  echo ""
+                  echo "Aggregated per-email jobs:"
+                  cat aggregated.csv || echo "(empty)"
+
+            # 5. Send or preview using Brevo
+            - name: Send job digest emails (Brevo)
+              if: always()
+              env:
+                  RECIPIENTS_FILE:
+                      ${{ steps.match-and-prepare.outputs.recipients_file }}
+                  AGGREGATED_FILE:
+                      ${{ steps.match-and-prepare.outputs.aggregated_file }}
+                  RECIPIENT_COUNT:
+                      ${{ steps.match-and-prepare.outputs.recipient_count }}
+              run: |
+                  echo "Outputs: recipients_file=$RECIPIENTS_FILE aggregated_file=$AGGREGATED_FILE count=$RECIPIENT_COUNT"
+
+                  if [[ -z "$RECIPIENTS_FILE" || ! -f "$RECIPIENTS_FILE" || ! -s "$RECIPIENTS_FILE" ]]; then
+                    echo "No recipients found — check matches above"
+                    ls -la *.csv *.txt || true
+                    exit 0
+                  fi
+
+                  echo "Recipients:"
+                  cat "$RECIPIENTS_FILE"
+
+                  if [[ "${{ secrets.TEST_MODE }}" == "true" ]]; then
+                    echo ""
+                    echo "TEST MODE — preview (Brevo):"
+
+                    while IFS='|' read -r email jobs_html; do
+                      echo "----------------------------------------"
+                      echo "To: $email"
+                      echo "Subject: Job Opportunities Matching Your Profile"
+                      echo ""
+                      echo "HTML:"
+                      echo "<h1>Header</h1>"
+                      echo "<p>We found the following jobs that match your roles:</p>"
+                      echo "$jobs_html"
+                      echo "<p><a href=\"https://nordic-marketeers.onrender.com/search/jobs\">View all jobs →</a></p>"
+                      echo "<p>Footer</p>"
+                      echo ""
+                    done < "$AGGREGATED_FILE"
+
+                    exit 0
+                  fi
+
+                  while IFS='|' read -r email jobs_html; do
+                    escaped_html=$(printf '%s' "$jobs_html" | sed 's/[\\/"]/\\&/g')
+
+                    RESPONSE=$(curl -s -X POST "https://api.brevo.com/v3/smtp/email" \
+                      -H "accept: application/json" \
+                      -H "api-key: ${{ secrets.BREVO_API_KEY }}" \
+                      -H "Content-Type: application/json" \
+                      -d '{
+                        "sender": {
+                          "name": "'"${{ secrets.FROM_NAME }}"'",
+                          "email": "'"${{ secrets.FROM_EMAIL }}"'"
+                        },
+                        "to": [{
+                          "email": "'"$email"'"
+                        }],
+                        "subject": "Job Opportunities Matching Your Profile",
+                        "htmlContent": "<h1>Header</h1><p>We found the following jobs that match your roles:</p>'"$escaped_html"'<p><a href=\"https://nordic-marketeers.onrender.com/search/jobs\">Browse all opportunities →</a></p><p>Footer</p>"
+                      }')
+
+                    echo "$RESPONSE" | jq . 2>/dev/null || echo "Brevo raw response: $RESPONSE"
+
+                    if echo "$RESPONSE" | grep -q '"messageId"'; then
+                      echo "Sent successfully to $email"
+                    else
+                      echo "Failed to send to $email — check response above"
+                    fi
+
+                    sleep 1.2
+                  done < "$AGGREGATED_FILE"
+
+                  echo "Brevo email sending completed."

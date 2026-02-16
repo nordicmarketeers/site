@@ -24,6 +24,9 @@ import {
 	AvatarLarge,
 } from "../../components";
 
+import noPfp from "../../assets/no_pfp.jpg";
+import { IoLanguage, IoLocationSharp } from "react-icons/io5";
+
 import css from "./ListingCard.module.css";
 
 const MIN_LENGTH_FOR_LONG_WORDS = 10;
@@ -221,8 +224,6 @@ export const ListingCard = props => {
 	);
 	const showListingImage = requireListingImage(foundListingTypeConfig);
 
-	console.log(listing);
-
 	const {
 		aspectWidth = 1,
 		aspectHeight = 1,
@@ -244,6 +245,9 @@ export const ListingCard = props => {
 		? publicData.languages.map(capitalize).join(", ")
 		: "";
 
+	const authorImgURL =
+		author.profileImage?.attributes.variants["square-small"]?.url || noPfp;
+
 	if (publicData.listingType === "consultant_profile") {
 		return (
 			<NamedLink
@@ -251,7 +255,9 @@ export const ListingCard = props => {
 				name="ListingPage"
 				params={{ id, slug }}
 			>
-				<div className={`${css.cardWrapper} ${css.profileWrapper}`}>
+				<div
+					className={`${css.consultantCardWrapper} ${css.profileWrapper}`}
+				>
 					<div className={css.topRow}>
 						<AvatarLarge
 							user={author}
@@ -261,9 +267,15 @@ export const ListingCard = props => {
 
 						<div className={css.authorText}>
 							<p className={css.authorName}>{authorName}</p>
-							<p className={css.metaText}>{cityCountry}</p>
+							<p className={css.metaText}>
+								<IoLocationSharp />
+								{cityCountry}
+							</p>
 							{languages && (
-								<p className={css.metaText}>{languages}</p>
+								<p className={css.metaText}>
+									<IoLanguage />
+									{languages}
+								</p>
 							)}
 						</div>
 					</div>
@@ -284,31 +296,38 @@ export const ListingCard = props => {
 				name="ListingPage"
 				params={{ id, slug }}
 			>
-				<div className={css.cardWrapper}>
-					<p className={css.jobTitle}>{title}</p>
+				<div className={css.jobCardWrapper}>
+					<div className={css.imageWrapper}>
+						<img src={authorImgURL} className={css.squareImg} />
+					</div>
+					<div className={css.info}>
+						<p className={css.jobTitle} title={title}>
+							{title}
+						</p>
+						<p className={css.jobLocation}>
+							<IoLocationSharp />
+							{cityCountry}
+						</p>
 
-					<p className={css.jobLocation}>{cityCountry}</p>
-
-					<div className={css.tagRow}>
-						{publicData?.role?.[0] && (
-							<span className={css.tag}>
-								{capitalize(
-									publicData.role[0].replace("_", " ")
-								)}
-							</span>
-						)}
-
-						{publicData?.work_model && (
-							<span className={css.tag}>
-								{capitalize(publicData.work_model)}
-							</span>
-						)}
-
-						{publicData?.extent.map(item => (
-							<span key={item} className={css.tag}>
-								{capitalize(item.replace("_", " "))}
-							</span>
-						))}
+						<div className={css.tagRow}>
+							{publicData?.role?.[0] && (
+								<span className={css.tag}>
+									{capitalize(
+										publicData.role[0].replace("_", " ")
+									)}
+								</span>
+							)}
+							{publicData?.work_model && (
+								<span className={css.tag}>
+									{capitalize(publicData.work_model)}
+								</span>
+							)}
+							{publicData?.extent.map(item => (
+								<span key={item} className={css.tag}>
+									{capitalize(item.replace("_", " "))}
+								</span>
+							))}
+						</div>
 					</div>
 				</div>
 			</NamedLink>

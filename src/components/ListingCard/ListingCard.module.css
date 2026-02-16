@@ -26,7 +26,7 @@
 
 /* CONSULTANT PROFILE */
 
-.cardWrapper {
+.consultantCardWrapper {
 	border: 1px solid var(--colorGrey300);
 	border-radius: 8px;
 	padding: 12px;
@@ -34,14 +34,14 @@
 }
 
 .profileWrapper {
-	min-height: 225px;
+	min-height: 200px;
 }
 
 /* Top row */
 .topRow {
 	display: flex;
 	gap: 10px;
-	margin-bottom: 10px;
+	margin-bottom: 6px;
 }
 
 .cardAvatar {
@@ -54,16 +54,22 @@
 }
 
 .authorName {
-	font-size: 1.6rem;
+	font-size: 1.4rem;
 	font-weight: var(--fontWeightSemiBold);
-	margin: 4px 0 4px 0;
+	margin: 4px 0 0 0;
+	padding: 6px 0 2px 0;
 }
 
 .metaText {
-	font-size: 1.2rem;
+	font-size: 1.1rem;
 	color: var(--colorGrey500);
 	margin: 0;
 	padding: 0;
+}
+
+.metaText > svg {
+	margin-bottom: 2px;
+	margin-right: 2px;
 }
 
 .content {
@@ -72,9 +78,11 @@
 }
 
 .title {
-	font-size: 1.4rem;
+	font-size: 1.2rem;
 	font-weight: var(--fontWeightMedium);
 	margin: 0 0 4px 0;
+	padding-top: 0;
+
 	display: -webkit-box;
 	line-clamp: 1;
 	-webkit-line-clamp: 1;
@@ -84,9 +92,10 @@
 }
 
 .description {
-	font-size: 1.2rem;
+	font-size: 1.1rem;
 	color: var(--colorGrey700);
 	margin: 0;
+	padding-top: 0;
 
 	display: -webkit-box;
 	line-clamp: 2;
@@ -98,15 +107,30 @@
 /* CONSULTANT JOB */
 
 .jobTitle {
-	font-size: 1.6rem;
+	font-size: 1.4rem;
 	font-weight: var(--fontWeightSemiBold);
-	margin: 0 0 4px 0;
+	margin: 0;
+	padding: 0;
+	display: inline-block;
+
+	display: -webkit-box;
+	line-clamp: 1;
+	-webkit-line-clamp: 1;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
 }
 
 .jobLocation {
-	font-size: 1.2rem;
+	padding: 4px 0 0 0;
+	font-size: 1.1rem;
 	color: var(--colorGrey500);
-	margin: 0 0 10px 0;
+	margin: 0 0 8px 0;
+	display: inline-block;
+}
+
+.jobLocation > svg {
+	margin-bottom: 2px;
+	margin-right: 2px;
 }
 
 .tagRow {
@@ -116,7 +140,7 @@
 }
 
 .tag {
-	font-size: 1.1rem;
+	font-size: 1rem;
 	padding: 4px 8px;
 	border-radius: 6px;
 	background-color: var(--colorGrey100);
@@ -217,4 +241,34 @@
 	/* use break-word if available */
 	word-break: break-word;
 	hyphens: auto;
+}
+
+.jobCardWrapper {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	border: 1px solid var(--colorGrey300);
+	border-radius: 8px;
+	padding: 12px;
+	background: #fff;
+}
+
+.imageWrapper {
+	flex-shrink: 0;
+}
+
+.squareImg {
+	width: 95px;
+	height: 95px;
+	object-fit: cover;
+	border-radius: 8px;
+	display: none;
+	@media (--viewportSmall) {
+		display: flex;
+	}
+}
+
+.info {
+	padding: 0;
+	width: 100%;
 }
