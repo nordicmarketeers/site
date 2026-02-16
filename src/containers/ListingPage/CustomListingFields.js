@@ -34,6 +34,19 @@ const CustomListingFields = props => {
 		categoryConfiguration,
 	} = props;
 
+	// Treat certain fields like enums to make them appear in the details table
+	listingFieldConfigs.forEach(obj => {
+		if (["apply_last_date", "starting_date"].includes(obj.key)) {
+			obj.schemaType = "enum";
+
+			const valueFromPublicData = publicData[obj.key];
+
+			obj.enumOptions = [
+				{ label: valueFromPublicData, option: valueFromPublicData },
+			];
+		}
+	});
+
 	const {
 		key: categoryPrefix,
 		categories: listingCategoriesConfig,
