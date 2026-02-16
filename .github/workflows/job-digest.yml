@@ -36,7 +36,7 @@ jobs:
 
                   curl -s --get "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query" \
                     -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
-                    --data-urlencode "listingType=consultant_job" \
+                    --data-urlencode "pub_listingType=consultant_job" \
                     --data-urlencode "createdAtStart=$SINCE" \
                     --data-urlencode "state=published" \
                     --data-urlencode "limit=100" \
@@ -54,7 +54,7 @@ jobs:
               run: |
                   curl -s --get "https://flex-integ-api.sharetribe.com/v1/integration_api/listings/query" \
                     -H "Authorization: Bearer $SHARETRIBE_TOKEN" \
-                    --data-urlencode "listingType=consultant_profile" \
+                    --data-urlencode "pub_listingType=consultant_profile" \
                     --data-urlencode "pub_approved=approved" \
                     --data-urlencode "state=published" \
                     --data-urlencode "limit=100" \
