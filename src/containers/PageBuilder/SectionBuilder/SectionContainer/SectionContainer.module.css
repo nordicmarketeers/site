@@ -27,6 +27,21 @@
 	@media (--viewportMedium) {
 		padding: 64px 0;
 	}
+
+	animation: fadeVertical 1s ease-out both;
+	animation-timeline: view();
+	animation-range: entry 0% entry 60%;
+}
+
+@keyframes fadeVertical {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 .backgroundImageWrapper {

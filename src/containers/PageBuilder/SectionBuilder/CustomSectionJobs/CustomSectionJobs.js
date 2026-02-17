@@ -3,6 +3,7 @@ import classNames from "classnames";
 import css from "../SectionBuilder.module.css";
 import hCss from "../../Primitives/Heading/Heading.module.css";
 import iCss from "../../Primitives/Ingress/Ingress.module.css";
+import secCss from "../SectionContainer/SectionContainer.module.css";
 
 const CustomJobsSection = props => {
 	const { jobListings } = props;
@@ -16,12 +17,12 @@ const CustomJobsSection = props => {
 					backgroundColor: "white",
 				}}
 				id="section-3"
+				className={secCss.sectionContent}
 			>
 				<div
 					style={{
 						maxWidth: "100%",
 						margin: "0 auto",
-						padding: "40px 20px",
 					}}
 				>
 					<header className={css.sectionDetails}>
