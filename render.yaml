@@ -1,4 +1,4 @@
-# Exported from Render on 2026-01-19T13:53:20Z
+# Exported from Render on 2026-02-17T09:37:50Z
 version: "1"
 projects:
     - name: Nordic Marketeers Marketplace
@@ -6,7 +6,7 @@ projects:
           - name: Production
             services:
                 - type: web
-                  name: nordic-marketeers
+                  name: nordicmarketeers
                   runtime: node
                   repo: https://github.com/nordicmarketeers/site
                   plan: free
