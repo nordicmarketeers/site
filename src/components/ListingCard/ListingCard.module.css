@@ -249,7 +249,7 @@
 .jobCardWrapper {
 	display: flex;
 	align-items: center;
-	gap: 12px;
+	gap: 0;
 	border: 1px solid var(--colorGrey300);
 	border-radius: 8px;
 	padding: 12px;
@@ -257,6 +257,10 @@
 	box-shadow: 2px 2px 3px 0 var(--colorGrey100);
 
 	animation: fadeVertical 250ms ease-out forwards;
+
+	@media (--viewportSmall) {
+		gap: 12px;
+	}
 }
 
 .imageWrapper {
