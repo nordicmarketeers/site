@@ -32,6 +32,8 @@
 	padding: 12px;
 	background: #fff;
 	box-shadow: 2px 2px 3px 0 var(--colorGrey100);
+
+	animation: fadeVertical 250ms ease-out forwards;
 }
 
 .profileWrapper {
@@ -253,6 +255,8 @@
 	padding: 12px;
 	background: #fff;
 	box-shadow: 2px 2px 3px 0 var(--colorGrey100);
+
+	animation: fadeVertical 250ms ease-out forwards;
 }
 
 .imageWrapper {
@@ -273,4 +277,15 @@
 .info {
 	padding: 0;
 	width: 100%;
+}
+
+@keyframes fadeVertical {
+	from {
+		opacity: 0;
+		transform: translateY(10px); /* adjust to 10–20px as needed */
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
