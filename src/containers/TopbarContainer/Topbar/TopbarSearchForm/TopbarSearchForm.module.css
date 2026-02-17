@@ -50,6 +50,9 @@
 	border: 0;
 	border-radius: 0;
 
+	background-color: var(--colorWhite);
+	color: var(--colorGrey900);
+
 	/* Safari bugfix: without this Safari will print placeholder to a wrong place */
 	&::-webkit-input-placeholder {
 		line-height: normal;
@@ -61,6 +64,7 @@
 		border: 0;
 		outline: none;
 		box-shadow: none;
+		background-color: var(--colorWhite);
 	}
 }
 
@@ -93,12 +97,16 @@
 	margin-bottom: 0;
 	margin-left: 10px;
 
+	background-color: var(--colorWhite);
+
 	&:hover,
 	&:focus {
 		border-bottom-color: var(--marketplaceColor);
 		outline: none;
 		border: 0;
 		box-shadow: none;
+
+		background-color: var(--colorWhite);
 	}
 
 	&:hover::placeholder,
