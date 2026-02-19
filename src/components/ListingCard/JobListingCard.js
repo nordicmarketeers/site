@@ -30,7 +30,7 @@ const JobListingCard = props => {
 					</p>
 					<p className={css.jobLocation}>
 						<IoLocationSharp />
-						{cityCountry}
+						{cityCountry ? cityCountry : "Ingen plats satt"}
 					</p>
 
 					<div className={css.tagRow}>

@@ -1,8 +1,10 @@
 export const cityCountryFormat = rawlocation => {
 	return rawlocation
-		.split(", ")
-		.filter((_, i) => i !== 1)
-		.join(", ");
+		? rawlocation
+				.split(", ")
+				.filter((_, i) => i !== 1)
+				.join(", ")
+		: "";
 };
 
 export const capitalize = str => {
