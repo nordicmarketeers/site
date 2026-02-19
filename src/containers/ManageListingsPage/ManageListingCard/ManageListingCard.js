@@ -52,6 +52,8 @@ import {
 import MenuIcon from "./MenuIcon";
 import Overlay from "./Overlay";
 import css from "./ManageListingCard.module.css";
+import { useSelector } from "react-redux";
+import JobListingCard from "../../../components/ListingCard/JobListingCard";
 
 // Menu content needs the same padding
 const MENU_CONTENT_OFFSET = -12;
@@ -480,6 +482,8 @@ export const ManageListingCard = props => {
 		onToggleMenu,
 		renderSizes,
 	} = props;
+
+	const author = useSelector(state => state.user.currentUser);
 	const classes = classNames(rootClassName || css.root, className);
 	const currentListing = ensureOwnListing(listing);
 	const id = currentListing.id.uuid;
@@ -591,10 +595,15 @@ export const ManageListingCard = props => {
 						/>
 					</AspectRatioWrapper>
 				) : (
-					<ListingCardThumbnail
-						style={cardStyle}
-						width={aspectWidth}
-						height={aspectHeight}
+					// <ListingCardThumbnail
+					// 	style={cardStyle}
+					// 	width={aspectWidth}
+					// 	height={aspectHeight}
+					// />
+					<JobListingCard
+						author={author}
+						// classes={classes}
+						currentListing={currentListing}
 					/>
 				)}
 
@@ -660,6 +669,21 @@ export const ManageListingCard = props => {
 										<FormattedMessage id="ManageListingCard.closeListing" />
 									</InlineTextButton>
 								</MenuItem>
+
+								<MenuItem key="edit-listing">
+									<InlineTextButton
+										rootClassName={menuItemClasses}
+										onClick={event => {
+											event.preventDefault();
+											event.stopPropagation();
+
+											const url = `/l/${title}/${id}/edit/details`;
+											window.location.assign(url);
+										}}
+									>
+										<FormattedMessage id="ManageListingCard.editListing" />
+									</InlineTextButton>
+								</MenuItem>
 							</MenuContent>
 						</Menu>
 					</div>
@@ -717,7 +741,7 @@ export const ManageListingCard = props => {
 				) : null}
 			</div>
 
-			<div className={css.info}>
+			{/* <div className={css.info}>
 				<PriceMaybe
 					price={price}
 					publicData={publicData}
@@ -775,7 +799,7 @@ export const ManageListingCard = props => {
 						intl={intl}
 					/>
 				</div>
-			</div>
+			</div> */}
 		</div>
 	);
 };
