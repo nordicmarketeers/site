@@ -484,6 +484,7 @@ export const loadData = (params, search, config) => (
 				"publicData.role",
 				"publicData.work_model",
 				"publicData.extent",
+				"publicData.senior_level",
 				"publicData.location",
 				// These help rendering of 'purchase' listings,
 				// when transitioning from search page to listing page

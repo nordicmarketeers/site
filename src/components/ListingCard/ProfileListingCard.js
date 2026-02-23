@@ -5,6 +5,7 @@ import { AvatarLarge } from "../Avatar/Avatar";
 import { IoLanguage, IoLocationSharp } from "react-icons/io5";
 import { createSlug } from "../../util/urlHelpers";
 import {
+	capitalize,
 	cityCountryFormat,
 	languagesFormat,
 } from "../../util/listingCardHelpers";
@@ -22,6 +23,8 @@ const ProfileListingCard = props => {
 
 	const authorName = author.attributes.profile.displayName;
 
+	const seniorLevel = capitalize(publicData.senior_level);
+
 	return (
 		<NamedLink className={classes} name="ListingPage" params={{ id, slug }}>
 			<div
@@ -35,7 +38,13 @@ const ProfileListingCard = props => {
 					/>
 
 					<div className={css.authorText}>
-						<p className={css.authorName}>{authorName}</p>
+						<p className={css.authorName}>
+							{authorName}
+							<span className={css.seniorLevel}>
+								<span className={css.seniorLevelDot}>•</span>
+								{seniorLevel}
+							</span>
+						</p>
 						<p className={css.metaText}>
 							<IoLocationSharp />
 							{cityCountry}

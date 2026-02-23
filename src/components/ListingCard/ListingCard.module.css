@@ -63,6 +63,21 @@
 	padding: 6px 0 2px 0;
 }
 
+.seniorLevel {
+	color: var(--colorGrey500);
+	font-size: 1rem;
+	font-weight: var(--fontWeightMedium);
+	position: relative;
+	top: -2px;
+}
+
+.seniorLevelDot {
+	font-weight: 300;
+	padding: 0 4px 0 4px;
+	position: relative;
+	top: -1px;
+}
+
 .metaText {
 	font-size: 1.1rem;
 	color: var(--colorGrey500);
