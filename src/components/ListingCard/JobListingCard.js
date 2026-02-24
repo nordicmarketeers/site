@@ -46,11 +46,13 @@ const JobListingCard = props => {
 								{capitalize(publicData.work_model)}
 							</span>
 						)}
-						{publicData?.extent.map(item => (
-							<span key={item} className={css.tag}>
-								{capitalize(item.replace("_", " "))}
+						{publicData?.extent_job && (
+							<span className={css.tag}>
+								{capitalize(publicData.extent_job)}{" "}
+								{publicData.part_time_percent &&
+									`(${publicData.part_time_percent}%)`}
 							</span>
-						))}
+						)}
 					</div>
 				</div>
 			</div>

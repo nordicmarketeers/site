@@ -14,4 +14,26 @@
 			margin-bottom: 0;
 		}
 	}
+
+	animation: fadeIn 500ms 0ms forwards;
+}
+
+/* Animations on the custom dropdowns with search breaks them */
+.customField:has(legend) {
+	animation: none;
+}
+
+.hide {
+	display: none;
+}
+
+@keyframes fadeIn {
+	from {
+		transform: translateY(20px);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
 }

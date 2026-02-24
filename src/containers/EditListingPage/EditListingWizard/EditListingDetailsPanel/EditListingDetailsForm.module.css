@@ -31,11 +31,26 @@
 
 .title {
 	composes: formMargins;
+
+	animation: fadeIn 500ms 0ms forwards;
 }
 
 .description {
 	composes: formMargins;
 	flex-shrink: 0;
+
+	animation: fadeIn 500ms 0ms forwards;
+}
+
+@keyframes fadeIn {
+	from {
+		transform: translateY(20px);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
 }
 
 .listingTypeSelect {

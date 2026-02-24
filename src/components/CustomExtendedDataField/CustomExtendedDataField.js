@@ -25,6 +25,7 @@ import {
 } from "../../components";
 // Import modules from this directory
 import css from "./CustomExtendedDataField.module.css";
+import classNames from "classnames";
 
 const createFilterOptions = options =>
 	options.map(o => ({ key: `${o.option}`, label: o.label }));
@@ -70,7 +71,10 @@ const CustomFieldEnum = props => {
 
 	return filterOptions ? (
 		<FieldSelect
-			className={css.customField}
+			className={classNames(
+				css.customField,
+				name === "pub_part_time_percent" ? css.hide : ""
+			)}
 			name={name}
 			id={formId ? `${formId}.${name}` : name}
 			label={label}

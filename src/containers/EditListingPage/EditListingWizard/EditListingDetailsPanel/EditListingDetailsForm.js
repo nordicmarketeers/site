@@ -464,8 +464,45 @@ const EditListingDetailsForm = props => (
 				!hasMandatoryListingTypeData ||
 				!isCompatibleCurrency;
 
+			// Only show the part time percentage if part time is selected
+			// Uncomment code to make percentage required
+			const handlePartTime = e => {
+				if (e.target.name !== "pub_extent_job") return;
+
+				const partTimePercentEl = document.getElementsByName(
+					"pub_part_time_percent"
+				)[0];
+
+				// const label = partTimePercentEl.previousSibling.textContent;
+
+				// partTimePercentEl.previousSibling.textContent = !label.includes(
+				// 	"*"
+				// )
+				// 	? label + " *"
+				// 	: label;
+
+				const parentNo = partTimePercentEl.parentNode;
+
+				if (e.target.value === "deltid") {
+					// partTimePercentEl.required = true;
+					parentNo.style = "display: block";
+				} else {
+					partTimePercentEl.selectedIndex = 0;
+					// partTimePercentEl.required = false;
+					parentNo.style = "display: none";
+				}
+
+				partTimePercentEl.dispatchEvent(
+					new Event("change", { bubbles: true })
+				);
+			};
+
 			return (
-				<Form className={classes} onSubmit={handleSubmit}>
+				<Form
+					className={classes}
+					onSubmit={handleSubmit}
+					onChange={handlePartTime}
+				>
 					<ErrorMessage fetchErrors={fetchErrors} />
 
 					<FieldSelectListingType
