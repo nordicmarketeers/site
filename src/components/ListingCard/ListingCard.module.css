@@ -79,7 +79,7 @@
 }
 
 .metaText {
-	font-size: 1.1rem;
+	font-size: 1rem;
 	color: var(--colorGrey500);
 	margin: 0;
 	padding: 0;
@@ -125,7 +125,7 @@
 /* CONSULTANT JOB */
 
 .jobTitle {
-	font-size: 1.4rem;
+	font-size: 1.3rem;
 	font-weight: var(--fontWeightSemiBold);
 	margin: 0;
 	padding: 0;
@@ -140,7 +140,7 @@
 
 .jobLocation {
 	padding: 4px 0 0 0;
-	font-size: 1.1rem;
+	font-size: 1rem;
 	color: var(--colorGrey500);
 	margin: 0 0 8px 0;
 	display: inline-block;
@@ -158,8 +158,8 @@
 }
 
 .tag {
-	font-size: 1rem;
-	padding: 4px 8px;
+	font-size: 0.9rem;
+	padding: 3px 8px;
 	border-radius: 6px;
 	background-color: var(--colorGrey100);
 	color: var(--colorGrey700);
