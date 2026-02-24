@@ -335,6 +335,14 @@ const EditListingDetailsPanel = props => {
 	const listingCategories = config.categoryConfiguration.categories;
 	const categoryKey = config.categoryConfiguration.key;
 
+	// Make sure fields treated as enums in ListingPage uses original schemaType
+	// Otherwise causes it to still be locked to old schemaType if switch drectly from ListingPage to EditListingPage
+	listingFields.forEach(obj => {
+		if (["apply_last_date", "starting_date"].includes(obj.key)) {
+			obj.schemaType = "text";
+		}
+	});
+
 	const {
 		hasExistingListingType,
 		existingListingTypeInfo,
