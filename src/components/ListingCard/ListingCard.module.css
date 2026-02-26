@@ -34,6 +34,10 @@
 	box-shadow: 2px 2px 3px 0 var(--colorGrey100);
 
 	animation: fadeVertical 250ms ease-out forwards;
+
+	&:hover {
+		background-color: var(--colorGrey50);
+	}
 }
 
 .profileWrapper {
@@ -157,6 +161,48 @@
 	gap: 6px;
 }
 
+.moreRolesTag {
+	text-decoration: none;
+
+	@media (--viewportSmall) {
+		text-decoration: underline dotted;
+		text-decoration-thickness: 1px;
+		text-underline-offset: 3px;
+		text-decoration-color: var(--colorGrey400);
+	}
+}
+
+.restRolesTooltip {
+	display: none;
+	position: absolute;
+	bottom: 50px;
+
+	background-color: var(--colorGrey100);
+	color: var(--colorGrey700);
+
+	border-radius: 6px;
+	padding: 3px 8px;
+	font-size: 0.9rem;
+
+	width: max-content;
+
+	white-space: normal;
+	word-break: break-word;
+
+	box-shadow: 1px 2px 3px 0 var(--colorGrey300);
+
+	z-index: 10;
+	animation: fadeVertical 100ms ease-out forwards;
+}
+
+.tagRow:has(.restRolesTooltip) {
+	.moreRolesTag:hover {
+		+ .restRolesTooltip {
+			display: block;
+		}
+	}
+}
+
 .tag {
 	font-size: 0.9rem;
 	padding: 3px 8px;
@@ -275,6 +321,10 @@
 
 	@media (--viewportSmall) {
 		gap: 12px;
+	}
+
+	&:hover {
+		background-color: var(--colorGrey50);
 	}
 }
 
