@@ -49,7 +49,9 @@ const ProfileListingCard = props => {
         </div>
 
         <div className={css.content}>
-          <p className={css.title}>{title}</p>
+          <p className={css.title} title={title}>
+            {title}
+          </p>
           <p className={css.description}>{currentListing.attributes.description}</p>
         </div>
       </div>
