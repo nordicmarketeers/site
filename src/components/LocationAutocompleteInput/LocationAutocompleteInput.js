@@ -1,14 +1,12 @@
-import React from "react";
-import { Field } from "react-final-form";
-import loadable from "@loadable/component";
-import { ValidationError } from "../../components";
+import React from 'react';
+import { Field } from 'react-final-form';
+import loadable from '@loadable/component';
+import { ValidationError } from '../../components';
 
 // LocationAutocompleteInputImpl is a big component that includes code for both Mapbox and Google Maps
 // It is loaded dynamically - i.e. it is splitted to its own code chunk.
 const LocationAutocompleteInputImpl = loadable(() =>
-	import(
-		/* webpackChunkName: "LocationAutocompleteInputImpl" */ "./LocationAutocompleteInputImpl"
-	)
+  import(/* webpackChunkName: "LocationAutocompleteInputImpl" */ './LocationAutocompleteInputImpl')
 );
 
 /**
@@ -28,41 +26,35 @@ const LocationAutocompleteInputImpl = loadable(() =>
  * @returns {JSX.Element} arrow head icon
  */
 const LocationAutocompleteInputComponent = props => {
-	/* eslint-disable no-unused-vars */
-	const {
-		rootClassName,
-		labelClassName,
-		hideErrorMessage,
-		...restProps
-	} = props;
-	const { input, label, meta, valueFromForm, ...otherProps } = restProps;
-	/* eslint-enable no-unused-vars */
+  /* eslint-disable no-unused-vars */
+  const { rootClassName, labelClassName, hideErrorMessage, ...restProps } = props;
+  const { input, label, meta, valueFromForm, ...otherProps } = restProps;
+  /* eslint-enable no-unused-vars */
 
-	const value =
-		typeof valueFromForm !== "undefined" ? valueFromForm : input.value;
-	const locationAutocompleteProps = {
-		label,
-		meta,
-		...otherProps,
-		input: { ...input, value },
-	};
-	const labelInfo = label ? (
-		<label className={labelClassName} htmlFor={props.id}>
-			{label}
-		</label>
-	) : null;
+  const value = typeof valueFromForm !== 'undefined' ? valueFromForm : input.value;
+  const locationAutocompleteProps = {
+    label,
+    meta,
+    ...otherProps,
+    input: { ...input, value },
+  };
+  const labelInfo = label ? (
+    <label className={labelClassName} htmlFor={props.id}>
+      {label}
+    </label>
+  ) : null;
 
-	return (
-		<div className={rootClassName}>
-			{labelInfo}
-			<LocationAutocompleteInputImpl {...locationAutocompleteProps} />
-			{hideErrorMessage ? null : <ValidationError fieldMeta={meta} />}
-		</div>
-	);
+  return (
+    <div className={rootClassName}>
+      {labelInfo}
+      <LocationAutocompleteInputImpl {...locationAutocompleteProps} />
+      {hideErrorMessage ? null : <ValidationError fieldMeta={meta} />}
+    </div>
+  );
 };
 
 export default LocationAutocompleteInputImpl;
 
 export const FieldLocationAutocompleteInput = props => {
-	return <Field component={LocationAutocompleteInputComponent} {...props} />;
+  return <Field component={LocationAutocompleteInputComponent} {...props} />;
 };

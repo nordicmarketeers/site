@@ -1,27 +1,23 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { updatedEntities, denormalisedEntities } from "../util/data";
+import { createSlice } from '@reduxjs/toolkit';
+import { updatedEntities, denormalisedEntities } from '../util/data';
 
 // ================ Redux Toolkit Slice ================ //
 
 const initialState = {
-	// Database of all the fetched entities.
-	entities: {},
+  // Database of all the fetched entities.
+  entities: {},
 };
 
 const marketplaceDataSlice = createSlice({
-	name: "marketplaceData",
-	initialState,
-	reducers: {
-		addEntities: (state, action) => {
-			const { sdkResponse, sanitizeConfig } = action.payload;
-			const apiResponse = sdkResponse.data;
-			state.entities = updatedEntities(
-				{ ...state.entities },
-				apiResponse,
-				sanitizeConfig
-			);
-		},
-	},
+  name: 'marketplaceData',
+  initialState,
+  reducers: {
+    addEntities: (state, action) => {
+      const { sdkResponse, sanitizeConfig } = action.payload;
+      const apiResponse = sdkResponse.data;
+      state.entities = updatedEntities({ ...state.entities }, apiResponse, sanitizeConfig);
+    },
+  },
 });
 
 // Export the reducer as default
@@ -36,13 +32,13 @@ export default marketplaceDataSlice.reducer;
  * @param {Array<UUID>} listingIds listing IDs to select from the store
  */
 export const getListingsById = (state, listingIds) => {
-	const { entities } = state.marketplaceData;
-	const resources = listingIds.map(id => ({
-		id,
-		type: "listing",
-	}));
-	const throwIfNotFound = false;
-	return denormalisedEntities(entities, resources, throwIfNotFound);
+  const { entities } = state.marketplaceData;
+  const resources = listingIds.map(id => ({
+    id,
+    type: 'listing',
+  }));
+  const throwIfNotFound = false;
+  return denormalisedEntities(entities, resources, throwIfNotFound);
 };
 
 /**
@@ -57,9 +53,9 @@ export const getListingsById = (state, listingIds) => {
  * @return {Array<Object>} denormalised entities
  */
 export const getMarketplaceEntities = (state, entityRefs) => {
-	const { entities } = state.marketplaceData;
-	const throwIfNotFound = false;
-	return denormalisedEntities(entities, entityRefs, throwIfNotFound);
+  const { entities } = state.marketplaceData;
+  const throwIfNotFound = false;
+  return denormalisedEntities(entities, entityRefs, throwIfNotFound);
 };
 
 // ================ Action creators ================ //
@@ -69,4 +65,4 @@ export const { addEntities } = marketplaceDataSlice.actions;
 
 // ================ Helpers (maintains same API) ================ //
 export const addMarketplaceEntities = (sdkResponse, sanitizeConfig) =>
-	addEntities({ sdkResponse, sanitizeConfig });
+  addEntities({ sdkResponse, sanitizeConfig });

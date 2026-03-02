@@ -1,8 +1,8 @@
-import { types as sdkTypes } from "../util/sdkLoader";
+import { types as sdkTypes } from '../util/sdkLoader';
 
 const { LatLng: SDKLatLng, LatLngBounds: SDKLatLngBounds } = sdkTypes;
 
-const isDev = process.env.NODE_ENV === "development";
+const isDev = process.env.NODE_ENV === 'development';
 
 /**
  * Extracts the geographic location (origin) from a Google Maps Place object
@@ -14,10 +14,10 @@ const isDev = process.env.NODE_ENV === "development";
  *                           Returns null if the place or its location is invalid.
  */
 const placeOrigin = place => {
-	if (place && place.location) {
-		return new SDKLatLng(place.location.lat(), place.location.lng());
-	}
-	return null;
+  if (place && place.location) {
+    return new SDKLatLng(place.location.lat(), place.location.lng());
+  }
+  return null;
 };
 
 /**
@@ -30,15 +30,15 @@ const placeOrigin = place => {
  *                                 Returns null if the place or its viewport is invalid.
  */
 const placeBounds = place => {
-	if (place && place.viewport) {
-		const ne = place.viewport.getNorthEast();
-		const sw = place.viewport.getSouthWest();
-		return new SDKLatLngBounds(
-			new SDKLatLng(ne.lat(), ne.lng()),
-			new SDKLatLng(sw.lat(), sw.lng())
-		);
-	}
-	return null;
+  if (place && place.viewport) {
+    const ne = place.viewport.getNorthEast();
+    const sw = place.viewport.getSouthWest();
+    return new SDKLatLngBounds(
+      new SDKLatLng(ne.lat(), ne.lng()),
+      new SDKLatLng(sw.lat(), sw.lng())
+    );
+  }
+  return null;
 };
 
 /**
@@ -52,34 +52,25 @@ const placeBounds = place => {
  *   - `bounds` (object): The viewport bounds of the place (calculated using `placeBounds`).
  */
 export const getPlaceDetails = async placeId => {
-	try {
-		const place = await new window.google.maps.places.Place({
-			id: placeId,
-		});
-		const fields = [
-			"addressComponents",
-			"formattedAddress",
-			"viewport",
-			"id",
-			"location",
-		];
+  try {
+    const place = await new window.google.maps.places.Place({
+      id: placeId,
+    });
+    const fields = ['addressComponents', 'formattedAddress', 'viewport', 'id', 'location'];
 
-		await place.fetchFields({ fields: fields });
+    await place.fetchFields({ fields: fields });
 
-		return {
-			address: place.formattedAddress,
-			origin: placeOrigin(place),
-			bounds: placeBounds(place),
-		};
-	} catch (error) {
-		if (isDev) {
-			console.error(
-				`Could not get details for place id "${placeId}": `,
-				error
-			);
-		}
-		return error;
-	}
+    return {
+      address: place.formattedAddress,
+      origin: placeOrigin(place),
+      bounds: placeBounds(place),
+    };
+  } catch (error) {
+    if (isDev) {
+      console.error(`Could not get details for place id "${placeId}": `, error);
+    }
+    return error;
+  }
 };
 
 /**
@@ -95,38 +86,32 @@ export const getPlaceDetails = async placeId => {
  *   - `search` (string): The search query.
  *   - `predictions` (array): An array of prediction objects returned from the Google Places API.
  */
-export const getPlacePredictions = async (
-	search,
-	sessionToken,
-	searchConfigurations
-) => {
-	try {
-		const sessionTokenMaybe = sessionToken ? { sessionToken } : {};
-		const request = {
-			input: search,
-			...searchConfigurations,
-			...sessionTokenMaybe,
-		};
+export const getPlacePredictions = async (search, sessionToken, searchConfigurations) => {
+  try {
+    const sessionTokenMaybe = sessionToken ? { sessionToken } : {};
+    const request = {
+      input: search,
+      ...searchConfigurations,
+      ...sessionTokenMaybe,
+    };
 
-		const {
-			suggestions,
-		} = await google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(
-			request
-		);
+    const {
+      suggestions,
+    } = await google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
 
-		return {
-			search,
-			predictions: suggestions || [],
-		};
-	} catch (error) {
-		if (isDev) {
-			console.error(
-				`Could not get autocomplete suggestions using search query "${search}": `,
-				error
-			);
-		}
-		return error;
-	}
+    return {
+      search,
+      predictions: suggestions || [],
+    };
+  } catch (error) {
+    if (isDev) {
+      console.error(
+        `Could not get autocomplete suggestions using search query "${search}": `,
+        error
+      );
+    }
+    return error;
+  }
 };
 
 /**
@@ -140,11 +125,11 @@ export const getPlacePredictions = async (
  * @return {SDKLatLngBounds} - bounds cut to given fixed precision
  */
 export const sdkBoundsToFixedCoordinates = (sdkBounds, fixedPrecision) => {
-	const fixed = n => Number.parseFloat(n.toFixed(fixedPrecision));
-	const ne = new SDKLatLng(fixed(sdkBounds.ne.lat), fixed(sdkBounds.ne.lng));
-	const sw = new SDKLatLng(fixed(sdkBounds.sw.lat), fixed(sdkBounds.sw.lng));
+  const fixed = n => Number.parseFloat(n.toFixed(fixedPrecision));
+  const ne = new SDKLatLng(fixed(sdkBounds.ne.lat), fixed(sdkBounds.ne.lng));
+  const sw = new SDKLatLng(fixed(sdkBounds.sw.lat), fixed(sdkBounds.sw.lng));
 
-	return new SDKLatLngBounds(ne, sw);
+  return new SDKLatLngBounds(ne, sw);
 };
 
 /**
@@ -157,18 +142,15 @@ export const sdkBoundsToFixedCoordinates = (sdkBounds, fixedPrecision) => {
  * @return {boolean} - true if bounds are the same
  */
 export const hasSameSDKBounds = (sdkBounds1, sdkBounds2) => {
-	if (
-		!(sdkBounds1 instanceof SDKLatLngBounds) ||
-		!(sdkBounds2 instanceof SDKLatLngBounds)
-	) {
-		return false;
-	}
-	return (
-		sdkBounds1.ne.lat === sdkBounds2.ne.lat &&
-		sdkBounds1.ne.lng === sdkBounds2.ne.lng &&
-		sdkBounds1.sw.lat === sdkBounds2.sw.lat &&
-		sdkBounds1.sw.lng === sdkBounds2.sw.lng
-	);
+  if (!(sdkBounds1 instanceof SDKLatLngBounds) || !(sdkBounds2 instanceof SDKLatLngBounds)) {
+    return false;
+  }
+  return (
+    sdkBounds1.ne.lat === sdkBounds2.ne.lat &&
+    sdkBounds1.ne.lng === sdkBounds2.ne.lng &&
+    sdkBounds1.sw.lat === sdkBounds2.sw.lat &&
+    sdkBounds1.sw.lng === sdkBounds2.sw.lng
+  );
 };
 
 /**
@@ -182,18 +164,15 @@ export const hasSameSDKBounds = (sdkBounds1, sdkBounds2) => {
  *
  */
 export const locationBounds = (latlng, distance) => {
-	const bounds = new window.google.maps.Circle({
-		center: new window.google.maps.LatLng(latlng.lat, latlng.lng),
-		radius: distance,
-	}).getBounds();
+  const bounds = new window.google.maps.Circle({
+    center: new window.google.maps.LatLng(latlng.lat, latlng.lng),
+    radius: distance,
+  }).getBounds();
 
-	const ne = bounds.getNorthEast();
-	const sw = bounds.getSouthWest();
+  const ne = bounds.getNorthEast();
+  const sw = bounds.getSouthWest();
 
-	return new SDKLatLngBounds(
-		new SDKLatLng(ne.lat(), ne.lng()),
-		new SDKLatLng(sw.lat(), sw.lng())
-	);
+  return new SDKLatLngBounds(new SDKLatLng(ne.lat(), ne.lng()), new SDKLatLng(sw.lat(), sw.lng()));
 };
 
 /**
@@ -205,19 +184,16 @@ export const locationBounds = (latlng, distance) => {
  * @return position offset to allow custom position for the OverlayView
  */
 export const getOffsetOverride = (containerElement, props) => {
-	const { getPixelPositionOffset } = props;
-	//
-	// Allows the component to control the visual position of the OverlayView
-	// relative to the LatLng pixel position.
-	//
-	if (typeof getPixelPositionOffset === "function") {
-		return getPixelPositionOffset(
-			containerElement.offsetWidth,
-			containerElement.offsetHeight
-		);
-	} else {
-		return {};
-	}
+  const { getPixelPositionOffset } = props;
+  //
+  // Allows the component to control the visual position of the OverlayView
+  // relative to the LatLng pixel position.
+  //
+  if (typeof getPixelPositionOffset === 'function') {
+    return getPixelPositionOffset(containerElement.offsetWidth, containerElement.offsetHeight);
+  } else {
+    return {};
+  }
 };
 
 /**
@@ -231,20 +207,20 @@ export const getOffsetOverride = (containerElement, props) => {
  * @return styles to render the overlay within the projection.
  */
 const getLayoutStylesByBounds = (mapCanvasProjection, offset, bounds) => {
-	const ne = mapCanvasProjection.fromLatLngToDivPixel(bounds.getNorthEast());
-	const sw = mapCanvasProjection.fromLatLngToDivPixel(bounds.getSouthWest());
-	if (ne && sw) {
-		return {
-			left: `${sw.x + offset.x}px`,
-			top: `${ne.y + offset.y}px`,
-			width: `${ne.x - sw.x - offset.x}px`,
-			height: `${sw.y - ne.y - offset.y}px`,
-		};
-	}
-	return {
-		left: `-9999px`,
-		top: `-9999px`,
-	};
+  const ne = mapCanvasProjection.fromLatLngToDivPixel(bounds.getNorthEast());
+  const sw = mapCanvasProjection.fromLatLngToDivPixel(bounds.getSouthWest());
+  if (ne && sw) {
+    return {
+      left: `${sw.x + offset.x}px`,
+      top: `${ne.y + offset.y}px`,
+      width: `${ne.x - sw.x - offset.x}px`,
+      height: `${sw.y - ne.y - offset.y}px`,
+    };
+  }
+  return {
+    left: `-9999px`,
+    top: `-9999px`,
+  };
 };
 
 /**
@@ -258,18 +234,18 @@ const getLayoutStylesByBounds = (mapCanvasProjection, offset, bounds) => {
  * @return  styles to render single coordinate pair within the projection.
  */
 const getLayoutStylesByPosition = (mapCanvasProjection, offset, position) => {
-	const point = mapCanvasProjection.fromLatLngToDivPixel(position);
-	if (point) {
-		const { x, y } = point;
-		return {
-			left: `${x + offset.x}px`,
-			top: `${y + offset.y}px`,
-		};
-	}
-	return {
-		left: `-9999px`,
-		top: `-9999px`,
-	};
+  const point = mapCanvasProjection.fromLatLngToDivPixel(position);
+  if (point) {
+    const { x, y } = point;
+    return {
+      left: `${x + offset.x}px`,
+      top: `${y + offset.y}px`,
+    };
+  }
+  return {
+    left: `-9999px`,
+    top: `-9999px`,
+  };
 };
 
 /**
@@ -283,38 +259,30 @@ const getLayoutStylesByPosition = (mapCanvasProjection, offset, position) => {
  * @return styles to render an area or a single coordinate pair within the projection.
  */
 export const getLayoutStyles = (mapCanvasProjection, offset, props) => {
-	const createLatLng = (inst, Type) => {
-		return new Type(inst.lat, inst.lng);
-	};
+  const createLatLng = (inst, Type) => {
+    return new Type(inst.lat, inst.lng);
+  };
 
-	const createLatLngBounds = (inst, Type) => {
-		return new Type(
-			new window.google.maps.LatLng(inst.ne.lat, inst.ne.lng),
-			new window.google.maps.LatLng(inst.sw.lat, inst.sw.lng)
-		);
-	};
+  const createLatLngBounds = (inst, Type) => {
+    return new Type(
+      new window.google.maps.LatLng(inst.ne.lat, inst.ne.lng),
+      new window.google.maps.LatLng(inst.sw.lat, inst.sw.lng)
+    );
+  };
 
-	const ensureOfType = (inst, type, factory) => {
-		if (inst instanceof type) {
-			return inst;
-		} else {
-			return factory(inst, type);
-		}
-	};
+  const ensureOfType = (inst, type, factory) => {
+    if (inst instanceof type) {
+      return inst;
+    } else {
+      return factory(inst, type);
+    }
+  };
 
-	if (props.bounds) {
-		const bounds = ensureOfType(
-			props.bounds,
-			window.google.maps.LatLngBounds,
-			createLatLngBounds
-		);
-		return getLayoutStylesByBounds(mapCanvasProjection, offset, bounds);
-	} else {
-		const position = ensureOfType(
-			props.position,
-			window.google.maps.LatLng,
-			createLatLng
-		);
-		return getLayoutStylesByPosition(mapCanvasProjection, offset, position);
-	}
+  if (props.bounds) {
+    const bounds = ensureOfType(props.bounds, window.google.maps.LatLngBounds, createLatLngBounds);
+    return getLayoutStylesByBounds(mapCanvasProjection, offset, bounds);
+  } else {
+    const position = ensureOfType(props.position, window.google.maps.LatLng, createLatLng);
+    return getLayoutStylesByPosition(mapCanvasProjection, offset, position);
+  }
 };

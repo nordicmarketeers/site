@@ -1,27 +1,27 @@
 // default-negotiation process: transitions that make the first offer
 const makeOfferTransitions = [
-	"transition/make-offer",
-	"transition/make-offer-after-inquiry",
-	"transition/make-offer-from-request",
+  'transition/make-offer',
+  'transition/make-offer-after-inquiry',
+  'transition/make-offer-from-request',
 ];
 
 // default-negotiation process: transitions that make a counter offer
 const counterOfferTransitions = [
-	"transition/customer-make-counter-offer",
-	"transition/provider-make-counter-offer",
+  'transition/customer-make-counter-offer',
+  'transition/provider-make-counter-offer',
 ];
 
 // default-negotiation process: transitions that revoke a counter offer
 const revokeCounterOfferTransitions = [
-	"transition/customer-withdraw-counter-offer",
-	"transition/provider-reject-counter-offer",
+  'transition/customer-withdraw-counter-offer',
+  'transition/provider-reject-counter-offer',
 ];
 
 // default-negotiation process: transitions that affect pricing on negotiation loop
 const offerTransitionsInNegotiationProcess = [
-	...makeOfferTransitions,
-	...counterOfferTransitions,
-	...revokeCounterOfferTransitions,
+  ...makeOfferTransitions,
+  ...counterOfferTransitions,
+  ...revokeCounterOfferTransitions,
 ];
 
 /**
@@ -46,11 +46,9 @@ const offerTransitionsInNegotiationProcess = [
  * @returns {boolean}
  */
 exports.isIntentionToMakeOffer = (offerInSubunits, transitionName) => {
-	const isIntentionToMakeOffer = makeOfferTransitions.includes(
-		transitionName
-	);
-	const hasOffer = offerInSubunits > 0;
-	return isIntentionToMakeOffer && hasOffer;
+  const isIntentionToMakeOffer = makeOfferTransitions.includes(transitionName);
+  const hasOffer = offerInSubunits > 0;
+  return isIntentionToMakeOffer && hasOffer;
 };
 /**
  * Checks if the transition is a make counter offer transition and if the offer is greater than 0.
@@ -60,11 +58,9 @@ exports.isIntentionToMakeOffer = (offerInSubunits, transitionName) => {
  * @returns {boolean}
  */
 exports.isIntentionToMakeCounterOffer = (offerInSubunits, transitionName) => {
-	const isIntentionToMakeCounterOffer = counterOfferTransitions.includes(
-		transitionName
-	);
-	const hasOffer = offerInSubunits > 0;
-	return isIntentionToMakeCounterOffer && hasOffer;
+  const isIntentionToMakeCounterOffer = counterOfferTransitions.includes(transitionName);
+  const hasOffer = offerInSubunits > 0;
+  return isIntentionToMakeCounterOffer && hasOffer;
 };
 /**
  * Checks if the transition is a revoke counter offer transition.
@@ -73,44 +69,34 @@ exports.isIntentionToMakeCounterOffer = (offerInSubunits, transitionName) => {
  * @returns {boolean}
  */
 exports.isIntentionToRevokeCounterOffer = transitionName => {
-	return revokeCounterOfferTransitions.includes(transitionName);
+  return revokeCounterOfferTransitions.includes(transitionName);
 };
 
 const filterRelevantTransitions = (transitions, relevantTransitions) => {
-	return transitions.filter(t => relevantTransitions.includes(t.transition));
+  return transitions.filter(t => relevantTransitions.includes(t.transition));
 };
-const isValidNegotiationOffersArray = (
-	offers,
-	transitions,
-	relevantTransitions
-) => {
-	const pickedTransitions = filterRelevantTransitions(
-		transitions,
-		relevantTransitions
-	);
-	const isOffersAnArray = !!offers && Array.isArray(offers);
+const isValidNegotiationOffersArray = (offers, transitions, relevantTransitions) => {
+  const pickedTransitions = filterRelevantTransitions(transitions, relevantTransitions);
+  const isOffersAnArray = !!offers && Array.isArray(offers);
 
-	// First check if we have the same number of offers and transitions
-	if (!isOffersAnArray || offers.length !== pickedTransitions.length) {
-		return false;
-	}
+  // First check if we have the same number of offers and transitions
+  if (!isOffersAnArray || offers.length !== pickedTransitions.length) {
+    return false;
+  }
 
-	// Then verify that each offer corresponds to the transition at the same index
-	// and that the order matches
-	for (let i = 0; i < offers.length; i++) {
-		const offer = offers[i];
-		const transition = pickedTransitions[i];
+  // Then verify that each offer corresponds to the transition at the same index
+  // and that the order matches
+  for (let i = 0; i < offers.length; i++) {
+    const offer = offers[i];
+    const transition = pickedTransitions[i];
 
-		// Check if the offer's transition and actor match the transition at the same index
-		if (
-			offer.transition !== transition.transition ||
-			offer.by !== transition.by
-		) {
-			return false;
-		}
-	}
+    // Check if the offer's transition and actor match the transition at the same index
+    if (offer.transition !== transition.transition || offer.by !== transition.by) {
+      return false;
+    }
+  }
 
-	return true;
+  return true;
 };
 
 /**
@@ -122,49 +108,39 @@ const isValidNegotiationOffersArray = (
  * @param {Array<NegotiationOffer>} offers - Array of negotiation offers
  * @param {Array<TransitionRecord>} transitions - Array of transition records
  */
-exports.throwErrorIfNegotiationOfferHasInvalidHistory = (
-	transitionName,
-	offers,
-	transitions
-) => {
-	// const isNegotiationProcess = transaction.attributes.processName === 'default-negotiation';
-	const isRelevantTransition = offerTransitionsInNegotiationProcess.includes(
-		transitionName
-	);
+exports.throwErrorIfNegotiationOfferHasInvalidHistory = (transitionName, offers, transitions) => {
+  // const isNegotiationProcess = transaction.attributes.processName === 'default-negotiation';
+  const isRelevantTransition = offerTransitionsInNegotiationProcess.includes(transitionName);
 
-	if (
-		isRelevantTransition &&
-		!isValidNegotiationOffersArray(
-			offers,
-			transitions,
-			offerTransitionsInNegotiationProcess
-		)
-	) {
-		const error = new Error("Past negotiation offers are invalid");
-		error.status = 400;
-		error.statusText = "Past negotiation offers are invalid";
-		error.data = {
-			offers: offers,
-			relevantTransitions: filterRelevantTransitions(
-				transitions,
-				offerTransitionsInNegotiationProcess
-			),
-		};
-		throw error;
-	}
+  if (
+    isRelevantTransition &&
+    !isValidNegotiationOffersArray(offers, transitions, offerTransitionsInNegotiationProcess)
+  ) {
+    const error = new Error('Past negotiation offers are invalid');
+    error.status = 400;
+    error.statusText = 'Past negotiation offers are invalid';
+    error.data = {
+      offers: offers,
+      relevantTransitions: filterRelevantTransitions(
+        transitions,
+        offerTransitionsInNegotiationProcess
+      ),
+    };
+    throw error;
+  }
 };
 
 const getPreviousOffer = offers => {
-	if (offers?.length < 2) {
-		const error = new Error("Past negotiation offers are invalid");
-		error.status = 400;
-		error.statusText = "Past negotiation offers are invalid";
-		error.data = {
-			offers: offers,
-		};
-		throw error;
-	}
-	return offers[offers.length - 2];
+  if (offers?.length < 2) {
+    const error = new Error('Past negotiation offers are invalid');
+    error.status = 400;
+    error.statusText = 'Past negotiation offers are invalid';
+    error.data = {
+      offers: offers,
+    };
+    throw error;
+  }
+  return offers[offers.length - 2];
 };
 
 /**
@@ -174,8 +150,8 @@ const getPreviousOffer = offers => {
  * @returns {number} offer from the previous offer (in subunits)
  */
 exports.getAmountFromPreviousOffer = offers => {
-	const offer = getPreviousOffer(offers);
-	return offer.offerInSubunits;
+  const offer = getPreviousOffer(offers);
+  return offer.offerInSubunits;
 };
 
 /**
@@ -186,15 +162,15 @@ exports.getAmountFromPreviousOffer = offers => {
  * @returns {Object} The updated metadata object
  */
 exports.addOfferToMetadata = (metadata, offer) => {
-	const existingOffers = metadata?.offers || [];
-	return !!offer && metadata
-		? {
-				metadata: {
-					...metadata,
-					offers: [...existingOffers, offer],
-				},
-		  }
-		: metadata
-		? { metadata }
-		: {};
+  const existingOffers = metadata?.offers || [];
+  return !!offer && metadata
+    ? {
+        metadata: {
+          ...metadata,
+          offers: [...existingOffers, offer],
+        },
+      }
+    : metadata
+    ? { metadata }
+    : {};
 };

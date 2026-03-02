@@ -6,62 +6,54 @@
  *
  */
 
-import React from "react";
-import classNames from "classnames";
-import includes from "lodash/includes";
+import React from 'react';
+import classNames from 'classnames';
+import includes from 'lodash/includes';
 
-import css from "./PropertyGroup.module.css";
+import css from './PropertyGroup.module.css';
 
 const checkSelected = (options, selectedOptions) => {
-	return options.map(option => ({
-		key: option.key,
-		label: option.label,
-		isSelected: includes(selectedOptions, option.key),
-	}));
+  return options.map(option => ({
+    key: option.key,
+    label: option.label,
+    isSelected: includes(selectedOptions, option.key),
+  }));
 };
 
 const IconCheck = props => {
-	const isVisible = props.isVisible;
-	const classes = isVisible
-		? css.checkIcon
-		: classNames(css.checkIcon, css.hidden);
+  const isVisible = props.isVisible;
+  const classes = isVisible ? css.checkIcon : classNames(css.checkIcon, css.hidden);
 
-	return (
-		<svg
-			width="9"
-			height="9"
-			xmlns="http://www.w3.org/2000/svg"
-			className={classes}
-			role="none"
-		>
-			<path
-				className={css.marketplaceFill}
-				d="M2.636621 7.7824771L.3573694 5.6447948c-.4764924-.4739011-.4764924-1.2418639 0-1.7181952.4777142-.473901 1.251098-.473901 1.7288122 0l1.260291 1.1254783L6.1721653.505847C6.565577-.0373166 7.326743-.1636902 7.8777637.227582c.5473554.3912721.6731983 1.150729.2797866 1.6951076L4.4924979 7.631801c-.2199195.306213-.5803433.5067096-.9920816.5067096-.3225487 0-.6328797-.1263736-.8637952-.3560334z"
-				fillRule="evenodd"
-			/>
-		</svg>
-	);
+  return (
+    <svg width="9" height="9" xmlns="http://www.w3.org/2000/svg" className={classes} role="none">
+      <path
+        className={css.marketplaceFill}
+        d="M2.636621 7.7824771L.3573694 5.6447948c-.4764924-.4739011-.4764924-1.2418639 0-1.7181952.4777142-.473901 1.251098-.473901 1.7288122 0l1.260291 1.1254783L6.1721653.505847C6.565577-.0373166 7.326743-.1636902 7.8777637.227582c.5473554.3912721.6731983 1.150729.2797866 1.6951076L4.4924979 7.631801c-.2199195.306213-.5803433.5067096-.9920816.5067096-.3225487 0-.6328797-.1263736-.8637952-.3560334z"
+        fillRule="evenodd"
+      />
+    </svg>
+  );
 };
 
 const Item = props => {
-	const { label, isSelected } = props;
-	const labelClass = isSelected ? css.selectedLabel : css.notSelectedLabel;
-	return (
-		<li className={css.item} aria-hidden={!isSelected}>
-			<span className={css.iconWrapper}>
-				<IconCheck isVisible={isSelected} />
-			</span>
-			<div className={css.labelWrapper}>
-				{isSelected ? (
-					<span className={labelClass}>{label}</span>
-				) : (
-					<s>
-						<span className={labelClass}>{label}</span>
-					</s>
-				)}
-			</div>
-		</li>
-	);
+  const { label, isSelected } = props;
+  const labelClass = isSelected ? css.selectedLabel : css.notSelectedLabel;
+  return (
+    <li className={css.item} aria-hidden={!isSelected}>
+      <span className={css.iconWrapper}>
+        <IconCheck isVisible={isSelected} />
+      </span>
+      <div className={css.labelWrapper}>
+        {isSelected ? (
+          <span className={labelClass}>{label}</span>
+        ) : (
+          <s>
+            <span className={labelClass}>{label}</span>
+          </s>
+        )}
+      </div>
+    </li>
+  );
 };
 
 /**
@@ -84,37 +76,31 @@ const Item = props => {
  * @returns {JSX.Element}
  */
 const PropertyGroup = props => {
-	const {
-		rootClassName,
-		className,
-		id,
-		ariaLabel,
-		options,
-		selectedOptions = [],
-		twoColumns,
-		showUnselectedOptions,
-	} = props;
-	const classes = classNames(rootClassName || css.root, className);
-	const listClasses = twoColumns
-		? classNames(classes, css.twoColumns)
-		: classes;
-	const ariaLabelMaybe = ariaLabel ? { ["aria-label"]: ariaLabel } : {};
+  const {
+    rootClassName,
+    className,
+    id,
+    ariaLabel,
+    options,
+    selectedOptions = [],
+    twoColumns,
+    showUnselectedOptions,
+  } = props;
+  const classes = classNames(rootClassName || css.root, className);
+  const listClasses = twoColumns ? classNames(classes, css.twoColumns) : classes;
+  const ariaLabelMaybe = ariaLabel ? { ['aria-label']: ariaLabel } : {};
 
-	const checked = showUnselectedOptions
-		? checkSelected(options, selectedOptions)
-		: checkSelected(options, selectedOptions).filter(o => o.isSelected);
+  const checked = showUnselectedOptions
+    ? checkSelected(options, selectedOptions)
+    : checkSelected(options, selectedOptions).filter(o => o.isSelected);
 
-	return (
-		<ul className={listClasses} {...ariaLabelMaybe}>
-			{checked.map(option => (
-				<Item
-					key={`${id}.${option.key}`}
-					label={option.label}
-					isSelected={option.isSelected}
-				/>
-			))}
-		</ul>
-	);
+  return (
+    <ul className={listClasses} {...ariaLabelMaybe}>
+      {checked.map(option => (
+        <Item key={`${id}.${option.key}`} label={option.label} isSelected={option.isSelected} />
+      ))}
+    </ul>
+  );
 };
 
 export default PropertyGroup;

@@ -1,7 +1,7 @@
-import { combineReducers } from "@reduxjs/toolkit";
-import { logoutThunk } from "./ducks/auth.duck";
-import * as globalReducers from "./ducks";
-import * as pageReducers from "./containers/reducers";
+import { combineReducers } from '@reduxjs/toolkit';
+import { logoutThunk } from './ducks/auth.duck';
+import * as globalReducers from './ducks';
+import * as pageReducers from './containers/reducers';
 
 /**
  * Function _createReducer_ combines global reducers (reducers that are used in
@@ -13,22 +13,18 @@ import * as pageReducers from "./containers/reducers";
 const appReducer = combineReducers({ ...globalReducers, ...pageReducers });
 
 const createReducer = () => {
-	return (state, action) => {
-		// Clear state when logout is successful
-		const shouldClearState = action.type === logoutThunk.fulfilled.type;
-		const appState = shouldClearState ? undefined : state;
+  return (state, action) => {
+    // Clear state when logout is successful
+    const shouldClearState = action.type === logoutThunk.fulfilled.type;
+    const appState = shouldClearState ? undefined : state;
 
-		// Clear sessionStorage when logging out.
-		if (
-			shouldClearState &&
-			typeof window !== "undefined" &&
-			!!window.sessionStorage
-		) {
-			window.sessionStorage.clear();
-		}
+    // Clear sessionStorage when logging out.
+    if (shouldClearState && typeof window !== 'undefined' && !!window.sessionStorage) {
+      window.sessionStorage.clear();
+    }
 
-		return appReducer(appState, action);
-	};
+    return appReducer(appState, action);
+  };
 };
 
 export default createReducer;

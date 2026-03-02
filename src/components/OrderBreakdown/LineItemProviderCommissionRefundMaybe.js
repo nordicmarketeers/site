@@ -1,10 +1,10 @@
-import React from "react";
+import React from 'react';
 
-import { FormattedMessage, intlShape } from "../../util/reactIntl";
-import { formatMoney } from "../../util/currency";
-import { propTypes, LINE_ITEM_PROVIDER_COMMISSION } from "../../util/types";
+import { FormattedMessage, intlShape } from '../../util/reactIntl';
+import { formatMoney } from '../../util/currency';
+import { propTypes, LINE_ITEM_PROVIDER_COMMISSION } from '../../util/types';
 
-import css from "./OrderBreakdown.module.css";
+import css from './OrderBreakdown.module.css';
 
 /**
  * A component that renders the provider commission refund as a line item.
@@ -18,25 +18,20 @@ import css from "./OrderBreakdown.module.css";
  * @returns {JSX.Element}
  */
 const LineItemProviderCommissionRefundMaybe = props => {
-	const { lineItems, isProvider, marketplaceName, intl } = props;
+  const { lineItems, isProvider, marketplaceName, intl } = props;
 
-	const refund = lineItems.find(
-		item => item.code === LINE_ITEM_PROVIDER_COMMISSION && item.reversal
-	);
+  const refund = lineItems.find(
+    item => item.code === LINE_ITEM_PROVIDER_COMMISSION && item.reversal
+  );
 
-	return isProvider && refund ? (
-		<div className={css.lineItem}>
-			<span className={css.itemLabel}>
-				<FormattedMessage
-					id="OrderBreakdown.refundProviderFee"
-					values={{ marketplaceName }}
-				/>
-			</span>
-			<span className={css.itemValue}>
-				{formatMoney(intl, refund.lineTotal)}
-			</span>
-		</div>
-	) : null;
+  return isProvider && refund ? (
+    <div className={css.lineItem}>
+      <span className={css.itemLabel}>
+        <FormattedMessage id="OrderBreakdown.refundProviderFee" values={{ marketplaceName }} />
+      </span>
+      <span className={css.itemValue}>{formatMoney(intl, refund.lineTotal)}</span>
+    </div>
+  ) : null;
 };
 
 export default LineItemProviderCommissionRefundMaybe;

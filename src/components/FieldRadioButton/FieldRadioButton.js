@@ -1,8 +1,8 @@
-import React from "react";
-import classNames from "classnames";
-import { Field } from "react-final-form";
+import React from 'react';
+import classNames from 'classnames';
+import { Field } from 'react-final-form';
 
-import css from "./FieldRadioButton.module.css";
+import css from './FieldRadioButton.module.css';
 
 /**
  * IconRadioButton
@@ -14,47 +14,33 @@ import css from "./FieldRadioButton.module.css";
  * @returns {JSX.Element} checkbox svg that places the native radio button
  */
 const IconRadioButton = props => {
-	const { className, checkedClassName, showAsRequired } = props;
-	return (
-		<div>
-			<svg
-				className={className}
-				width="14"
-				height="14"
-				xmlns="http://www.w3.org/2000/svg"
-			>
-				<circle
-					className={showAsRequired ? css.required : css.notChecked}
-					cx="5"
-					cy="19"
-					r="6"
-					transform="translate(2 -12)"
-					strokeWidth="2"
-					fill="none"
-					fillRule="evenodd"
-				/>
+  const { className, checkedClassName, showAsRequired } = props;
+  return (
+    <div>
+      <svg className={className} width="14" height="14" xmlns="http://www.w3.org/2000/svg">
+        <circle
+          className={showAsRequired ? css.required : css.notChecked}
+          cx="5"
+          cy="19"
+          r="6"
+          transform="translate(2 -12)"
+          strokeWidth="2"
+          fill="none"
+          fillRule="evenodd"
+        />
 
-				<g
-					className={classNames(
-						css.checked,
-						checkedClassName || css.checkedStyle
-					)}
-					transform="translate(2 -12)"
-					fill="none"
-					fillRule="evenodd"
-				>
-					<circle strokeWidth="2" cx="5" cy="19" r="6" />
-					<circle
-						fill="#FFF"
-						fillRule="nonzero"
-						cx="5"
-						cy="19"
-						r="3"
-					/>
-				</g>
-			</svg>
-		</div>
-	);
+        <g
+          className={classNames(css.checked, checkedClassName || css.checkedStyle)}
+          transform="translate(2 -12)"
+          fill="none"
+          fillRule="evenodd"
+        >
+          <circle strokeWidth="2" cx="5" cy="19" r="6" />
+          <circle fill="#FFF" fillRule="nonzero" cx="5" cy="19" r="3" />
+        </g>
+      </svg>
+    </div>
+  );
 };
 
 /**
@@ -74,41 +60,41 @@ const IconRadioButton = props => {
  * @returns {JSX.Element} Final Form Field containing radio button input
  */
 const FieldRadioButton = props => {
-	const {
-		rootClassName,
-		className,
-		svgClassName,
-		checkedClassName,
-		id,
-		label,
-		showAsRequired,
-		...rest
-	} = props;
+  const {
+    rootClassName,
+    className,
+    svgClassName,
+    checkedClassName,
+    id,
+    label,
+    showAsRequired,
+    ...rest
+  } = props;
 
-	const classes = classNames(rootClassName || css.root, className);
-	const radioButtonProps = {
-		id,
-		className: css.input,
-		component: "input",
-		type: "radio",
-		...rest,
-	};
+  const classes = classNames(rootClassName || css.root, className);
+  const radioButtonProps = {
+    id,
+    className: css.input,
+    component: 'input',
+    type: 'radio',
+    ...rest,
+  };
 
-	return (
-		<span className={classes}>
-			<Field {...radioButtonProps} />
-			<label htmlFor={id} className={css.label}>
-				<span className={css.radioButtonWrapper}>
-					<IconRadioButton
-						className={svgClassName}
-						checkedClassName={checkedClassName}
-						showAsRequired={showAsRequired}
-					/>
-				</span>
-				<span className={css.text}>{label}</span>
-			</label>
-		</span>
-	);
+  return (
+    <span className={classes}>
+      <Field {...radioButtonProps} />
+      <label htmlFor={id} className={css.label}>
+        <span className={css.radioButtonWrapper}>
+          <IconRadioButton
+            className={svgClassName}
+            checkedClassName={checkedClassName}
+            showAsRequired={showAsRequired}
+          />
+        </span>
+        <span className={css.text}>{label}</span>
+      </label>
+    </span>
+  );
 };
 
 export default FieldRadioButton;

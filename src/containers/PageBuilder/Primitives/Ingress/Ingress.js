@@ -1,7 +1,7 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import css from "./Ingress.module.css";
+import css from './Ingress.module.css';
 
 /**
  * Ingress: a lead paragraph or an opening paragraph
@@ -15,10 +15,10 @@ import css from "./Ingress.module.css";
  * @returns {JSX.Element} ingress (using 'p' element)
  */
 export const Ingress = React.forwardRef((props, ref) => {
-	const { className, rootClassName, ...otherProps } = props;
-	const classes = classNames(rootClassName || css.ingress, className);
+  const { className, rootClassName, ...otherProps } = props;
+  const classes = classNames(rootClassName || css.ingress, className);
 
-	return <p className={classes} {...otherProps} ref={ref} />;
+  return <p className={classes} {...otherProps} ref={ref} />;
 });
 
-Ingress.displayName = "Ingress";
+Ingress.displayName = 'Ingress';

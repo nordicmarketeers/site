@@ -1,28 +1,23 @@
-import React from "react";
-import { Field } from "react-final-form";
-import classNames from "classnames";
+import React from 'react';
+import { Field } from 'react-final-form';
+import classNames from 'classnames';
 
-import { intlShape } from "../../util/reactIntl";
-import { propTypes } from "../../util/types";
-import * as validators from "../../util/validators";
+import { intlShape } from '../../util/reactIntl';
+import { propTypes } from '../../util/types';
+import * as validators from '../../util/validators';
 
-import { FieldSelect } from "../../components";
+import { FieldSelect } from '../../components';
 
-import css from "./AuthenticationPage.module.css";
+import css from './AuthenticationPage.module.css';
 
 // Hidden input field
 const FieldHidden = props => {
-	const { name } = props;
-	return (
-		<Field
-			id={name}
-			name={name}
-			type="hidden"
-			className={css.unitTypeHidden}
-		>
-			{fieldRenderProps => <input {...fieldRenderProps?.input} />}
-		</Field>
-	);
+  const { name } = props;
+  return (
+    <Field id={name} name={name} type="hidden" className={css.unitTypeHidden}>
+      {fieldRenderProps => <input {...fieldRenderProps?.input} />}
+    </Field>
+  );
 };
 
 /**
@@ -39,48 +34,39 @@ const FieldHidden = props => {
  * @returns {JSX.Element}
  */
 const FieldSelectUserType = props => {
-	const {
-		rootClassName,
-		className,
-		name,
-		userTypes,
-		hasExistingUserType,
-		intl,
-	} = props;
-	const hasMultipleUserTypes = userTypes?.length > 1;
-	const classes = classNames(rootClassName || css.userTypeSelect, className);
+  const { rootClassName, className, name, userTypes, hasExistingUserType, intl } = props;
+  const hasMultipleUserTypes = userTypes?.length > 1;
+  const classes = classNames(rootClassName || css.userTypeSelect, className);
 
-	return hasMultipleUserTypes && !hasExistingUserType ? (
-		<>
-			<FieldSelect
-				id={name}
-				name={name}
-				className={classes}
-				label={intl.formatMessage({ id: "FieldSelectUserType.label" })}
-				validate={validators.required(
-					intl.formatMessage({ id: "FieldSelectUserType.required" })
-				)}
-			>
-				<option disabled value="">
-					{intl.formatMessage({
-						id: "FieldSelectUserType.placeholder",
-					})}
-				</option>
-				{userTypes.map(config => {
-					const type = config.userType;
-					return (
-						<option key={type} value={type}>
-							{config.label}
-						</option>
-					);
-				})}
-			</FieldSelect>
-		</>
-	) : (
-		<>
-			<FieldHidden name={name} />
-		</>
-	);
+  return hasMultipleUserTypes && !hasExistingUserType ? (
+    <>
+      <FieldSelect
+        id={name}
+        name={name}
+        className={classes}
+        label={intl.formatMessage({ id: 'FieldSelectUserType.label' })}
+        validate={validators.required(intl.formatMessage({ id: 'FieldSelectUserType.required' }))}
+      >
+        <option disabled value="">
+          {intl.formatMessage({
+            id: 'FieldSelectUserType.placeholder',
+          })}
+        </option>
+        {userTypes.map(config => {
+          const type = config.userType;
+          return (
+            <option key={type} value={type}>
+              {config.label}
+            </option>
+          );
+        })}
+      </FieldSelect>
+    </>
+  ) : (
+    <>
+      <FieldHidden name={name} />
+    </>
+  );
 };
 
 export default FieldSelectUserType;

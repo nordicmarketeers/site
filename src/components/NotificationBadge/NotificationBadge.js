@@ -1,7 +1,7 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import css from "./NotificationBadge.module.css";
+import css from './NotificationBadge.module.css';
 
 /**
  * Small badge/dot with number inside.
@@ -14,10 +14,10 @@ import css from "./NotificationBadge.module.css";
  * @returns {JSX.Element} badge component that shows how many notifications should be shown.
  */
 const NotificationBadge = props => {
-	const { className, rootClassName, count } = props;
-	const classes = classNames(rootClassName || css.root, className);
+  const { className, rootClassName, count } = props;
+  const classes = classNames(rootClassName || css.root, className);
 
-	return <span className={classes}>{count}</span>;
+  return <span className={classes}>{count}</span>;
 };
 
 export default NotificationBadge;

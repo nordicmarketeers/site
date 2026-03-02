@@ -1,7 +1,7 @@
-import IconLocation from "./IconLocation";
+import IconLocation from './IconLocation';
 
 export const Icon = {
-	component: IconLocation,
-	props: {},
-	group: "icons",
+  component: IconLocation,
+  props: {},
+  group: 'icons',
 };

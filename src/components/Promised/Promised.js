@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { Component } from "react";
+import { Component } from 'react';
 
 /**
  * Promised component makes it easier to render content that
@@ -16,42 +16,40 @@ import { Component } from "react";
  * @returns {JSX.Element}
  */
 class Promised extends Component {
-	constructor(props) {
-		super(props);
+  constructor(props) {
+    super(props);
 
-		// success value is string to be more useful when rendering texts.
-		this.state = {
-			value: "",
-			error: null,
-		};
-		this._isMounted = false;
-	}
+    // success value is string to be more useful when rendering texts.
+    this.state = {
+      value: '',
+      error: null,
+    };
+    this._isMounted = false;
+  }
 
-	componentDidMount() {
-		this._isMounted = true;
-		this.props.promise
-			.then(value => {
-				if (this._isMounted) {
-					this.setState({ value });
-				}
-			})
-			.catch(error => {
-				if (this._isMounted) {
-					this.setState({ error });
-				}
-			});
-	}
+  componentDidMount() {
+    this._isMounted = true;
+    this.props.promise
+      .then(value => {
+        if (this._isMounted) {
+          this.setState({ value });
+        }
+      })
+      .catch(error => {
+        if (this._isMounted) {
+          this.setState({ error });
+        }
+      });
+  }
 
-	componentWillUnmount() {
-		this._isMounted = false;
-	}
+  componentWillUnmount() {
+    this._isMounted = false;
+  }
 
-	render() {
-		const { renderFulfilled, renderRejected = e => e } = this.props;
-		return this.state.error
-			? renderRejected(this.state.error)
-			: renderFulfilled(this.state.value);
-	}
+  render() {
+    const { renderFulfilled, renderRejected = e => e } = this.props;
+    return this.state.error ? renderRejected(this.state.error) : renderFulfilled(this.state.value);
+  }
 }
 
 export default Promised;

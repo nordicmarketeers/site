@@ -1,16 +1,16 @@
 import {
-	isAfterDate,
-	isInRange,
-	getDayOfWeek,
-	getStartOf,
-	stringifyDateToISO8601,
-	parseDateTimeString,
-} from "./dates.js";
+  isAfterDate,
+  isInRange,
+  getDayOfWeek,
+  getStartOf,
+  stringifyDateToISO8601,
+  parseDateTimeString,
+} from './dates.js';
 // NOTE: This file imports sanitize.js, which may lead to circular dependency
 
 // This is the order of days as JavaScript understands them
 // The number returned by "new Date().getDay()" refers to day of week starting from sunday.
-const WEEKDAYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
 const getMinutes = ms => Math.floor(ms / 60000);
 
@@ -23,15 +23,15 @@ const getMinutes = ms => Math.floor(ms / 60000);
  * @returns array with desired properties being unique.
  */
 export const uniqueBy = (arr, f) => {
-	var unique = {};
-	return arr.reduce((distinct, x) => {
-		var key = f(x);
-		if (key != null && !unique[key]) {
-			unique[key] = true;
-			return [...distinct, x];
-		}
-		return distinct;
-	}, []);
+  var unique = {};
+  return arr.reduce((distinct, x) => {
+    var key = f(x);
+    if (key != null && !unique[key]) {
+      unique[key] = true;
+      return [...distinct, x];
+    }
+    return distinct;
+  }, []);
 };
 
 /**
@@ -52,19 +52,17 @@ export const pipe = (x0, ...fns) => fns.reduce((x, f) => f(x), x0);
  * @returns generator function that assumes iterable over which "f" is applied.
  */
 export const map = f =>
-	function*(iterable) {
-		for (let x of iterable) {
-			yield f(x);
-		}
-	};
+  function*(iterable) {
+    for (let x of iterable) {
+      yield f(x);
+    }
+  };
 
 const getMillis = d => d.getTime();
 const pastException = (x, startInMillis, endInMillis) =>
-	getMillis(x.attributes.start) <= startInMillis &&
-	getMillis(x.attributes.end) < endInMillis;
+  getMillis(x.attributes.start) <= startInMillis && getMillis(x.attributes.end) < endInMillis;
 const exceptionInRange = (x, startInMillis, endInMillis) =>
-	startInMillis < getMillis(x.attributes.start) &&
-	getMillis(x.attributes.end) < endInMillis;
+  startInMillis < getMillis(x.attributes.start) && getMillis(x.attributes.end) < endInMillis;
 
 /**
  * Generates inverted time slots between start and end
@@ -75,41 +73,41 @@ const exceptionInRange = (x, startInMillis, endInMillis) =>
  * @returns generator function that generates new time slots that doesn't have exception inside.
  */
 const invertedRangesFromExceptions = (start, end) =>
-	function*(iterable) {
-		// Range start and end in milliseconds
-		const startInMillis = getMillis(start);
-		const endInMillis = getMillis(end);
-		let currentStartInMillis = startInMillis;
-		// Iterate over eXceptions
-		for (let x of iterable) {
-			if (pastException(x, currentStartInMillis, endInMillis)) {
-				// Inconsequential past exception or range starts with an exception
-				// Move start index
-				currentStartInMillis = getMillis(x.attributes.end);
-			} else if (exceptionInRange(x, currentStartInMillis, endInMillis)) {
-				// Exception is completely inside the range
-				yield {
-					start: new Date(currentStartInMillis),
-					end: new Date(x.attributes.start),
-				};
-				// Move start index
-				currentStartInMillis = getMillis(x.attributes.end);
-			} else {
-				// Exception.start in range, but exception.end happens after the end of the range
-				yield {
-					start: new Date(currentStartInMillis),
-					end: new Date(end),
-				};
-				return;
-			}
-		}
+  function*(iterable) {
+    // Range start and end in milliseconds
+    const startInMillis = getMillis(start);
+    const endInMillis = getMillis(end);
+    let currentStartInMillis = startInMillis;
+    // Iterate over eXceptions
+    for (let x of iterable) {
+      if (pastException(x, currentStartInMillis, endInMillis)) {
+        // Inconsequential past exception or range starts with an exception
+        // Move start index
+        currentStartInMillis = getMillis(x.attributes.end);
+      } else if (exceptionInRange(x, currentStartInMillis, endInMillis)) {
+        // Exception is completely inside the range
+        yield {
+          start: new Date(currentStartInMillis),
+          end: new Date(x.attributes.start),
+        };
+        // Move start index
+        currentStartInMillis = getMillis(x.attributes.end);
+      } else {
+        // Exception.start in range, but exception.end happens after the end of the range
+        yield {
+          start: new Date(currentStartInMillis),
+          end: new Date(end),
+        };
+        return;
+      }
+    }
 
-		// If iterable is completed, but there's still pending "currentStartInMillis",
-		// yeald it with given end.
-		if (currentStartInMillis < endInMillis) {
-			yield { start: new Date(currentStartInMillis), end };
-		}
-	};
+    // If iterable is completed, but there's still pending "currentStartInMillis",
+    // yeald it with given end.
+    if (currentStartInMillis < endInMillis) {
+      yield { start: new Date(currentStartInMillis), end };
+    }
+  };
 
 /**
  * Creates exception free time slots. Those slots are free for new exceptions (no clash).
@@ -120,11 +118,8 @@ const invertedRangesFromExceptions = (start, end) =>
  * @returns Array of { start, end } objects.
  */
 export const availableRanges = (start, end, exceptions) => {
-	const availableRanges = pipe(
-		exceptions,
-		invertedRangesFromExceptions(start, end)
-	);
-	return [...availableRanges];
+  const availableRanges = pipe(exceptions, invertedRangesFromExceptions(start, end));
+  return [...availableRanges];
 };
 
 /**
@@ -136,22 +131,15 @@ export const availableRanges = (start, end, exceptions) => {
  * @param {Integer} step when the next yielded Date object should be pointing at.
  * @param {String} stepUnit step unit that moment library understands (e.g. 'days')
  */
-const timeUnitGenerator = function*(
-	start,
-	unit,
-	timeZone,
-	untilFn,
-	step = 1,
-	stepUnit = "days"
-) {
-	let s = getStartOf(start, unit, timeZone);
-	const defaultEnd = () => true;
-	const testEnd = untilFn || defaultEnd;
+const timeUnitGenerator = function*(start, unit, timeZone, untilFn, step = 1, stepUnit = 'days') {
+  let s = getStartOf(start, unit, timeZone);
+  const defaultEnd = () => true;
+  const testEnd = untilFn || defaultEnd;
 
-	while (testEnd(s)) {
-		yield s;
-		s = getStartOf(s, unit, timeZone, step, stepUnit);
-	}
+  while (testEnd(s)) {
+    yield s;
+    s = getStartOf(s, unit, timeZone, step, stepUnit);
+  }
 };
 
 /**
@@ -164,8 +152,8 @@ const timeUnitGenerator = function*(
  * @returns An array of date objects in desired time zone
  */
 export const generateDates = (start, end, timeZone) => {
-	const untilFn = d => isAfterDate(end, d);
-	return [...timeUnitGenerator(start, "day", timeZone, untilFn)];
+  const untilFn = d => isAfterDate(end, d);
+  return [...timeUnitGenerator(start, 'day', timeZone, untilFn)];
 };
 /**
  * Generates Dates for months (start of moments) between given range on desired time zone.
@@ -177,10 +165,8 @@ export const generateDates = (start, end, timeZone) => {
  * @returns An array of date objects in desired time zone
  */
 export const generateMonths = (start, end, timeZone) => {
-	const untilFn = d => isAfterDate(end, d);
-	return [
-		...timeUnitGenerator(start, "month", timeZone, untilFn, 1, "months"),
-	];
+  const untilFn = d => isAfterDate(end, d);
+  return [...timeUnitGenerator(start, 'month', timeZone, untilFn, 1, 'months')];
 };
 
 /**
@@ -192,39 +178,26 @@ export const generateMonths = (start, end, timeZone) => {
  * @returns function that gets day and available slots with them
  */
 const toExceptionFreeSlotsPerDate = (availableSlots, timeZone) => day => {
-	const availableSlotsOnDate = availableSlots.filter(s => {
-		const dayStart = getStartOf(day, "day", timeZone);
-		const dayEnd = getStartOf(day, "day", timeZone, 1, "day");
-		const dateRange = [dayStart, dayEnd];
-		const slotRange = [s.start, s.end];
+  const availableSlotsOnDate = availableSlots.filter(s => {
+    const dayStart = getStartOf(day, 'day', timeZone);
+    const dayEnd = getStartOf(day, 'day', timeZone, 1, 'day');
+    const dateRange = [dayStart, dayEnd];
+    const slotRange = [s.start, s.end];
 
-		const millisecondBeforeEndTime = end => new Date(end.getTime() - 1);
-		const dayIsInsideSlot =
-			isInRange(dayStart, ...slotRange, undefined, timeZone) &&
-			isInRange(
-				millisecondBeforeEndTime(dayEnd),
-				...slotRange,
-				undefined,
-				timeZone
-			);
-		const slotStartIsInsideDate = isInRange(
-			s.start,
-			...dateRange,
-			timeZone
-		);
-		const slotEndIsInsideDate = isInRange(
-			millisecondBeforeEndTime(s.end),
-			...dateRange,
-			timeZone
-		);
-		// Pick slots that overlap with the 'day'.
-		return dayIsInsideSlot || slotStartIsInsideDate || slotEndIsInsideDate;
-	});
+    const millisecondBeforeEndTime = end => new Date(end.getTime() - 1);
+    const dayIsInsideSlot =
+      isInRange(dayStart, ...slotRange, undefined, timeZone) &&
+      isInRange(millisecondBeforeEndTime(dayEnd), ...slotRange, undefined, timeZone);
+    const slotStartIsInsideDate = isInRange(s.start, ...dateRange, timeZone);
+    const slotEndIsInsideDate = isInRange(millisecondBeforeEndTime(s.end), ...dateRange, timeZone);
+    // Pick slots that overlap with the 'day'.
+    return dayIsInsideSlot || slotStartIsInsideDate || slotEndIsInsideDate;
+  });
 
-	return {
-		id: stringifyDateToISO8601(day, timeZone), // "2022-12-24"
-		slots: availableSlotsOnDate,
-	};
+  return {
+    id: stringifyDateToISO8601(day, timeZone), // "2022-12-24"
+    slots: availableSlotsOnDate,
+  };
 };
 
 /**
@@ -237,12 +210,12 @@ const toExceptionFreeSlotsPerDate = (availableSlots, timeZone) => day => {
  * @returns function that takes in iterator and returns object literal
  */
 const toHashMap = f => iterator => {
-	let obj = {};
-	for (let x of iterator) {
-		const [key, value] = f(x);
-		obj[key] = value;
-	}
-	return obj;
+  let obj = {};
+  for (let x of iterator) {
+    const [key, value] = f(x);
+    obj[key] = value;
+  }
+  return obj;
 };
 
 //
@@ -265,14 +238,14 @@ const toHashMap = f => iterator => {
  * @returns hash-map with dateIds as keys.
  */
 export const exceptionFreeSlotsPerDate = (start, end, exceptions, timeZone) => {
-	const s = getStartOf(start, "day", timeZone);
-	const e = getStartOf(end, "day", timeZone);
-	const availableSlots = availableRanges(s, e, exceptions);
-	return pipe(
-		generateDates(s, e, timeZone),
-		map(toExceptionFreeSlotsPerDate(availableSlots, timeZone)),
-		toHashMap(({ id, ...rest }) => [id, rest])
-	);
+  const s = getStartOf(start, 'day', timeZone);
+  const e = getStartOf(end, 'day', timeZone);
+  const availableSlots = availableRanges(s, e, exceptions);
+  return pipe(
+    generateDates(s, e, timeZone),
+    map(toExceptionFreeSlotsPerDate(availableSlots, timeZone)),
+    toHashMap(({ id, ...rest }) => [id, rest])
+  );
 };
 
 /**
@@ -283,43 +256,29 @@ export const exceptionFreeSlotsPerDate = (start, end, exceptions, timeZone) => {
  * @returns filtered list of exceptions or empty array
  */
 const getExceptionsOnDate = (dateRange, exceptions, timeZone) => {
-	const [dayStart, dayEnd] = dateRange;
-	return exceptions.filter(e => {
-		const exceptionRange = [e.attributes.start, e.attributes.end];
+  const [dayStart, dayEnd] = dateRange;
+  return exceptions.filter(e => {
+    const exceptionRange = [e.attributes.start, e.attributes.end];
 
-		const inclusiveEndTime = end => new Date(end.getTime() - 1);
-		const dayStartInsideException = isInRange(
-			dayStart,
-			...exceptionRange,
-			undefined,
-			timeZone
-		);
-		const dayEndInsideException = isInRange(
-			inclusiveEndTime(dayEnd),
-			...exceptionRange,
-			undefined,
-			timeZone
-		);
-		const dayIsInsideException =
-			dayStartInsideException && dayEndInsideException;
+    const inclusiveEndTime = end => new Date(end.getTime() - 1);
+    const dayStartInsideException = isInRange(dayStart, ...exceptionRange, undefined, timeZone);
+    const dayEndInsideException = isInRange(
+      inclusiveEndTime(dayEnd),
+      ...exceptionRange,
+      undefined,
+      timeZone
+    );
+    const dayIsInsideException = dayStartInsideException && dayEndInsideException;
 
-		const exceptionStartIsInsideDate = isInRange(
-			e.attributes.start,
-			...dateRange,
-			timeZone
-		);
-		const exceptionEndIsInsideDate = isInRange(
-			inclusiveEndTime(e.attributes.end),
-			...dateRange,
-			timeZone
-		);
-		// Pick slots that overlap with the 'day'.
-		return (
-			dayIsInsideException ||
-			exceptionStartIsInsideDate ||
-			exceptionEndIsInsideDate
-		);
-	});
+    const exceptionStartIsInsideDate = isInRange(e.attributes.start, ...dateRange, timeZone);
+    const exceptionEndIsInsideDate = isInRange(
+      inclusiveEndTime(e.attributes.end),
+      ...dateRange,
+      timeZone
+    );
+    // Pick slots that overlap with the 'day'.
+    return dayIsInsideException || exceptionStartIsInsideDate || exceptionEndIsInsideDate;
+  });
 };
 
 /**
@@ -329,16 +288,13 @@ const getExceptionsOnDate = (dateRange, exceptions, timeZone) => {
  * @returns an exception entity
  */
 const findNextException = (date, exceptions) => {
-	const dateInMillis = getMillis(date);
-	return exceptions.find(exception => {
-		const start = getMillis(exception.attributes.start);
-		const end = getMillis(exception.attributes.end);
-		// is inside entry or exception is after given date moment
-		return (
-			(start <= dateInMillis && dateInMillis < end) ||
-			start > dateInMillis
-		);
-	});
+  const dateInMillis = getMillis(date);
+  return exceptions.find(exception => {
+    const start = getMillis(exception.attributes.start);
+    const end = getMillis(exception.attributes.end);
+    // is inside entry or exception is after given date moment
+    return (start <= dateInMillis && dateInMillis < end) || start > dateInMillis;
+  });
 };
 
 /**
@@ -349,8 +305,8 @@ const findNextException = (date, exceptions) => {
  * @returns Date object
  */
 const parseLocalizedTime = (date, timeString, timeZone) => {
-	const dateString = stringifyDateToISO8601(date, timeZone);
-	return parseDateTimeString(`${dateString} ${timeString}`, timeZone);
+  const dateString = stringifyDateToISO8601(date, timeZone);
+  return parseDateTimeString(`${dateString} ${timeString}`, timeZone);
 };
 
 /**
@@ -361,9 +317,9 @@ const parseLocalizedTime = (date, timeString, timeZone) => {
  * @returns
  */
 const getEndTimeAsDate = (date, endTime, timeZone) =>
-	endTime == "00:00"
-		? getStartOf(date, "day", timeZone, 1, "days")
-		: parseLocalizedTime(date, endTime, timeZone);
+  endTime == '00:00'
+    ? getStartOf(date, 'day', timeZone, 1, 'days')
+    : parseLocalizedTime(date, endTime, timeZone);
 
 /**
  * Find the next entry of Availability plan:
@@ -375,25 +331,20 @@ const getEndTimeAsDate = (date, endTime, timeZone) =>
  * @returns object literal like { start, end, seats } or null
  */
 const findNextPlanEntryInfo = (date, dayEntries, timeZone) => {
-	const dateInMillis = getMillis(date);
-	const entry = dayEntries.find(e => {
-		const start = getMillis(
-			parseLocalizedTime(date, e.startTime, timeZone)
-		);
-		const end = getMillis(getEndTimeAsDate(date, e.endTime, timeZone));
-		// is inside entry or entry is after given date moment
-		return (
-			(start <= dateInMillis && dateInMillis < end) ||
-			start > dateInMillis
-		);
-	});
+  const dateInMillis = getMillis(date);
+  const entry = dayEntries.find(e => {
+    const start = getMillis(parseLocalizedTime(date, e.startTime, timeZone));
+    const end = getMillis(getEndTimeAsDate(date, e.endTime, timeZone));
+    // is inside entry or entry is after given date moment
+    return (start <= dateInMillis && dateInMillis < end) || start > dateInMillis;
+  });
 
-	if (entry) {
-		const start = parseLocalizedTime(date, entry.startTime, timeZone);
-		const end = getEndTimeAsDate(date, entry.endTime, timeZone);
-		return { start, end, seats: entry.seats };
-	}
-	return null;
+  if (entry) {
+    const start = parseLocalizedTime(date, entry.startTime, timeZone);
+    const end = getEndTimeAsDate(date, entry.endTime, timeZone);
+    return { start, end, seats: entry.seats };
+  }
+  return null;
 };
 
 /**
@@ -406,117 +357,97 @@ const findNextPlanEntryInfo = (date, dayEntries, timeZone) => {
  * @returns info of plan entries and exceptions relavant to the given "day" and seats-ranges inside it
  */
 const toAvailabilityPerDate = (plan, exceptions, timeZone) => day => {
-	const entries = plan
-		? plan.entries.filter(
-				entry =>
-					entry.dayOfWeek === WEEKDAYS[getDayOfWeek(day, timeZone)]
-		  )
-		: [];
-	const dayStart = getStartOf(day, "day", timeZone);
-	const dayEnd = getStartOf(day, "day", timeZone, 1, "day");
-	const dateRange = [dayStart, dayEnd];
-	const exceptionsOnDate = getExceptionsOnDate(
-		dateRange,
-		exceptions,
-		timeZone
-	);
+  const entries = plan
+    ? plan.entries.filter(entry => entry.dayOfWeek === WEEKDAYS[getDayOfWeek(day, timeZone)])
+    : [];
+  const dayStart = getStartOf(day, 'day', timeZone);
+  const dayEnd = getStartOf(day, 'day', timeZone, 1, 'day');
+  const dateRange = [dayStart, dayEnd];
+  const exceptionsOnDate = getExceptionsOnDate(dateRange, exceptions, timeZone);
 
-	let hasAvailability = false;
-	let ranges = [];
-	let currentStart = dayStart;
-	// currentStart is the cursor within this loop
-	while (getMillis(currentStart) < getMillis(dayEnd)) {
-		// Find next relevant exception (if there is any)
-		const nextException = findNextException(currentStart, exceptionsOnDate);
-		const exceptionRange = [
-			nextException?.attributes?.start,
-			nextException?.attributes?.end,
-		];
-		const isInExceptionRange =
-			!!nextException &&
-			isInRange(currentStart, ...exceptionRange, undefined, timeZone);
+  let hasAvailability = false;
+  let ranges = [];
+  let currentStart = dayStart;
+  // currentStart is the cursor within this loop
+  while (getMillis(currentStart) < getMillis(dayEnd)) {
+    // Find next relevant exception (if there is any)
+    const nextException = findNextException(currentStart, exceptionsOnDate);
+    const exceptionRange = [nextException?.attributes?.start, nextException?.attributes?.end];
+    const isInExceptionRange =
+      !!nextException && isInRange(currentStart, ...exceptionRange, undefined, timeZone);
 
-		// Find next plan entry (if there is any)
-		const nextPlanEntry = findNextPlanEntryInfo(
-			currentStart,
-			entries,
-			timeZone
-		);
-		const planRange = [nextPlanEntry?.start, nextPlanEntry?.end];
-		const isInPlanRange =
-			!!nextPlanEntry &&
-			isInRange(currentStart, ...planRange, undefined, timeZone);
+    // Find next plan entry (if there is any)
+    const nextPlanEntry = findNextPlanEntryInfo(currentStart, entries, timeZone);
+    const planRange = [nextPlanEntry?.start, nextPlanEntry?.end];
+    const isInPlanRange =
+      !!nextPlanEntry && isInRange(currentStart, ...planRange, undefined, timeZone);
 
-		if (isInExceptionRange) {
-			// If currentStart is inside an exception, the exception is picked as the next range
-			const end =
-				getMillis(nextException.attributes.end) < getMillis(dayEnd)
-					? nextException.attributes.end
-					: dayEnd;
-			ranges.push({
-				start: currentStart,
-				end,
-				seats: nextException.attributes.seats,
-				exception: nextException,
-			});
-			hasAvailability =
-				hasAvailability || !!nextException.attributes.seats;
-			currentStart = end; // update currentStart handle
-		} else if (isInPlanRange) {
-			// Alternatively, if currentStart is inside a plan entry,
-			// the entry is picked until next exception (or entry's own end)
-			const planEnd = nextPlanEntry.end;
+    if (isInExceptionRange) {
+      // If currentStart is inside an exception, the exception is picked as the next range
+      const end =
+        getMillis(nextException.attributes.end) < getMillis(dayEnd)
+          ? nextException.attributes.end
+          : dayEnd;
+      ranges.push({
+        start: currentStart,
+        end,
+        seats: nextException.attributes.seats,
+        exception: nextException,
+      });
+      hasAvailability = hasAvailability || !!nextException.attributes.seats;
+      currentStart = end; // update currentStart handle
+    } else if (isInPlanRange) {
+      // Alternatively, if currentStart is inside a plan entry,
+      // the entry is picked until next exception (or entry's own end)
+      const planEnd = nextPlanEntry.end;
 
-			const end =
-				nextException &&
-				getMillis(nextException.attributes.start) <= getMillis(planEnd)
-					? nextException.attributes.start
-					: planEnd;
+      const end =
+        nextException && getMillis(nextException.attributes.start) <= getMillis(planEnd)
+          ? nextException.attributes.start
+          : planEnd;
 
-			ranges.push({
-				start: currentStart,
-				end,
-				seats: nextPlanEntry.seats,
-				plan: nextPlanEntry,
-			});
-			hasAvailability = hasAvailability || !!nextPlanEntry.seats;
-			currentStart = end; // update currentStart handle
-		} else {
-			// If no exception or plan entry is relevant at currentStart,
-			// Then we create *seats: 0* range until next exception/entry/day end is found
-			const isNextRangeAnException =
-				nextException &&
-				(!nextPlanEntry ||
-					(nextPlanEntry &&
-						getMillis(nextException.attributes.start) <=
-							getMillis(nextPlanEntry.start)));
-			const isNextRangeAPlanEntry =
-				!isNextRangeAnException && nextPlanEntry;
-			const end = isNextRangeAnException
-				? nextException.attributes.start
-				: isNextRangeAPlanEntry
-				? nextPlanEntry.start
-				: dayEnd;
-			ranges.push({
-				start: currentStart,
-				end,
-				seats: 0,
-			});
-			currentStart = end;
-			// If found end happens after dayend, break the while-loop
-			if (getMillis(end) >= getMillis(dayEnd)) {
-				break;
-			}
-		}
-	}
+      ranges.push({
+        start: currentStart,
+        end,
+        seats: nextPlanEntry.seats,
+        plan: nextPlanEntry,
+      });
+      hasAvailability = hasAvailability || !!nextPlanEntry.seats;
+      currentStart = end; // update currentStart handle
+    } else {
+      // If no exception or plan entry is relevant at currentStart,
+      // Then we create *seats: 0* range until next exception/entry/day end is found
+      const isNextRangeAnException =
+        nextException &&
+        (!nextPlanEntry ||
+          (nextPlanEntry &&
+            getMillis(nextException.attributes.start) <= getMillis(nextPlanEntry.start)));
+      const isNextRangeAPlanEntry = !isNextRangeAnException && nextPlanEntry;
+      const end = isNextRangeAnException
+        ? nextException.attributes.start
+        : isNextRangeAPlanEntry
+        ? nextPlanEntry.start
+        : dayEnd;
+      ranges.push({
+        start: currentStart,
+        end,
+        seats: 0,
+      });
+      currentStart = end;
+      // If found end happens after dayend, break the while-loop
+      if (getMillis(end) >= getMillis(dayEnd)) {
+        break;
+      }
+    }
+  }
 
-	return {
-		id: stringifyDateToISO8601(day, timeZone), // "2022-12-24"
-		planEntries: entries,
-		exceptions: exceptionsOnDate,
-		ranges,
-		hasAvailability,
-	};
+  return {
+    id: stringifyDateToISO8601(day, timeZone), // "2022-12-24"
+    planEntries: entries,
+    exceptions: exceptionsOnDate,
+    ranges,
+    hasAvailability,
+  };
 };
 
 /**
@@ -536,14 +467,14 @@ const toAvailabilityPerDate = (plan, exceptions, timeZone) => day => {
  * @returns hashmap of date info grouped by date id (e.g. "2023-01-01" )
  */
 export const availabilityPerDate = (start, end, plan, exceptions) => {
-	const timeZone = plan?.timezone;
-	const s = getStartOf(start, "day", timeZone);
-	const e = getStartOf(end, "day", timeZone);
-	return pipe(
-		generateDates(s, e, timeZone),
-		map(toAvailabilityPerDate(plan, exceptions, timeZone)),
-		toHashMap(x => [x.id, x])
-	);
+  const timeZone = plan?.timezone;
+  const s = getStartOf(start, 'day', timeZone);
+  const e = getStartOf(end, 'day', timeZone);
+  return pipe(
+    generateDates(s, e, timeZone),
+    map(toAvailabilityPerDate(plan, exceptions, timeZone)),
+    toHashMap(x => [x.id, x])
+  );
 };
 
 /**
@@ -554,58 +485,38 @@ export const availabilityPerDate = (start, end, plan, exceptions) => {
  * @param {Number} minDurationStartingInDay minimum length of time slot. It needs to start in generated day
  * @returns filtered list of time slots or an empty array
  */
-const getTimeSlotsOnDate = (
-	dateRange,
-	timeSlots,
-	timeZone,
-	minDurationStartingInDay
-) => {
-	const [dayStart, dayEnd] = dateRange;
-	return timeSlots.filter(ts => {
-		const timeSlotRange = [ts.attributes.start, ts.attributes.end];
+const getTimeSlotsOnDate = (dateRange, timeSlots, timeZone, minDurationStartingInDay) => {
+  const [dayStart, dayEnd] = dateRange;
+  return timeSlots.filter(ts => {
+    const timeSlotRange = [ts.attributes.start, ts.attributes.end];
 
-		const inclusiveEndTime = end => new Date(end.getTime() - 1);
-		const dayStartInsideTimeSlot = isInRange(
-			dayStart,
-			...timeSlotRange,
-			undefined,
-			timeZone
-		);
-		const dayEndInsideTimeSlot = isInRange(
-			inclusiveEndTime(dayEnd),
-			...timeSlotRange,
-			undefined,
-			timeZone
-		);
-		const dayIsInsideTimeSlot =
-			dayStartInsideTimeSlot && dayEndInsideTimeSlot;
+    const inclusiveEndTime = end => new Date(end.getTime() - 1);
+    const dayStartInsideTimeSlot = isInRange(dayStart, ...timeSlotRange, undefined, timeZone);
+    const dayEndInsideTimeSlot = isInRange(
+      inclusiveEndTime(dayEnd),
+      ...timeSlotRange,
+      undefined,
+      timeZone
+    );
+    const dayIsInsideTimeSlot = dayStartInsideTimeSlot && dayEndInsideTimeSlot;
 
-		const timeSlotStartIsInsideDate = isInRange(
-			ts.attributes.start,
-			...dateRange,
-			timeZone
-		);
-		const timeSlotEndIsInsideDate = isInRange(
-			inclusiveEndTime(ts.attributes.end),
-			...dateRange,
-			timeZone
-		);
+    const timeSlotStartIsInsideDate = isInRange(ts.attributes.start, ...dateRange, timeZone);
+    const timeSlotEndIsInsideDate = isInRange(
+      inclusiveEndTime(ts.attributes.end),
+      ...dateRange,
+      timeZone
+    );
 
-		// Check if the time slot has enough duration to be considered
-		const startingInDay = timeSlotStartIsInsideDate
-			? timeSlotRange[0]
-			: dayStart;
-		const hasEnoughDuration =
-			getMinutes(timeSlotRange[1] - startingInDay) >=
-			minDurationStartingInDay;
+    // Check if the time slot has enough duration to be considered
+    const startingInDay = timeSlotStartIsInsideDate ? timeSlotRange[0] : dayStart;
+    const hasEnoughDuration =
+      getMinutes(timeSlotRange[1] - startingInDay) >= minDurationStartingInDay;
 
-		// Pick slots that overlap with the 'day'.
-		const overlapsWithDay =
-			dayIsInsideTimeSlot ||
-			timeSlotStartIsInsideDate ||
-			timeSlotEndIsInsideDate;
-		return hasEnoughDuration && overlapsWithDay;
-	});
+    // Pick slots that overlap with the 'day'.
+    const overlapsWithDay =
+      dayIsInsideTimeSlot || timeSlotStartIsInsideDate || timeSlotEndIsInsideDate;
+    return hasEnoughDuration && overlapsWithDay;
+  });
 };
 
 /**
@@ -618,30 +529,25 @@ const getTimeSlotsOnDate = (
  * @param {Number} minDurationStartingInDay minimum length of time slot. It needs to start in generated day
  * @returns info of time slots relavant to the given "day" and seats-ranges inside it
  */
-const toTimeSlotsPerDate = (
-	timeSlots,
-	timeZone,
-	minSeats = 1,
-	minDurationStartingInDay
-) => day => {
-	const entries = Array.isArray(timeSlots)
-		? timeSlots.filter(ts => ts.attributes.seats >= minSeats)
-		: [];
-	const dayStart = getStartOf(day, "day", timeZone);
-	const dayEnd = getStartOf(day, "day", timeZone, 1, "day");
-	const dateRange = [dayStart, dayEnd];
-	const timeSlotsOnDate = getTimeSlotsOnDate(
-		dateRange,
-		entries,
-		timeZone,
-		minDurationStartingInDay
-	);
+const toTimeSlotsPerDate = (timeSlots, timeZone, minSeats = 1, minDurationStartingInDay) => day => {
+  const entries = Array.isArray(timeSlots)
+    ? timeSlots.filter(ts => ts.attributes.seats >= minSeats)
+    : [];
+  const dayStart = getStartOf(day, 'day', timeZone);
+  const dayEnd = getStartOf(day, 'day', timeZone, 1, 'day');
+  const dateRange = [dayStart, dayEnd];
+  const timeSlotsOnDate = getTimeSlotsOnDate(
+    dateRange,
+    entries,
+    timeZone,
+    minDurationStartingInDay
+  );
 
-	return {
-		id: stringifyDateToISO8601(day, timeZone), // "2022-12-24"
-		timeSlots: timeSlotsOnDate,
-		hasAvailability: timeSlotsOnDate.length > 0,
-	};
+  return {
+    id: stringifyDateToISO8601(day, timeZone), // "2022-12-24"
+    timeSlots: timeSlotsOnDate,
+    hasAvailability: timeSlotsOnDate.length > 0,
+  };
 };
 
 /**
@@ -662,19 +568,12 @@ const toTimeSlotsPerDate = (
  * @returns hashmap of date info grouped by date id (e.g. "2023-01-01" )
  */
 export const timeSlotsPerDate = (start, end, timeSlots, timeZone, options) => {
-	const { seats = 1, minDurationStartingInDay = 5 } = options || {};
-	const s = getStartOf(start, "day", timeZone);
-	const e = getStartOf(end, "day", timeZone);
-	return pipe(
-		generateDates(s, e, timeZone),
-		map(
-			toTimeSlotsPerDate(
-				timeSlots,
-				timeZone,
-				seats,
-				minDurationStartingInDay
-			)
-		),
-		toHashMap(x => [x.id, x])
-	);
+  const { seats = 1, minDurationStartingInDay = 5 } = options || {};
+  const s = getStartOf(start, 'day', timeZone);
+  const e = getStartOf(end, 'day', timeZone);
+  return pipe(
+    generateDates(s, e, timeZone),
+    map(toTimeSlotsPerDate(timeSlots, timeZone, seats, minDurationStartingInDay)),
+    toHashMap(x => [x.id, x])
+  );
 };

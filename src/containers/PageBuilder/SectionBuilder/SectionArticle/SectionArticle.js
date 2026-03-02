@@ -1,11 +1,11 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import Field, { hasDataInFields } from "../../Field";
-import BlockBuilder from "../../BlockBuilder";
+import Field, { hasDataInFields } from '../../Field';
+import BlockBuilder from '../../BlockBuilder';
 
-import SectionContainer from "../SectionContainer";
-import css from "./SectionArticle.module.css";
+import SectionContainer from '../SectionContainer';
+import css from './SectionArticle.module.css';
 
 /**
  * @typedef {Object} BlockConfig
@@ -46,78 +46,59 @@ import css from "./SectionArticle.module.css";
  * @returns {JSX.Element} Section for article content
  */
 const SectionArticle = props => {
-	const {
-		sectionId,
-		className,
-		rootClassName,
-		defaultClasses,
-		title,
-		description,
-		appearance,
-		callToAction,
-		blocks = [],
-		isInsideContainer = false,
-		options,
-	} = props;
+  const {
+    sectionId,
+    className,
+    rootClassName,
+    defaultClasses,
+    title,
+    description,
+    appearance,
+    callToAction,
+    blocks = [],
+    isInsideContainer = false,
+    options,
+  } = props;
 
-	// If external mapping has been included for fields
-	// E.g. { h1: { component: MyAwesomeHeader } }
-	const fieldComponents = options?.fieldComponents;
-	const fieldOptions = { fieldComponents };
+  // If external mapping has been included for fields
+  // E.g. { h1: { component: MyAwesomeHeader } }
+  const fieldComponents = options?.fieldComponents;
+  const fieldOptions = { fieldComponents };
 
-	const hasHeaderFields = hasDataInFields(
-		[title, description, callToAction],
-		fieldOptions
-	);
-	const hasBlocks = blocks?.length > 0;
+  const hasHeaderFields = hasDataInFields([title, description, callToAction], fieldOptions);
+  const hasBlocks = blocks?.length > 0;
 
-	return (
-		<SectionContainer
-			id={sectionId}
-			className={className}
-			rootClassName={rootClassName}
-			appearance={appearance}
-			options={fieldOptions}
-		>
-			{hasHeaderFields ? (
-				<header className={defaultClasses.sectionDetails}>
-					<Field
-						data={title}
-						className={defaultClasses.title}
-						options={fieldOptions}
-					/>
-					<Field
-						data={description}
-						className={defaultClasses.description}
-						options={fieldOptions}
-					/>
-					<Field
-						data={callToAction}
-						className={defaultClasses.ctaButton}
-						options={fieldOptions}
-					/>
-				</header>
-			) : null}
-			{hasBlocks ? (
-				<div
-					className={classNames(
-						defaultClasses.blockContainer,
-						css.articleMain,
-						{
-							[css.noSidePaddings]: isInsideContainer,
-						}
-					)}
-				>
-					<BlockBuilder
-						blocks={blocks}
-						sectionId={sectionId}
-						ctaButtonClass={defaultClasses.ctaButton}
-						options={options}
-					/>
-				</div>
-			) : null}
-		</SectionContainer>
-	);
+  return (
+    <SectionContainer
+      id={sectionId}
+      className={className}
+      rootClassName={rootClassName}
+      appearance={appearance}
+      options={fieldOptions}
+    >
+      {hasHeaderFields ? (
+        <header className={defaultClasses.sectionDetails}>
+          <Field data={title} className={defaultClasses.title} options={fieldOptions} />
+          <Field data={description} className={defaultClasses.description} options={fieldOptions} />
+          <Field data={callToAction} className={defaultClasses.ctaButton} options={fieldOptions} />
+        </header>
+      ) : null}
+      {hasBlocks ? (
+        <div
+          className={classNames(defaultClasses.blockContainer, css.articleMain, {
+            [css.noSidePaddings]: isInsideContainer,
+          })}
+        >
+          <BlockBuilder
+            blocks={blocks}
+            sectionId={sectionId}
+            ctaButtonClass={defaultClasses.ctaButton}
+            options={options}
+          />
+        </div>
+      ) : null}
+    </SectionContainer>
+  );
 };
 
 export default SectionArticle;

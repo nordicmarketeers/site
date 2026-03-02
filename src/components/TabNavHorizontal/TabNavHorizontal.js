@@ -1,100 +1,71 @@
-import React from "react";
-import classNames from "classnames";
-import { InlineTextButton, NamedLink } from "../../components";
+import React from 'react';
+import classNames from 'classnames';
+import { InlineTextButton, NamedLink } from '../../components';
 
-import css from "./TabNavHorizontal.module.css";
+import css from './TabNavHorizontal.module.css';
 
-export const LIGHT_SKIN = "light";
-export const DARK_SKIN = "dark";
+export const LIGHT_SKIN = 'light';
+export const DARK_SKIN = 'dark';
 
 const Tab = props => {
-	const {
-		className,
-		disabled,
-		text,
-		selected,
-		onClick,
-		linkProps,
-		isDark,
-	} = props;
-	const darkSkinClasses = isDark
-		? classNames(css.tabContentDarkSkin, {
-				[css.selectedTabContentDarkSkin]: selected,
-				[css.disabledDarkSkin]: disabled,
-		  })
-		: null;
+  const { className, disabled, text, selected, onClick, linkProps, isDark } = props;
+  const darkSkinClasses = isDark
+    ? classNames(css.tabContentDarkSkin, {
+        [css.selectedTabContentDarkSkin]: selected,
+        [css.disabledDarkSkin]: disabled,
+      })
+    : null;
 
-	const linkClasses = classNames(
-		css.tabContent,
-		{
-			[css.selectedTabContent]: selected,
-			[css.disabled]: disabled,
-		},
-		darkSkinClasses
-	);
+  const linkClasses = classNames(
+    css.tabContent,
+    {
+      [css.selectedTabContent]: selected,
+      [css.disabled]: disabled,
+    },
+    darkSkinClasses
+  );
 
-	const buttonClasses = classNames(
-		css.tabContent,
-		css.button,
-		{
-			[css.selectedTabContent]: selected,
-			[css.disabled]: disabled,
-		},
-		darkSkinClasses
-	);
+  const buttonClasses = classNames(
+    css.tabContent,
+    css.button,
+    {
+      [css.selectedTabContent]: selected,
+      [css.disabled]: disabled,
+    },
+    darkSkinClasses
+  );
 
-	const isButton = !!onClick;
+  const isButton = !!onClick;
 
-	return (
-		<div className={className}>
-			{isButton ? (
-				<InlineTextButton
-					rootClassName={buttonClasses}
-					onClick={onClick}
-				>
-					{text}
-				</InlineTextButton>
-			) : (
-				<NamedLink className={linkClasses} {...linkProps}>
-					{text}
-				</NamedLink>
-			)}
-		</div>
-	);
+  return (
+    <div className={className}>
+      {isButton ? (
+        <InlineTextButton rootClassName={buttonClasses} onClick={onClick}>
+          {text}
+        </InlineTextButton>
+      ) : (
+        <NamedLink className={linkClasses} {...linkProps}>
+          {text}
+        </NamedLink>
+      )}
+    </div>
+  );
 };
 
 const TabNavHorizontal = props => {
-	const {
-		className,
-		rootClassName,
-		tabRootClassName,
-		tabs,
-		skin = LIGHT_SKIN,
-		ariaLabel,
-	} = props;
-	const isDark = skin === DARK_SKIN;
-	const classes = classNames(
-		rootClassName || css.root,
-		{ [css.darkSkin]: isDark },
-		className
-	);
-	const tabClasses = tabRootClassName || css.tab;
-	const ariaLabelMaybe = ariaLabel ? { ["aria-label"]: ariaLabel } : {};
-	return (
-		<nav className={classes} {...ariaLabelMaybe}>
-			{tabs.map((tab, index) => {
-				const key = typeof tab.text === "string" ? tab.text : index;
-				return (
-					<Tab
-						key={key}
-						className={tabClasses}
-						{...tab}
-						isDark={isDark}
-					/>
-				);
-			})}
-		</nav>
-	);
+  const { className, rootClassName, tabRootClassName, tabs, skin = LIGHT_SKIN, ariaLabel } = props;
+  const isDark = skin === DARK_SKIN;
+  const classes = classNames(rootClassName || css.root, { [css.darkSkin]: isDark }, className);
+  const tabClasses = tabRootClassName || css.tab;
+  const ariaLabelMaybe = ariaLabel ? { ['aria-label']: ariaLabel } : {};
+  return (
+    <nav className={classes} {...ariaLabelMaybe}>
+      {tabs.map((tab, index) => {
+        const key = typeof tab.text === 'string' ? tab.text : index;
+        return <Tab key={key} className={tabClasses} {...tab} isDark={isDark} />;
+      })}
+    </nav>
+  );
 };
 
 /**

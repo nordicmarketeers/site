@@ -1,8 +1,7 @@
 # Fields
 
-Fields are pieces of content defined in the page asset JSON file. They are
-usually part of data grouped under Section or Block content. For example, field
-data could look like this:
+Fields are pieces of content defined in the page asset JSON file. They are usually part of data
+grouped under Section or Block content. For example, field data could look like this:
 
 ```json
 "title": {
@@ -11,9 +10,8 @@ data could look like this:
 }
 ```
 
-The Field component will check the type of the field and validate the data. If
-there are valid data (e.g. if "content" is valid data for the field type
-"heading1"), the field renders the content.
+The Field component will check the type of the field and validate the data. If there are valid data
+(e.g. if "content" is valid data for the field type "heading1"), the field renders the content.
 
 ## Mapping of field types and components
 
@@ -36,5 +34,4 @@ It's also possible to pass additional mapping to the Field component:
 
 ## Rendable components
 
-The Field uses components from the _Primitives_ directory to actually render the
-data it receives.
+The Field uses components from the _Primitives_ directory to actually render the data it receives.

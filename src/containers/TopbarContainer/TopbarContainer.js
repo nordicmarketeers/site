@@ -1,19 +1,14 @@
-import React from "react";
-import { compose } from "redux";
-import { connect } from "react-redux";
-import { withRouter } from "react-router-dom";
-import loadable from "@loadable/component";
+import React from 'react';
+import { compose } from 'redux';
+import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
+import loadable from '@loadable/component';
 
-import {
-	sendVerificationEmail,
-	hasCurrentUserErrors,
-} from "../../ducks/user.duck";
-import { logout, authenticationInProgress } from "../../ducks/auth.duck";
-import { manageDisableScrolling } from "../../ducks/ui.duck";
+import { sendVerificationEmail, hasCurrentUserErrors } from '../../ducks/user.duck';
+import { logout, authenticationInProgress } from '../../ducks/auth.duck';
+import { manageDisableScrolling } from '../../ducks/ui.duck';
 
-const Topbar = loadable(() =>
-	import(/* webpackChunkName: "Topbar" */ "./Topbar/Topbar")
-);
+const Topbar = loadable(() => import(/* webpackChunkName: "Topbar" */ './Topbar/Topbar'));
 
 /**
  * Topbar container component, which is connected to Redux Store.
@@ -29,58 +24,47 @@ const Topbar = loadable(() =>
  * @returns {JSX.Element}
  */
 export const TopbarContainerComponent = props => {
-	const { notificationCount = 0, hasGenericError, ...rest } = props;
+  const { notificationCount = 0, hasGenericError, ...rest } = props;
 
-	return (
-		<Topbar
-			notificationCount={notificationCount}
-			showGenericError={hasGenericError}
-			{...rest}
-		/>
-	);
+  return (
+    <Topbar notificationCount={notificationCount} showGenericError={hasGenericError} {...rest} />
+  );
 };
 
 const mapStateToProps = state => {
-	// Topbar needs isAuthenticated and isLoggedInAs
-	const {
-		isAuthenticated,
-		isLoggedInAs,
-		logoutError,
-		authScopes,
-	} = state.auth;
-	// Topbar needs user info.
-	const {
-		currentUser,
-		currentUserHasListings,
-		currentUserHasOrders,
-		currentUserSaleNotificationCount = 0,
-		currentUserOrderNotificationCount = 0,
-		sendVerificationEmailInProgress,
-		sendVerificationEmailError,
-	} = state.user;
-	const hasGenericError = !!(logoutError || hasCurrentUserErrors(state));
-	return {
-		authInProgress: authenticationInProgress(state),
-		currentUser,
-		currentUserHasListings,
-		currentUserHasOrders,
-		notificationCount:
-			currentUserSaleNotificationCount +
-			currentUserOrderNotificationCount,
-		isAuthenticated,
-		isLoggedInAs,
-		authScopes,
-		sendVerificationEmailInProgress,
-		sendVerificationEmailError,
-		hasGenericError,
-	};
+  // Topbar needs isAuthenticated and isLoggedInAs
+  const { isAuthenticated, isLoggedInAs, logoutError, authScopes } = state.auth;
+  // Topbar needs user info.
+  const {
+    currentUser,
+    currentUserHasListings,
+    currentUserHasOrders,
+    currentUserSaleNotificationCount = 0,
+    currentUserOrderNotificationCount = 0,
+    sendVerificationEmailInProgress,
+    sendVerificationEmailError,
+  } = state.user;
+  const hasGenericError = !!(logoutError || hasCurrentUserErrors(state));
+  return {
+    authInProgress: authenticationInProgress(state),
+    currentUser,
+    currentUserHasListings,
+    currentUserHasOrders,
+    notificationCount: currentUserSaleNotificationCount + currentUserOrderNotificationCount,
+    isAuthenticated,
+    isLoggedInAs,
+    authScopes,
+    sendVerificationEmailInProgress,
+    sendVerificationEmailError,
+    hasGenericError,
+  };
 };
 
 const mapDispatchToProps = dispatch => ({
-	onLogout: historyPush => dispatch(logout(historyPush)),
-	onManageDisableScrolling: (componentId, disableScrolling) =>
-		dispatch(manageDisableScrolling(componentId, disableScrolling)),
-	onResendVerificationEmail: () => dispatch(sendVerificationEmail()),
+  onLogout: historyPush => dispatch(logout(historyPush)),
+  onManageDisableScrolling: (componentId, disableScrolling) =>
+    dispatch(manageDisableScrolling(componentId, disableScrolling)),
+  onResendVerificationEmail: () => dispatch(sendVerificationEmail()),
 });
 
 // Note: it is important that the withRouter HOC is **outside** the
@@ -90,11 +74,8 @@ const mapDispatchToProps = dispatch => ({
 //
 // See: https://github.com/ReactTraining/react-router/issues/4671
 const TopbarContainer = compose(
-	withRouter,
-	connect(
-		mapStateToProps,
-		mapDispatchToProps
-	)
+  withRouter,
+  connect(mapStateToProps, mapDispatchToProps)
 )(TopbarContainerComponent);
 
 export default TopbarContainer;

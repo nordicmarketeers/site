@@ -1,7 +1,7 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import css from "./Overlay.module.css";
+import css from './Overlay.module.css';
 
 /**
  * Overlay
@@ -15,28 +15,26 @@ import css from "./Overlay.module.css";
  * @returns {JSX.Element} Overlay component
  */
 const Overlay = props => {
-	const { className, rootClassName, message, errorMessage, children } = props;
+  const { className, rootClassName, message, errorMessage, children } = props;
 
-	const classes = classNames(rootClassName || css.root, className);
+  const classes = classNames(rootClassName || css.root, className);
 
-	return (
-		<div
-			className={classes}
-			onClick={event => {
-				event.preventDefault();
-				event.stopPropagation();
-			}}
-		>
-			<div className={css.overlay} />
-			<div className={css.overlayContent}>
-				{errorMessage ? (
-					<div className={css.errorMessage}>{errorMessage}</div>
-				) : null}
-				{message ? <div className={css.message}>{message}</div> : null}
-				{children}
-			</div>
-		</div>
-	);
+  return (
+    <div
+      className={classes}
+      onClick={event => {
+        event.preventDefault();
+        event.stopPropagation();
+      }}
+    >
+      <div className={css.overlay} />
+      <div className={css.overlayContent}>
+        {errorMessage ? <div className={css.errorMessage}>{errorMessage}</div> : null}
+        {message ? <div className={css.message}>{message}</div> : null}
+        {children}
+      </div>
+    </div>
+  );
 };
 
 export default Overlay;

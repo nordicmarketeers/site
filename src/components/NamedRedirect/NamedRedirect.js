@@ -1,8 +1,8 @@
-import React from "react";
-import { Redirect } from "react-router-dom";
+import React from 'react';
+import { Redirect } from 'react-router-dom';
 
-import { useRouteConfiguration } from "../../context/routeConfigurationContext";
-import { pathByRouteName } from "../../util/routes";
+import { useRouteConfiguration } from '../../context/routeConfigurationContext';
+import { pathByRouteName } from '../../util/routes';
 
 /**
  * This component wraps React-Router's Redirect by providing name-based routing.
@@ -18,10 +18,10 @@ import { pathByRouteName } from "../../util/routes";
  * @returns {JSX.Element} redirect component to help navigation
  */
 const NamedRedirect = props => {
-	const routeConfiguration = useRouteConfiguration();
-	const { name, search, state = {}, params = {}, push = false } = props;
-	const pathname = pathByRouteName(name, routeConfiguration, params);
-	return <Redirect to={{ pathname, search, state }} push={push} />;
+  const routeConfiguration = useRouteConfiguration();
+  const { name, search, state = {}, params = {}, push = false } = props;
+  const pathname = pathByRouteName(name, routeConfiguration, params);
+  return <Redirect to={{ pathname, search, state }} push={push} />;
 };
 
 export default NamedRedirect;

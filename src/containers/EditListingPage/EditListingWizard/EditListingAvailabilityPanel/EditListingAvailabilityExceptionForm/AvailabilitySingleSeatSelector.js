@@ -1,9 +1,9 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import { FieldRadioButton } from "../../../../../components";
+import { FieldRadioButton } from '../../../../../components';
 
-import css from "./AvailabilitySingleSeatSelector.module.css";
+import css from './AvailabilitySingleSeatSelector.module.css';
 
 /**
  * A Form Field that allows marking singleSeat availability (allow/block)
@@ -17,33 +17,33 @@ import css from "./AvailabilitySingleSeatSelector.module.css";
  * @returns {JSX.Element} Form Field looking like a radio button
  */
 const AvailabilitySingleSeatSelector = props => {
-	const { rootClassName, className, idPrefix, pristine, intl } = props;
-	const classes = classNames(rootClassName || css.root, className);
+  const { rootClassName, className, idPrefix, pristine, intl } = props;
+  const classes = classNames(rootClassName || css.root, className);
 
-	return (
-		<div className={classes}>
-			<FieldRadioButton
-				id={`${idPrefix}.available`}
-				name="availability"
-				label={intl.formatMessage({
-					id: "EditListingAvailabilityExceptionForm.available",
-				})}
-				value="available"
-				checkedClassName={css.checkedAvailable}
-				showAsRequired={pristine}
-			/>
-			<FieldRadioButton
-				id={`${idPrefix}.not-available`}
-				name="availability"
-				label={intl.formatMessage({
-					id: "EditListingAvailabilityExceptionForm.notAvailable",
-				})}
-				value="not-available"
-				checkedClassName={css.checkedNotAvailable}
-				showAsRequired={pristine}
-			/>
-		</div>
-	);
+  return (
+    <div className={classes}>
+      <FieldRadioButton
+        id={`${idPrefix}.available`}
+        name="availability"
+        label={intl.formatMessage({
+          id: 'EditListingAvailabilityExceptionForm.available',
+        })}
+        value="available"
+        checkedClassName={css.checkedAvailable}
+        showAsRequired={pristine}
+      />
+      <FieldRadioButton
+        id={`${idPrefix}.not-available`}
+        name="availability"
+        label={intl.formatMessage({
+          id: 'EditListingAvailabilityExceptionForm.notAvailable',
+        })}
+        value="not-available"
+        checkedClassName={css.checkedNotAvailable}
+        showAsRequired={pristine}
+      />
+    </div>
+  );
 };
 
 export default AvailabilitySingleSeatSelector;

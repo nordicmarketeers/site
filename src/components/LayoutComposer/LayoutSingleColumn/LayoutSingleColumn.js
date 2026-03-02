@@ -1,9 +1,9 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import LayoutComposer from "../LayoutComposer";
+import LayoutComposer from '../LayoutComposer';
 
-import css from "./LayoutSingleColumn.module.css";
+import css from './LayoutSingleColumn.module.css';
 
 /**
  * Commonly used layout: single column
@@ -19,50 +19,43 @@ import css from "./LayoutSingleColumn.module.css";
  * @returns {JSX.Element} LayoutComposer that expects children to be a function.
  */
 const LayoutSingleColumn = props => {
-	const {
-		className,
-		rootClassName,
-		mainColumnClassName,
-		children,
-		topbar: topbarContent,
-		footer: footerContent,
-		...rest
-	} = props;
+  const {
+    className,
+    rootClassName,
+    mainColumnClassName,
+    children,
+    topbar: topbarContent,
+    footer: footerContent,
+    ...rest
+  } = props;
 
-	const classes = classNames(rootClassName || css.root, className);
-	const layoutAreas = `
+  const classes = classNames(rootClassName || css.root, className);
+  const layoutAreas = `
     topbar
     main
     footer
   `;
 
-	return (
-		<LayoutComposer areas={layoutAreas} className={classes} {...rest}>
-			{layoutProps => {
-				const { Topbar, Main, Footer } = layoutProps;
-				return (
-					<>
-						<Topbar as="header" className={css.topbar}>
-							{topbarContent}
-						</Topbar>
-						<Main
-							as="main"
-							id="main-content"
-							className={classNames(
-								css.main,
-								mainColumnClassName
-							)}
-						>
-							{children}
-						</Main>
-						<Footer>{footerContent}</Footer>
-					</>
-				);
-			}}
-		</LayoutComposer>
-	);
+  return (
+    <LayoutComposer areas={layoutAreas} className={classes} {...rest}>
+      {layoutProps => {
+        const { Topbar, Main, Footer } = layoutProps;
+        return (
+          <>
+            <Topbar as="header" className={css.topbar}>
+              {topbarContent}
+            </Topbar>
+            <Main as="main" id="main-content" className={classNames(css.main, mainColumnClassName)}>
+              {children}
+            </Main>
+            <Footer>{footerContent}</Footer>
+          </>
+        );
+      }}
+    </LayoutComposer>
+  );
 };
 
-LayoutSingleColumn.displayName = "LayoutSingleColumn";
+LayoutSingleColumn.displayName = 'LayoutSingleColumn';
 
 export default LayoutSingleColumn;

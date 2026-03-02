@@ -1,11 +1,11 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import { FormattedMessage, useIntl } from "../../../util/reactIntl";
+import { FormattedMessage, useIntl } from '../../../util/reactIntl';
 
-import { IconAlert, Modal, Button } from "../../../components";
+import { IconAlert, Modal, Button } from '../../../components';
 
-import css from "./DiscardDraftModal.module.css";
+import css from './DiscardDraftModal.module.css';
 
 /**
  * Dispute modal
@@ -21,45 +21,45 @@ import css from "./DiscardDraftModal.module.css";
  * @returns {JSX.Element} Discard draft modal component
  */
 const DiscardDraftModal = props => {
-	const intl = useIntl();
-	const {
-		className,
-		rootClassName,
-		id,
-		isOpen,
-		focusElementId,
-		onCloseModal,
-		onManageDisableScrolling,
-		onDiscardDraft,
-	} = props;
-	const classes = classNames(rootClassName || css.root, className);
+  const intl = useIntl();
+  const {
+    className,
+    rootClassName,
+    id,
+    isOpen,
+    focusElementId,
+    onCloseModal,
+    onManageDisableScrolling,
+    onDiscardDraft,
+  } = props;
+  const classes = classNames(rootClassName || css.root, className);
 
-	return (
-		<Modal
-			id={id}
-			containerClassName={classes}
-			contentClassName={css.modalContent}
-			isOpen={isOpen}
-			onClose={onCloseModal}
-			onManageDisableScrolling={onManageDisableScrolling}
-			focusElementId={focusElementId}
-			usePortal
-			closeButtonMessage={intl.formatMessage({
-				id: "DiscardDraftModal.close",
-			})}
-		>
-			<IconAlert className={css.modalIcon} />
-			<p className={css.modalTitle}>
-				<FormattedMessage id="DiscardDraftModal.title" />
-			</p>
-			<p className={css.modalMessage}>
-				<FormattedMessage id="DiscardDraftModal.message" />
-			</p>
-			<Button onClick={onDiscardDraft} className={css.submitButton}>
-				<FormattedMessage id="DiscardDraftModal.submit" />
-			</Button>
-		</Modal>
-	);
+  return (
+    <Modal
+      id={id}
+      containerClassName={classes}
+      contentClassName={css.modalContent}
+      isOpen={isOpen}
+      onClose={onCloseModal}
+      onManageDisableScrolling={onManageDisableScrolling}
+      focusElementId={focusElementId}
+      usePortal
+      closeButtonMessage={intl.formatMessage({
+        id: 'DiscardDraftModal.close',
+      })}
+    >
+      <IconAlert className={css.modalIcon} />
+      <p className={css.modalTitle}>
+        <FormattedMessage id="DiscardDraftModal.title" />
+      </p>
+      <p className={css.modalMessage}>
+        <FormattedMessage id="DiscardDraftModal.message" />
+      </p>
+      <Button onClick={onDiscardDraft} className={css.submitButton}>
+        <FormattedMessage id="DiscardDraftModal.submit" />
+      </Button>
+    </Modal>
+  );
 };
 
 export default DiscardDraftModal;

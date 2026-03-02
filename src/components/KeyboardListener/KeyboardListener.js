@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from 'react';
 
 /**
  * KeyboardListener component
@@ -11,40 +11,37 @@ import React, { useEffect, useRef } from "react";
  * @returns {JSX.Element}
  */
 const KeyboardListener = props => {
-	const { children, containerId, keyMap, ...rest } = props;
-	const containerRef = useRef(null);
+  const { children, containerId, keyMap, ...rest } = props;
+  const containerRef = useRef(null);
 
-	useEffect(() => {
-		const handleKeyDown = event => {
-			// Only handle events that originated from this component's descendants
-			if (
-				!containerRef.current ||
-				!containerRef.current.contains(event.target)
-			) {
-				return;
-			}
+  useEffect(() => {
+    const handleKeyDown = event => {
+      // Only handle events that originated from this component's descendants
+      if (!containerRef.current || !containerRef.current.contains(event.target)) {
+        return;
+      }
 
-			if (keyMap && keyMap[event.key]) {
-				const { action, callback } = keyMap[event.key];
+      if (keyMap && keyMap[event.key]) {
+        const { action, callback } = keyMap[event.key];
 
-				if (action && callback) {
-					callback(event, containerId, action);
-				}
-			}
-		};
+        if (action && callback) {
+          callback(event, containerId, action);
+        }
+      }
+    };
 
-		document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
 
-		return () => {
-			document.removeEventListener("keydown", handleKeyDown);
-		};
-	}, [containerId, keyMap]);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [containerId, keyMap]);
 
-	return (
-		<div ref={containerRef} {...rest}>
-			{children}
-		</div>
-	);
+  return (
+    <div ref={containerRef} {...rest}>
+      {children}
+    </div>
+  );
 };
 
 export default KeyboardListener;

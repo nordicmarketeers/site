@@ -1,7 +1,7 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import css from "./BlockContainer.module.css";
+import css from './BlockContainer.module.css';
 
 /**
  * This element can be used to wrap some common styles and features,
@@ -15,12 +15,12 @@ import css from "./BlockContainer.module.css";
  * @returns {JSX.Element} containing wrapper that can be used inside Block components.
  */
 const BlockContainer = props => {
-	const { className, rootClassName, as, ...otherProps } = props;
-	const Tag = as || "div";
-	const classes = classNames(rootClassName || css.root, className);
+  const { className, rootClassName, as, ...otherProps } = props;
+  const Tag = as || 'div';
+  const classes = classNames(rootClassName || css.root, className);
 
-	// Note: otherProps contains "children" too!
-	return <Tag className={classes} {...otherProps} />;
+  // Note: otherProps contains "children" too!
+  return <Tag className={classes} {...otherProps} />;
 };
 
 export default BlockContainer;

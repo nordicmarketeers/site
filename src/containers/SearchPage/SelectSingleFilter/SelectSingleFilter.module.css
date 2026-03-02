@@ -1,4 +1,4 @@
-@import "../../../styles/customMediaQueries.css";
+@import '../../../styles/customMediaQueries.css';
 
 .root {
 }
@@ -7,10 +7,10 @@
 }
 
 .labelPlainSelected {
-	color: var(--marketplaceColor);
+  color: var(--marketplaceColor);
 
-	&:focus,
-	&:hover {
-		color: var(--marketplaceColorDark);
-	}
+  &:focus,
+  &:hover {
+    color: var(--marketplaceColorDark);
+  }
 }

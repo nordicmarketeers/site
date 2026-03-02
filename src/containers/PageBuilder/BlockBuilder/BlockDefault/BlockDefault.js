@@ -1,19 +1,19 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import Field, { hasDataInFields } from "../../Field";
-import BlockContainer from "../BlockContainer";
+import Field, { hasDataInFields } from '../../Field';
+import BlockContainer from '../BlockContainer';
 
-import css from "./BlockDefault.module.css";
+import css from './BlockDefault.module.css';
 
 const FieldMedia = props => {
-	const { className, media, sizes, options } = props;
-	const hasMediaField = hasDataInFields([media], options);
-	return hasMediaField ? (
-		<div className={classNames(className, css.media)}>
-			<Field data={media} sizes={sizes} options={options} />
-		</div>
-	) : null;
+  const { className, media, sizes, options } = props;
+  const hasMediaField = hasDataInFields([media], options);
+  return hasMediaField ? (
+    <div className={classNames(className, css.media)}>
+      <Field data={media} sizes={sizes} options={options} />
+    </div>
+  ) : null;
 };
 
 /**
@@ -45,62 +45,49 @@ const FieldMedia = props => {
  * @returns {JSX.Element} component that renders block type: 'defaultBlock'
  */
 const BlockDefault = props => {
-	const {
-		blockId,
-		className,
-		rootClassName,
-		mediaClassName,
-		textClassName,
-		ctaButtonClass,
-		title,
-		text,
-		callToAction,
-		media,
-		responsiveImageSizes,
-		options,
-		alignment,
-	} = props;
-	const classes = classNames(rootClassName || css.root, className);
-	const hasTextComponentFields = hasDataInFields(
-		[title, text, callToAction],
-		options
-	);
+  const {
+    blockId,
+    className,
+    rootClassName,
+    mediaClassName,
+    textClassName,
+    ctaButtonClass,
+    title,
+    text,
+    callToAction,
+    media,
+    responsiveImageSizes,
+    options,
+    alignment,
+  } = props;
+  const classes = classNames(rootClassName || css.root, className);
+  const hasTextComponentFields = hasDataInFields([title, text, callToAction], options);
 
-	const alignmentClasses = {
-		left: css.alignLeft,
-		center: css.alignCenter,
-		right: css.alignRight,
-	};
+  const alignmentClasses = {
+    left: css.alignLeft,
+    center: css.alignCenter,
+    right: css.alignRight,
+  };
 
-	const alignmentClass = alignmentClasses[alignment];
+  const alignmentClass = alignmentClasses[alignment];
 
-	return (
-		<BlockContainer id={blockId} className={classes}>
-			<FieldMedia
-				media={media}
-				sizes={responsiveImageSizes}
-				className={mediaClassName}
-				options={options}
-			/>
-			{hasTextComponentFields ? (
-				<div
-					className={classNames(
-						textClassName,
-						alignmentClass,
-						css.text
-					)}
-				>
-					<Field data={title} options={options} />
-					<Field data={text} options={options} />
-					<Field
-						data={callToAction}
-						className={ctaButtonClass}
-						options={options}
-					/>
-				</div>
-			) : null}
-		</BlockContainer>
-	);
+  return (
+    <BlockContainer id={blockId} className={classes}>
+      <FieldMedia
+        media={media}
+        sizes={responsiveImageSizes}
+        className={mediaClassName}
+        options={options}
+      />
+      {hasTextComponentFields ? (
+        <div className={classNames(textClassName, alignmentClass, css.text)}>
+          <Field data={title} options={options} />
+          <Field data={text} options={options} />
+          <Field data={callToAction} className={ctaButtonClass} options={options} />
+        </div>
+      ) : null}
+    </BlockContainer>
+  );
 };
 
 export default BlockDefault;

@@ -1,7 +1,7 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import css from "./Topbar.module.css";
+import css from './Topbar.module.css';
 
 /**
  * Search icon (magnifier icon)
@@ -13,32 +13,32 @@ import css from "./Topbar.module.css";
  * @returns {JSX.Element} search icon
  */
 const SearchIcon = props => {
-	const { className, rootClassName, ariaLabel } = props;
-	const classes = classNames(rootClassName || css.rootSearchIcon, className);
+  const { className, rootClassName, ariaLabel } = props;
+  const classes = classNames(rootClassName || css.rootSearchIcon, className);
 
-	return (
-		<svg
-			className={classes}
-			width="18"
-			height="18"
-			viewBox="0 0 18 18"
-			xmlns="http://www.w3.org/2000/svg"
-			role="img"
-			aria-label={ariaLabel}
-		>
-			<g
-				transform="matrix(-1 0 0 1 17 1)"
-				strokeWidth="2"
-				fill="none"
-				fillRule="evenodd"
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			>
-				<path d="M11.733 11.733l3.727 3.727" />
-				<circle cx="6.4" cy="6.4" r="6.4" />
-			</g>
-		</svg>
-	);
+  return (
+    <svg
+      className={classes}
+      width="18"
+      height="18"
+      viewBox="0 0 18 18"
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label={ariaLabel}
+    >
+      <g
+        transform="matrix(-1 0 0 1 17 1)"
+        strokeWidth="2"
+        fill="none"
+        fillRule="evenodd"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M11.733 11.733l3.727 3.727" />
+        <circle cx="6.4" cy="6.4" r="6.4" />
+      </g>
+    </svg>
+  );
 };
 
 export default SearchIcon;

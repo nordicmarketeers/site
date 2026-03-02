@@ -1,2 +1,2 @@
-import CustomConsultantsSection from "./CustomSectionConsultants";
+import CustomConsultantsSection from './CustomSectionConsultants';
 export default CustomConsultantsSection;

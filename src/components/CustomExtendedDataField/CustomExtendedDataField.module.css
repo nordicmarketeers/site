@@ -1,39 +1,39 @@
-@import "../../styles/customMediaQueries.css";
+@import '../../styles/customMediaQueries.css';
 
 .customField {
-	margin-bottom: 24px;
+  margin-bottom: 24px;
 
-	&:last-child {
-		margin-bottom: 0;
-	}
+  &:last-child {
+    margin-bottom: 0;
+  }
 
-	@media (--viewportMedium) {
-		margin-bottom: 32px;
+  @media (--viewportMedium) {
+    margin-bottom: 32px;
 
-		&:last-child {
-			margin-bottom: 0;
-		}
-	}
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
 
-	animation: fadeIn 500ms 0ms forwards;
+  animation: fadeIn 500ms 0ms forwards;
 }
 
 /* Animations on the custom dropdowns with search breaks them */
 .customField:has(legend) {
-	animation: none;
+  animation: none;
 }
 
 .hide {
-	display: none;
+  display: none;
 }
 
 @keyframes fadeIn {
-	from {
-		transform: translateY(20px);
-		opacity: 0;
-	}
-	to {
-		transform: translateY(0);
-		opacity: 1;
-	}
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }

@@ -1,13 +1,13 @@
-import React from "react";
-import { useIntl } from "react-intl";
-import classNames from "classnames";
+import React from 'react';
+import { useIntl } from 'react-intl';
+import classNames from 'classnames';
 
-import { types as sdkTypes } from "../../util/sdkLoader";
-import { propTypes } from "../../util/types";
+import { types as sdkTypes } from '../../util/sdkLoader';
+import { propTypes } from '../../util/types';
 
-import { ResponsiveImage } from "../../components";
+import { ResponsiveImage } from '../../components';
 
-import css from "./ResponsiveBackgroundImageContainer.module.css";
+import css from './ResponsiveBackgroundImageContainer.module.css';
 
 const { UUID } = sdkTypes;
 
@@ -19,21 +19,21 @@ const { UUID } = sdkTypes;
  * @returns image entity (contains: id, type, attributes.variants)
  */
 const createFakeImageEntity = url => {
-	return {
-		id: new UUID("empty"),
-		type: "image",
-		attributes: {
-			variants: {
-				scaled: {
-					name: "scaled",
-					// width and height don't matter since we use the image with object-fit
-					width: 1200,
-					height: 800,
-					url,
-				},
-			},
-		},
-	};
+  return {
+    id: new UUID('empty'),
+    type: 'image',
+    attributes: {
+      variants: {
+        scaled: {
+          name: 'scaled',
+          // width and height don't matter since we use the image with object-fit
+          width: 1200,
+          height: 800,
+          url,
+        },
+      },
+    },
+  };
 };
 
 /**
@@ -54,57 +54,53 @@ const createFakeImageEntity = url => {
  * @returns {JSX.Element}
  */
 const ResponsiveBackgroundImageContainer = props => {
-	const intl = useIntl();
-	const {
-		className,
-		rootClassName,
-		as,
-		children,
-		childrenWrapperClassName,
-		image,
-		alt,
-		sizes,
-		useOverlay,
-		...otherProps
-	} = props;
-	const Tag = as || "div";
+  const intl = useIntl();
+  const {
+    className,
+    rootClassName,
+    as,
+    children,
+    childrenWrapperClassName,
+    image,
+    alt,
+    sizes,
+    useOverlay,
+    ...otherProps
+  } = props;
+  const Tag = as || 'div';
 
-	const imageEntity =
-		typeof image === "string" ? createFakeImageEntity(image) : image;
-	const variants = imageEntity?.attributes?.variants || {};
-	const variantNames = Object.keys(variants);
+  const imageEntity = typeof image === 'string' ? createFakeImageEntity(image) : image;
+  const variants = imageEntity?.attributes?.variants || {};
+  const variantNames = Object.keys(variants);
 
-	const classes = classNames(rootClassName || css.root, className);
-	const overlayMaybe = useOverlay ? (
-		<div className={css.overlay}></div>
-	) : null;
-	const childrenWrapperClassNameMaybe = childrenWrapperClassName
-		? { className: childrenWrapperClassName }
-		: {};
+  const classes = classNames(rootClassName || css.root, className);
+  const overlayMaybe = useOverlay ? <div className={css.overlay}></div> : null;
+  const childrenWrapperClassNameMaybe = childrenWrapperClassName
+    ? { className: childrenWrapperClassName }
+    : {};
 
-	return (
-		<Tag className={classes} {...otherProps}>
-			<div className={css.backgroundImageWrapper}>
-				{imageEntity ? (
-					<ResponsiveImage
-						className={css.backgroundImage}
-						image={imageEntity}
-						alt={
-							alt ||
-							intl.formatMessage({
-								id:
-									"ResponsiveBackgroundImageContainer.backgroundImageAlt",
-							})
-						}
-						variants={variantNames}
-						sizes={sizes}
-					/>
-				) : null}
-				{overlayMaybe}
-			</div>
-			<div {...childrenWrapperClassNameMaybe}>{children}</div>
-		</Tag>
-	);
+  return (
+    <Tag className={classes} {...otherProps}>
+      <div className={css.backgroundImageWrapper}>
+        {imageEntity ? (
+          <ResponsiveImage
+            className={css.backgroundImage}
+            image={imageEntity}
+            alt={
+              alt ||
+              intl.formatMessage({
+                id: 'ResponsiveBackgroundImageContainer.backgroundImageAlt',
+              })
+            }
+            variants={variantNames}
+            sizes={sizes}
+          />
+        ) : null}
+        {overlayMaybe}
+      </div>
+      <div {...childrenWrapperClassNameMaybe}>{children}</div>
+    </Tag>
+  );
 };
 
 export default ResponsiveBackgroundImageContainer;

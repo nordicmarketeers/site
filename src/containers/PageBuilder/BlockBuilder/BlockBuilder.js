@@ -1,18 +1,18 @@
-import React from "react";
+import React from 'react';
 
 // Block components
-import BlockDefault from "./BlockDefault";
-import BlockFooter from "./BlockFooter";
-import BlockSocialMediaLink from "./BlockSocialMediaLink";
+import BlockDefault from './BlockDefault';
+import BlockFooter from './BlockFooter';
+import BlockSocialMediaLink from './BlockSocialMediaLink';
 
 ///////////////////////////////////////////
 // Mapping of block types and components //
 ///////////////////////////////////////////
 
 const defaultBlockComponents = {
-	defaultBlock: { component: BlockDefault },
-	footerBlock: { component: BlockFooter },
-	socialMediaLink: { component: BlockSocialMediaLink },
+  defaultBlock: { component: BlockDefault },
+  footerBlock: { component: BlockFooter },
+  socialMediaLink: { component: BlockSocialMediaLink },
 };
 
 ////////////////////
@@ -58,53 +58,48 @@ const defaultBlockComponents = {
  * @returns {JSX.Element} containing form that allows adding availability exceptions
  */
 const BlockBuilder = props => {
-	const { blocks = [], sectionId, options, ...otherProps } = props;
+  const { blocks = [], sectionId, options, ...otherProps } = props;
 
-	// Extract block & field component mappings from props
-	// If external mapping has been included for fields
-	// E.g. { h1: { component: MyAwesomeHeader } }
-	const { blockComponents, fieldComponents } = options || {};
-	const blockOptionsMaybe = fieldComponents
-		? { options: { fieldComponents } }
-		: {};
+  // Extract block & field component mappings from props
+  // If external mapping has been included for fields
+  // E.g. { h1: { component: MyAwesomeHeader } }
+  const { blockComponents, fieldComponents } = options || {};
+  const blockOptionsMaybe = fieldComponents ? { options: { fieldComponents } } : {};
 
-	// If there's no block, we can't render the correct block component
-	if (!blocks || blocks.length === 0) {
-		return null;
-	}
+  // If there's no block, we can't render the correct block component
+  if (!blocks || blocks.length === 0) {
+    return null;
+  }
 
-	// Selection of Block components
-	// Combine component-mapping from props together with the default one:
-	const components = { ...defaultBlockComponents, ...blockComponents };
+  // Selection of Block components
+  // Combine component-mapping from props together with the default one:
+  const components = { ...defaultBlockComponents, ...blockComponents };
 
-	return (
-		<>
-			{blocks.map((block, index) => {
-				const config = components[block.blockType];
-				const Block = config?.component;
-				const blockId =
-					block.blockId || `${sectionId}-block-${index + 1}`;
+  return (
+    <>
+      {blocks.map((block, index) => {
+        const config = components[block.blockType];
+        const Block = config?.component;
+        const blockId = block.blockId || `${sectionId}-block-${index + 1}`;
 
-				if (Block) {
-					return (
-						<Block
-							key={`${blockId}_i${index}`}
-							{...block}
-							blockId={blockId}
-							{...blockOptionsMaybe}
-							{...otherProps}
-						/>
-					);
-				} else {
-					// If the block type is unknown, the app can't know what to render
-					console.warn(
-						`Unknown block type (${block.blockType}) detected inside (${sectionId}).`
-					);
-					return null;
-				}
-			})}
-		</>
-	);
+        if (Block) {
+          return (
+            <Block
+              key={`${blockId}_i${index}`}
+              {...block}
+              blockId={blockId}
+              {...blockOptionsMaybe}
+              {...otherProps}
+            />
+          );
+        } else {
+          // If the block type is unknown, the app can't know what to render
+          console.warn(`Unknown block type (${block.blockType}) detected inside (${sectionId}).`);
+          return null;
+        }
+      })}
+    </>
+  );
 };
 
 export default BlockBuilder;

@@ -1,9 +1,9 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import Field from "../../Field";
+import Field from '../../Field';
 
-import css from "./SectionContainer.module.css";
+import css from './SectionContainer.module.css';
 
 /**
  * @typedef {Object} FieldComponentConfig
@@ -28,32 +28,23 @@ import css from "./SectionContainer.module.css";
  * @returns {JSX.Element} containing wrapper that can be used inside Block components.
  */
 const SectionContainer = props => {
-	const {
-		className,
-		rootClassName,
-		id,
-		as,
-		children,
-		appearance,
-		options,
-		...otherProps
-	} = props;
-	const Tag = as || "section";
-	const classes = classNames(rootClassName || css.root, className);
+  const { className, rootClassName, id, as, children, appearance, options, ...otherProps } = props;
+  const Tag = as || 'section';
+  const classes = classNames(rootClassName || css.root, className);
 
-	return (
-		<Tag className={classes} id={id} {...otherProps}>
-			{appearance?.fieldType === "customAppearance" ? (
-				<Field
-					data={{ alt: `Background image for ${id}`, ...appearance }}
-					className={className}
-					options={options}
-				/>
-			) : null}
+  return (
+    <Tag className={classes} id={id} {...otherProps}>
+      {appearance?.fieldType === 'customAppearance' ? (
+        <Field
+          data={{ alt: `Background image for ${id}`, ...appearance }}
+          className={className}
+          options={options}
+        />
+      ) : null}
 
-			<div className={css.sectionContent}>{children}</div>
-		</Tag>
-	);
+      <div className={css.sectionContent}>{children}</div>
+    </Tag>
+  );
 };
 
 export default SectionContainer;

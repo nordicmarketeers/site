@@ -1,34 +1,25 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import { validateInteger } from "../../../../../util/validators";
+import { validateInteger } from '../../../../../util/validators';
 
-import { FieldTextInput } from "../../../../../components";
+import { FieldTextInput } from '../../../../../components';
 
-import css from "./FieldSeatsInput.module.css";
+import css from './FieldSeatsInput.module.css';
 
 const validate = (value, min, max, intl) => {
-	const requiredMsg = intl.formatMessage({
-		id: "FieldSeatsInput.seatsError",
-	});
-	const numberTooSmallMessage = intl.formatMessage(
-		{ id: "FieldSeatsInput.numberTooSmall" },
-		{ min }
-	);
-	const numberTooBigMessage = intl.formatMessage(
-		{ id: "FieldSeatsInput.numberTooBig" },
-		{ max }
-	);
+  const requiredMsg = intl.formatMessage({
+    id: 'FieldSeatsInput.seatsError',
+  });
+  const numberTooSmallMessage = intl.formatMessage(
+    { id: 'FieldSeatsInput.numberTooSmall' },
+    { min }
+  );
+  const numberTooBigMessage = intl.formatMessage({ id: 'FieldSeatsInput.numberTooBig' }, { max });
 
-	return value == null
-		? requiredMsg
-		: validateInteger(
-				value,
-				max,
-				min,
-				numberTooSmallMessage,
-				numberTooBigMessage
-		  );
+  return value == null
+    ? requiredMsg
+    : validateInteger(value, max, min, numberTooSmallMessage, numberTooBigMessage);
 };
 
 /**
@@ -46,58 +37,42 @@ const validate = (value, min, max, intl) => {
  * @returns {JSX.Element} seats input for the React Final Form.
  */
 const FieldSeatsInput = props => {
-	const {
-		rootClassName,
-		className,
-		inputRootClass,
-		id,
-		name,
-		unitType,
-		intl,
-	} = props;
-	const classes = classNames(rootClassName || css.root, className);
+  const { rootClassName, className, inputRootClass, id, name, unitType, intl } = props;
+  const classes = classNames(rootClassName || css.root, className);
 
-	return (
-		<div className={classes}>
-			<FieldTextInput
-				className={css.customField}
-				inputRootClass={inputRootClass}
-				id={id}
-				name={name}
-				type="number"
-				step="1"
-				min="0"
-				max={`${Number.MAX_SAFE_INTEGER}`}
-				parse={value => {
-					const parsed = Number.parseInt(value, 10);
-					return Number.isNaN(parsed) ? null : parsed;
-				}}
-				label={intl.formatMessage(
-					{ id: "FieldSeatsInput.seatsLabel" },
-					{ unitType }
-				)}
-				placeholder={intl.formatMessage(
-					{ id: "FieldSeatsInput.seatsPlaceholder" },
-					{ unitType }
-				)}
-				validate={value =>
-					validate(value, 0, Number.MAX_SAFE_INTEGER, intl)
-				}
-				onWheel={e => {
-					// fix: number input should not change value on scroll
-					if (e.target === document.activeElement) {
-						// Prevent the input value change, because we prefer page scrolling
-						e.target.blur();
+  return (
+    <div className={classes}>
+      <FieldTextInput
+        className={css.customField}
+        inputRootClass={inputRootClass}
+        id={id}
+        name={name}
+        type="number"
+        step="1"
+        min="0"
+        max={`${Number.MAX_SAFE_INTEGER}`}
+        parse={value => {
+          const parsed = Number.parseInt(value, 10);
+          return Number.isNaN(parsed) ? null : parsed;
+        }}
+        label={intl.formatMessage({ id: 'FieldSeatsInput.seatsLabel' }, { unitType })}
+        placeholder={intl.formatMessage({ id: 'FieldSeatsInput.seatsPlaceholder' }, { unitType })}
+        validate={value => validate(value, 0, Number.MAX_SAFE_INTEGER, intl)}
+        onWheel={e => {
+          // fix: number input should not change value on scroll
+          if (e.target === document.activeElement) {
+            // Prevent the input value change, because we prefer page scrolling
+            e.target.blur();
 
-						// Refocus immediately, on the next tick (after the current function is done)
-						setTimeout(() => {
-							e.target.focus();
-						}, 0);
-					}
-				}}
-			/>
-		</div>
-	);
+            // Refocus immediately, on the next tick (after the current function is done)
+            setTimeout(() => {
+              e.target.focus();
+            }, 0);
+          }
+        }}
+      />
+    </div>
+  );
 };
 
 export default FieldSeatsInput;

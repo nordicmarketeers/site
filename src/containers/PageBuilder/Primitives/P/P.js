@@ -1,7 +1,7 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import css from "./P.module.css";
+import css from './P.module.css';
 
 /**
  * Paragraph <p>
@@ -14,10 +14,10 @@ import css from "./P.module.css";
  * @returns {JSX.Element} <p> element
  */
 export const P = React.forwardRef((props, ref) => {
-	const { className, rootClassName, ...otherProps } = props;
-	const classes = classNames(rootClassName || css.p, className);
+  const { className, rootClassName, ...otherProps } = props;
+  const classes = classNames(rootClassName || css.p, className);
 
-	return <p className={classes} {...otherProps} ref={ref} />;
+  return <p className={classes} {...otherProps} ref={ref} />;
 });
 
-P.displayName = "P";
+P.displayName = 'P';

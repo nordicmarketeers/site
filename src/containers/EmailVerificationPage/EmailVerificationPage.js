@@ -1,28 +1,28 @@
-import React from "react";
-import { compose } from "redux";
-import { connect } from "react-redux";
-import { withRouter } from "react-router-dom";
+import React from 'react';
+import { compose } from 'redux';
+import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 
-import { useConfiguration } from "../../context/configurationContext";
-import { FormattedMessage, useIntl } from "../../util/reactIntl";
-import { propTypes } from "../../util/types";
-import { parse } from "../../util/urlHelpers";
-import { ensureCurrentUser } from "../../util/data";
-import { verify } from "../../ducks/emailVerification.duck";
-import { isScrollingDisabled } from "../../ducks/ui.duck";
+import { useConfiguration } from '../../context/configurationContext';
+import { FormattedMessage, useIntl } from '../../util/reactIntl';
+import { propTypes } from '../../util/types';
+import { parse } from '../../util/urlHelpers';
+import { ensureCurrentUser } from '../../util/data';
+import { verify } from '../../ducks/emailVerification.duck';
+import { isScrollingDisabled } from '../../ducks/ui.duck';
 import {
-	Page,
-	ResponsiveBackgroundImageContainer,
-	NamedRedirect,
-	LayoutSingleColumn,
-} from "../../components";
+  Page,
+  ResponsiveBackgroundImageContainer,
+  NamedRedirect,
+  LayoutSingleColumn,
+} from '../../components';
 
-import TopbarContainer from "../../containers/TopbarContainer/TopbarContainer";
-import FooterContainer from "../../containers/FooterContainer/FooterContainer";
+import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
+import FooterContainer from '../../containers/FooterContainer/FooterContainer';
 
-import EmailVerificationForm from "./EmailVerificationForm/EmailVerificationForm";
+import EmailVerificationForm from './EmailVerificationForm/EmailVerificationForm';
 
-import css from "./EmailVerificationPage.module.css";
+import css from './EmailVerificationPage.module.css';
 
 /**
   Parse verification token from URL
@@ -36,14 +36,14 @@ import css from "./EmailVerificationPage.module.css";
   parses the token to number.
 */
 const parseVerificationToken = search => {
-	const urlParams = parse(search);
-	const verificationToken = urlParams.t;
+  const urlParams = parse(search);
+  const verificationToken = urlParams.t;
 
-	if (verificationToken) {
-		return `${verificationToken}`;
-	}
+  if (verificationToken) {
+    return `${verificationToken}`;
+  }
 
-	return null;
+  return null;
 };
 
 /**
@@ -62,96 +62,86 @@ const parseVerificationToken = search => {
  * @returns {JSX.Element} email verification page component
  */
 export const EmailVerificationPageComponent = props => {
-	const config = useConfiguration();
-	const intl = useIntl();
-	const {
-		currentUser,
-		scrollingDisabled,
-		submitVerification,
-		isVerified,
-		emailVerificationInProgress,
-		verificationError,
-		location,
-	} = props;
+  const config = useConfiguration();
+  const intl = useIntl();
+  const {
+    currentUser,
+    scrollingDisabled,
+    submitVerification,
+    isVerified,
+    emailVerificationInProgress,
+    verificationError,
+    location,
+  } = props;
 
-	const initialValues = {
-		verificationToken: parseVerificationToken(
-			location ? location.search : null
-		),
-	};
-	const user = ensureCurrentUser(currentUser);
+  const initialValues = {
+    verificationToken: parseVerificationToken(location ? location.search : null),
+  };
+  const user = ensureCurrentUser(currentUser);
 
-	// The first attempt to verify email is done when the page is loaded
-	// If the verify API call is successfull and the user has verified email
-	// We can redirect user forward from email verification page.
-	if (
-		isVerified &&
-		user.attributes.emailVerified &&
-		user.attributes.pendingEmail == null
-	) {
-		return <NamedRedirect name="LandingPage" />;
-	}
+  // The first attempt to verify email is done when the page is loaded
+  // If the verify API call is successfull and the user has verified email
+  // We can redirect user forward from email verification page.
+  if (isVerified && user.attributes.emailVerified && user.attributes.pendingEmail == null) {
+    return <NamedRedirect name="LandingPage" />;
+  }
 
-	return (
-		<Page
-			title={intl.formatMessage({
-				id: "EmailVerificationPage.title",
-			})}
-			scrollingDisabled={scrollingDisabled}
-			referrer="origin"
-		>
-			<LayoutSingleColumn
-				mainColumnClassName={css.layoutWrapperMain}
-				topbar={<TopbarContainer />}
-				footer={<FooterContainer />}
-			>
-				<ResponsiveBackgroundImageContainer
-					className={css.root}
-					childrenWrapperClassName={css.contentContainer}
-					as="section"
-					image={config.branding.brandImage}
-					sizes="100%"
-					useOverlay
-				>
-					<div className={css.content}>
-						{user.id ? (
-							<EmailVerificationForm
-								initialValues={initialValues}
-								onSubmit={submitVerification}
-								currentUser={user}
-								inProgress={emailVerificationInProgress}
-								verificationError={verificationError}
-							/>
-						) : (
-							<FormattedMessage id="EmailVerificationPage.loadingUserInformation" />
-						)}
-					</div>
-				</ResponsiveBackgroundImageContainer>
-			</LayoutSingleColumn>
-		</Page>
-	);
+  return (
+    <Page
+      title={intl.formatMessage({
+        id: 'EmailVerificationPage.title',
+      })}
+      scrollingDisabled={scrollingDisabled}
+      referrer="origin"
+    >
+      <LayoutSingleColumn
+        mainColumnClassName={css.layoutWrapperMain}
+        topbar={<TopbarContainer />}
+        footer={<FooterContainer />}
+      >
+        <ResponsiveBackgroundImageContainer
+          className={css.root}
+          childrenWrapperClassName={css.contentContainer}
+          as="section"
+          image={config.branding.brandImage}
+          sizes="100%"
+          useOverlay
+        >
+          <div className={css.content}>
+            {user.id ? (
+              <EmailVerificationForm
+                initialValues={initialValues}
+                onSubmit={submitVerification}
+                currentUser={user}
+                inProgress={emailVerificationInProgress}
+                verificationError={verificationError}
+              />
+            ) : (
+              <FormattedMessage id="EmailVerificationPage.loadingUserInformation" />
+            )}
+          </div>
+        </ResponsiveBackgroundImageContainer>
+      </LayoutSingleColumn>
+    </Page>
+  );
 };
 
 const mapStateToProps = state => {
-	const { currentUser } = state.user;
-	const {
-		isVerified,
-		verificationError,
-		verificationInProgress,
-	} = state.emailVerification;
-	return {
-		isVerified,
-		verificationError,
-		emailVerificationInProgress: verificationInProgress,
-		currentUser,
-		scrollingDisabled: isScrollingDisabled(state),
-	};
+  const { currentUser } = state.user;
+  const { isVerified, verificationError, verificationInProgress } = state.emailVerification;
+  return {
+    isVerified,
+    verificationError,
+    emailVerificationInProgress: verificationInProgress,
+    currentUser,
+    scrollingDisabled: isScrollingDisabled(state),
+  };
 };
 
 const mapDispatchToProps = dispatch => ({
-	submitVerification: ({ verificationToken }) => {
-		return dispatch(verify(verificationToken));
-	},
+  submitVerification: ({ verificationToken }) => {
+    return dispatch(verify(verificationToken));
+  },
 });
 
 // Note: it is important that the withRouter HOC is **outside** the
@@ -161,11 +151,8 @@ const mapDispatchToProps = dispatch => ({
 //
 // See: https://github.com/ReactTraining/react-router/issues/4671
 const EmailVerificationPage = compose(
-	withRouter,
-	connect(
-		mapStateToProps,
-		mapDispatchToProps
-	)
+  withRouter,
+  connect(mapStateToProps, mapDispatchToProps)
 )(EmailVerificationPageComponent);
 
 export default EmailVerificationPage;

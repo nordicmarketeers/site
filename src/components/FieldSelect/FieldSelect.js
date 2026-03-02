@@ -1,72 +1,72 @@
-import React from "react";
-import { Field } from "react-final-form";
-import classNames from "classnames";
-import { ValidationError } from "../../components";
+import React from 'react';
+import { Field } from 'react-final-form';
+import classNames from 'classnames';
+import { ValidationError } from '../../components';
 
-import css from "./FieldSelect.module.css";
+import css from './FieldSelect.module.css';
 
 const FieldSelectComponent = props => {
-	const {
-		rootClassName,
-		className,
-		selectClassName,
-		labelClassName,
-		id,
-		label,
-		input,
-		meta,
-		children,
-		onChange,
-		showLabelAsDisabled,
-		...rest
-	} = props;
+  const {
+    rootClassName,
+    className,
+    selectClassName,
+    labelClassName,
+    id,
+    label,
+    input,
+    meta,
+    children,
+    onChange,
+    showLabelAsDisabled,
+    ...rest
+  } = props;
 
-	if (label && !id) {
-		throw new Error("id required when a label is given");
-	}
+  if (label && !id) {
+    throw new Error('id required when a label is given');
+  }
 
-	const { valid, invalid, touched, error } = meta;
+  const { valid, invalid, touched, error } = meta;
 
-	// Error message and input error styles are only shown if the
-	// field has been touched and the validation has failed.
-	const hasError = touched && invalid && error;
+  // Error message and input error styles are only shown if the
+  // field has been touched and the validation has failed.
+  const hasError = touched && invalid && error;
 
-	const selectClasses = classNames({
-		[selectClassName]: selectClassName,
-		[css.selectError]: hasError,
-	});
-	const handleChange = e => {
-		input.onChange(e);
-		if (onChange) {
-			onChange(e.currentTarget.value);
-		}
-	};
+  const selectClasses = classNames({
+    [selectClassName]: selectClassName,
+    [css.selectError]: hasError,
+  });
+  const handleChange = e => {
+    input.onChange(e);
+    if (onChange) {
+      onChange(e.currentTarget.value);
+    }
+  };
 
-	const selectProps = {
-		className: selectClasses,
-		id,
-		...input,
-		onChange: handleChange,
-		...rest,
-	};
+  const selectProps = {
+    className: selectClasses,
+    id,
+    ...input,
+    onChange: handleChange,
+    ...rest,
+  };
 
-	const labelClasses = classNames({
-		[css.labelDisabled]: showLabelAsDisabled,
-		[labelClassName]: !!labelClassName,
-	});
+  const labelClasses = classNames({
+    [css.labelDisabled]: showLabelAsDisabled,
+    [labelClassName]: !!labelClassName,
+  });
 
-	const classes = classNames(rootClassName || css.root, className);
-	return (
-		<div className={classes}>
-			{label ? (
-				<label htmlFor={id} className={labelClasses}>
-					{label}
-				</label>
-			) : null}
-			<select {...selectProps}>{children}</select>
-			<ValidationError fieldMeta={meta} />
-		</div>
-	);
+  const classes = classNames(rootClassName || css.root, className);
+  return (
+    <div className={classes}>
+      {label ? (
+        <label htmlFor={id} className={labelClasses}>
+          {label}
+        </label>
+      ) : null}
+      <select {...selectProps}>{children}</select>
+      <ValidationError fieldMeta={meta} />
+    </div>
+  );
 };
 
 /**
@@ -86,7 +86,7 @@ const FieldSelectComponent = props => {
  * @returns {JSX.Element} Final Form Field containing <select> input
  */
 const FieldSelect = props => {
-	return <Field component={FieldSelectComponent} {...props} />;
+  return <Field component={FieldSelectComponent} {...props} />;
 };
 
 export default FieldSelect;

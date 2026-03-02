@@ -1,10 +1,10 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import Field, { hasDataInFields } from "../../Field";
-import BlockContainer from "../BlockContainer";
+import Field, { hasDataInFields } from '../../Field';
+import BlockContainer from '../BlockContainer';
 
-import css from "./BlockFooter.module.css";
+import css from './BlockFooter.module.css';
 
 /**
  * @typedef {Object} FieldComponentConfig
@@ -30,29 +30,22 @@ import css from "./BlockFooter.module.css";
  * @returns {JSX.Element} component that renders block type: 'footerBlock'
  */
 const BlockFooter = props => {
-	const {
-		blockId,
-		className,
-		rootClassName,
-		textClassName,
-		text,
-		options,
-	} = props;
-	const classes = classNames(rootClassName || css.root, className);
-	const hasTextComponentFields = hasDataInFields([text], options);
+  const { blockId, className, rootClassName, textClassName, text, options } = props;
+  const classes = classNames(rootClassName || css.root, className);
+  const hasTextComponentFields = hasDataInFields([text], options);
 
-	return (
-		<BlockContainer id={blockId} className={classes}>
-			{hasTextComponentFields ? (
-				<nav
-					className={classNames(textClassName, css.text)}
-					aria-label={blockId || "Footer navigation"}
-				>
-					<Field data={text} options={options} />
-				</nav>
-			) : null}
-		</BlockContainer>
-	);
+  return (
+    <BlockContainer id={blockId} className={classes}>
+      {hasTextComponentFields ? (
+        <nav
+          className={classNames(textClassName, css.text)}
+          aria-label={blockId || 'Footer navigation'}
+        >
+          <Field data={text} options={options} />
+        </nav>
+      ) : null}
+    </BlockContainer>
+  );
 };
 
 export default BlockFooter;

@@ -6,18 +6,18 @@
  *
  */
 
-import * as Sentry from "@sentry/browser";
-import appSettings from "../config/settings";
+import * as Sentry from '@sentry/browser';
+import appSettings from '../config/settings';
 
 const ingoreErrorsMap = {
-	["ResizeObserver loop limit exceeded"]: true, // Some exotic browsers seems to emit these.
-	["Error reading"]: true, // Ignore file reader errors (ImageFromFile)
-	["AxiosError: Network Error"]: true,
+  ['ResizeObserver loop limit exceeded']: true, // Some exotic browsers seems to emit these.
+  ['Error reading']: true, // Ignore file reader errors (ImageFromFile)
+  ['AxiosError: Network Error']: true,
 };
 
 const pickSelectedErrors = (ignored, entry) => {
-	const [key, value] = entry;
-	return value === true ? [...ignored, key] : ignored;
+  const [key, value] = entry;
+  return value === true ? [...ignored, key] : ignored;
 };
 
 /**
@@ -25,20 +25,17 @@ const pickSelectedErrors = (ignored, entry) => {
  * provided a Sentry client will be installed.
  */
 export const setup = () => {
-	if (appSettings.sentryDsn) {
-		const ignoreErrors = Object.entries(ingoreErrorsMap).reduce(
-			pickSelectedErrors,
-			[]
-		);
+  if (appSettings.sentryDsn) {
+    const ignoreErrors = Object.entries(ingoreErrorsMap).reduce(pickSelectedErrors, []);
 
-		// Configures the Sentry client. Adds a handler for
-		// any uncaught exception.
-		Sentry.init({
-			dsn: appSettings.sentryDsn,
-			environment: appSettings.env,
-			ignoreErrors,
-		});
-	}
+    // Configures the Sentry client. Adds a handler for
+    // any uncaught exception.
+    Sentry.init({
+      dsn: appSettings.sentryDsn,
+      environment: appSettings.env,
+      ignoreErrors,
+    });
+  }
 };
 
 /**
@@ -48,7 +45,7 @@ export const setup = () => {
  * @param {String} userId ID of current user
  */
 export const setUserId = userId => {
-	Sentry.setUser({ id: userId });
+  Sentry.setUser({ id: userId });
 };
 
 /**
@@ -56,36 +53,32 @@ export const setUserId = userId => {
  */
 
 export const clearUserId = () => {
-	Sentry.setUser(null);
+  Sentry.setUser(null);
 };
 
 const printAPIErrorsAsConsoleTable = apiErrors => {
-	if (
-		apiErrors != null &&
-		apiErrors.length > 0 &&
-		typeof console.table === "function"
-	) {
-		console.log("Errors returned by Marketplace API call:");
-		console.table(
-			apiErrors.map(err => ({
-				status: err.status,
-				code: err.code,
-				...err.meta,
-			}))
-		);
-	}
+  if (apiErrors != null && apiErrors.length > 0 && typeof console.table === 'function') {
+    console.log('Errors returned by Marketplace API call:');
+    console.table(
+      apiErrors.map(err => ({
+        status: err.status,
+        code: err.code,
+        ...err.meta,
+      }))
+    );
+  }
 };
 
 const responseAPIErrors = error => {
-	return error && error.data && error.data.errors ? error.data.errors : [];
+  return error && error.data && error.data.errors ? error.data.errors : [];
 };
 
 const responseApiErrorInfo = err =>
-	responseAPIErrors(err).map(e => ({
-		status: e.status,
-		code: e.code,
-		meta: e.meta,
-	}));
+  responseAPIErrors(err).map(e => ({
+    status: e.status,
+    code: e.code,
+    meta: e.meta,
+  }));
 
 /**
  * Logs an exception. If Sentry is configured
@@ -97,59 +90,59 @@ const responseApiErrorInfo = err =>
  * @param {Object} data Additional data to be sent to Sentry
  */
 export const error = (e, code, data) => {
-	const apiErrors = responseApiErrorInfo(e);
-	if (appSettings.sentryDsn) {
-		const extra = { ...data, apiErrorData: apiErrors };
+  const apiErrors = responseApiErrorInfo(e);
+  if (appSettings.sentryDsn) {
+    const extra = { ...data, apiErrorData: apiErrors };
 
-		Sentry.withScope(scope => {
-			scope.setTag("code", code);
-			Object.keys(extra).forEach(key => {
-				scope.setExtra(key, extra[key]);
-			});
-			Sentry.captureException(e);
-		});
+    Sentry.withScope(scope => {
+      scope.setTag('code', code);
+      Object.keys(extra).forEach(key => {
+        scope.setExtra(key, extra[key]);
+      });
+      Sentry.captureException(e);
+    });
 
-		printAPIErrorsAsConsoleTable(apiErrors);
-	} else {
-		console.error(e);
-		console.error("Error code:", code, "data:", data);
-		printAPIErrorsAsConsoleTable(apiErrors);
-	}
+    printAPIErrorsAsConsoleTable(apiErrors);
+  } else {
+    console.error(e);
+    console.error('Error code:', code, 'data:', data);
+    printAPIErrorsAsConsoleTable(apiErrors);
+  }
 };
 
 const setCause = (error, cause) => {
-	const seenErrors = new WeakSet();
+  const seenErrors = new WeakSet();
 
-	const setCauseIfNoExistingCause = (error, cause) => {
-		if (seenErrors.has(error)) {
-			return;
-		}
-		if (error.cause) {
-			seenErrors.add(error);
-			return setCauseIfNoExistingCause(error.cause, cause);
-		}
-		error.cause = cause;
-	};
+  const setCauseIfNoExistingCause = (error, cause) => {
+    if (seenErrors.has(error)) {
+      return;
+    }
+    if (error.cause) {
+      seenErrors.add(error);
+      return setCauseIfNoExistingCause(error.cause, cause);
+    }
+    error.cause = cause;
+  };
 
-	setCauseIfNoExistingCause(error, cause);
+  setCauseIfNoExistingCause(error, cause);
 };
 
 export const onRecoverableError = (e, componentStack) => {
-	let data = {};
+  let data = {};
 
-	if (componentStack) {
-		// Generating this synthetic error allows monitoring services to apply sourcemaps
-		// to unminify the stacktrace and make it readable.
-		const errorBoundaryError = new Error(e.message);
-		errorBoundaryError.name = `React ErrorBoundary ${errorBoundaryError.name}`;
-		errorBoundaryError.stack = componentStack;
+  if (componentStack) {
+    // Generating this synthetic error allows monitoring services to apply sourcemaps
+    // to unminify the stacktrace and make it readable.
+    const errorBoundaryError = new Error(e.message);
+    errorBoundaryError.name = `React ErrorBoundary ${errorBoundaryError.name}`;
+    errorBoundaryError.stack = componentStack;
 
-		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/cause
-		setCause(e, errorBoundaryError);
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/cause
+    setCause(e, errorBoundaryError);
 
-		data.componentStack = componentStack;
-	}
+    data.componentStack = componentStack;
+  }
 
-	// Replace with your error monitoring service.
-	error(error, "recoverable-error", data);
+  // Replace with your error monitoring service.
+  error(error, 'recoverable-error', data);
 };

@@ -1,38 +1,35 @@
-import React from "react";
-import { Form as FinalForm } from "react-final-form";
-import classNames from "classnames";
+import React from 'react';
+import { Form as FinalForm } from 'react-final-form';
+import classNames from 'classnames';
 
-import { FormattedMessage, useIntl } from "../../../util/reactIntl";
+import { FormattedMessage, useIntl } from '../../../util/reactIntl';
 
-import { Form, PrimaryButton } from "../..";
+import { Form, PrimaryButton } from '../..';
 
-import css from "./InquiryWithoutPaymentForm.module.css";
+import css from './InquiryWithoutPaymentForm.module.css';
 
 const renderForm = formRenderProps => {
-	// FormRenderProps from final-form
-	const {
-		formId,
-		className,
-		rootClassName,
-		handleSubmit,
-		isOwnListing,
-		finePrintComponent: FinePrint,
-	} = formRenderProps;
-	const classes = classNames(rootClassName || css.root, className);
+  // FormRenderProps from final-form
+  const {
+    formId,
+    className,
+    rootClassName,
+    handleSubmit,
+    isOwnListing,
+    finePrintComponent: FinePrint,
+  } = formRenderProps;
+  const classes = classNames(rootClassName || css.root, className);
 
-	return (
-		<Form id={formId} onSubmit={handleSubmit} className={classes}>
-			<div className={css.submitButton}>
-				<PrimaryButton type="submit">
-					<FormattedMessage id="InquiryWithoutPaymentForm.ctaButton" />
-				</PrimaryButton>
-				<FinePrint
-					isOwnListing={isOwnListing}
-					omitYouWontBeChargedMessage={true}
-				/>
-			</div>
-		</Form>
-	);
+  return (
+    <Form id={formId} onSubmit={handleSubmit} className={classes}>
+      <div className={css.submitButton}>
+        <PrimaryButton type="submit">
+          <FormattedMessage id="InquiryWithoutPaymentForm.ctaButton" />
+        </PrimaryButton>
+        <FinePrint isOwnListing={isOwnListing} omitYouWontBeChargedMessage={true} />
+      </div>
+    </Form>
+  );
 };
 
 /**
@@ -47,17 +44,10 @@ const renderForm = formRenderProps => {
  * @returns {JSX.Element}
  */
 const InquiryWithoutPaymentForm = props => {
-	const intl = useIntl();
-	const initialValues = {};
+  const intl = useIntl();
+  const initialValues = {};
 
-	return (
-		<FinalForm
-			initialValues={initialValues}
-			{...props}
-			intl={intl}
-			render={renderForm}
-		/>
-	);
+  return <FinalForm initialValues={initialValues} {...props} intl={intl} render={renderForm} />;
 };
 
 export default InquiryWithoutPaymentForm;

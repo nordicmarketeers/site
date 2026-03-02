@@ -1,7 +1,7 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import css from "./Track.module.css";
+import css from './Track.module.css';
 
 /**
  * A component that renders a track for a range slider.
@@ -16,40 +16,33 @@ import css from "./Track.module.css";
  * @returns {JSX.Element} the track component that has the handles and the range between them
  */
 const Track = props => {
-	const {
-		rootClassName,
-		className,
-		children,
-		handles = [],
-		valueToPosition,
-	} = props;
-	const positionFromIndex = index => valueToPosition(handles[index]);
+  const { rootClassName, className, children, handles = [], valueToPosition } = props;
+  const positionFromIndex = index => valueToPosition(handles[index]);
 
-	const classes = classNames(rootClassName || css.root, className);
-	return (
-		<div className={classes}>
-			<div className={css.track} />
+  const classes = classNames(rootClassName || css.root, className);
+  return (
+    <div className={classes}>
+      <div className={css.track} />
 
-			{handles.reduce((ranges, h, index) => {
-				return index < handles.length - 1
-					? [
-							...ranges,
-							<div
-								key={`range_${index}-${index + 1}`}
-								className={css.range}
-								style={{
-									left: `${valueToPosition(h)}px`,
-									width: `${positionFromIndex(index + 1) -
-										valueToPosition(h)}px`,
-								}}
-							/>,
-					  ]
-					: ranges;
-			}, [])}
+      {handles.reduce((ranges, h, index) => {
+        return index < handles.length - 1
+          ? [
+              ...ranges,
+              <div
+                key={`range_${index}-${index + 1}`}
+                className={css.range}
+                style={{
+                  left: `${valueToPosition(h)}px`,
+                  width: `${positionFromIndex(index + 1) - valueToPosition(h)}px`,
+                }}
+              />,
+            ]
+          : ranges;
+      }, [])}
 
-			{children}
-		</div>
-	);
+      {children}
+    </div>
+  );
 };
 
 export default Track;

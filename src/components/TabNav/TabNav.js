@@ -1,23 +1,23 @@
-import React from "react";
-import classNames from "classnames";
-import { NamedLink } from "../../components";
+import React from 'react';
+import classNames from 'classnames';
+import { NamedLink } from '../../components';
 
-import css from "./TabNav.module.css";
+import css from './TabNav.module.css';
 
 const Tab = props => {
-	const { className, id, disabled, text, selected, linkProps } = props;
-	const linkClasses = classNames(css.link, {
-		[css.selectedLink]: selected,
-		[css.disabled]: disabled,
-	});
+  const { className, id, disabled, text, selected, linkProps } = props;
+  const linkClasses = classNames(css.link, {
+    [css.selectedLink]: selected,
+    [css.disabled]: disabled,
+  });
 
-	return (
-		<div id={id} className={className}>
-			<NamedLink className={linkClasses} {...linkProps}>
-				{text}
-			</NamedLink>
-		</div>
-	);
+  return (
+    <div id={id} className={className}>
+      <NamedLink className={linkClasses} {...linkProps}>
+        {text}
+      </NamedLink>
+    </div>
+  );
 };
 
 /**
@@ -43,23 +43,17 @@ const Tab = props => {
  * @returns {JSX.Element}
  */
 const TabNav = props => {
-	const {
-		className,
-		rootClassName,
-		tabRootClassName,
-		tabs,
-		ariaLabel,
-	} = props;
-	const classes = classNames(rootClassName || css.root, className);
-	const tabClasses = tabRootClassName || css.tab;
-	return (
-		<nav className={classes} aria-label={ariaLabel}>
-			{tabs.map((tab, index) => {
-				const id = typeof tab.id === "string" ? tab.id : `${index}`;
-				return <Tab key={id} id={id} className={tabClasses} {...tab} />;
-			})}
-		</nav>
-	);
+  const { className, rootClassName, tabRootClassName, tabs, ariaLabel } = props;
+  const classes = classNames(rootClassName || css.root, className);
+  const tabClasses = tabRootClassName || css.tab;
+  return (
+    <nav className={classes} aria-label={ariaLabel}>
+      {tabs.map((tab, index) => {
+        const id = typeof tab.id === 'string' ? tab.id : `${index}`;
+        return <Tab key={id} id={id} className={tabClasses} {...tab} />;
+      })}
+    </nav>
+  );
 };
 
 export default TabNav;

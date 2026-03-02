@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import classNames from "classnames";
+import React, { useState } from 'react';
+import classNames from 'classnames';
 
-import css from "./MenuLabel.module.css";
+import css from './MenuLabel.module.css';
 
 /**
  * The label button of the menu. MenuLabel is the only always visible part of Menu.
@@ -19,58 +19,50 @@ import css from "./MenuLabel.module.css";
  * @returns {JSX.Element} label button
  */
 const MenuLabel = props => {
-	const [clicked, setClicked] = useState(false);
-	const {
-		children,
-		id,
-		className,
-		rootClassName,
-		isOpen,
-		isOpenClassName,
-		onToggleActive,
-		ariaLabel,
-	} = props;
+  const [clicked, setClicked] = useState(false);
+  const {
+    children,
+    id,
+    className,
+    rootClassName,
+    isOpen,
+    isOpenClassName,
+    onToggleActive,
+    ariaLabel,
+  } = props;
 
-	const onClick = e => {
-		e.stopPropagation();
-		e.preventDefault();
-		onToggleActive();
+  const onClick = e => {
+    e.stopPropagation();
+    e.preventDefault();
+    onToggleActive();
 
-		// Don't show focus outline if user just clicked the element with mouse
-		// tab + enter creates also a click event, but its location is origin.
-		const nativeEvent = e.nativeEvent;
-		const isRealClick = !(
-			nativeEvent.clientX === 0 && nativeEvent.clientY === 0
-		);
-		if (isRealClick) {
-			setClicked(true);
-		}
-	};
+    // Don't show focus outline if user just clicked the element with mouse
+    // tab + enter creates also a click event, but its location is origin.
+    const nativeEvent = e.nativeEvent;
+    const isRealClick = !(nativeEvent.clientX === 0 && nativeEvent.clientY === 0);
+    if (isRealClick) {
+      setClicked(true);
+    }
+  };
 
-	const onBlur = () => {
-		setClicked(false);
-	};
+  const onBlur = () => {
+    setClicked(false);
+  };
 
-	const rootClass = rootClassName || css.root;
-	const isOpenClass = isOpenClassName || css.isOpen;
-	const classes = classNames(rootClass, className, {
-		[css.clicked]: clicked,
-		[isOpenClass]: isOpen,
-	});
+  const rootClass = rootClassName || css.root;
+  const isOpenClass = isOpenClassName || css.isOpen;
+  const classes = classNames(rootClass, className, {
+    [css.clicked]: clicked,
+    [isOpenClass]: isOpen,
+  });
 
-	const ariaLabelMaybe = ariaLabel ? { ["aria-label"]: ariaLabel } : {};
+  const ariaLabelMaybe = ariaLabel ? { ['aria-label']: ariaLabel } : {};
 
-	return (
-		<button
-			id={id}
-			className={classes}
-			onClick={onClick}
-			onBlur={onBlur}
-			{...ariaLabelMaybe}
-		>
-			{children}
-		</button>
-	);
+  return (
+    <button id={id} className={classes} onClick={onClick} onBlur={onBlur} {...ariaLabelMaybe}>
+      {children}
+    </button>
+  );
 };
 
 export default MenuLabel;

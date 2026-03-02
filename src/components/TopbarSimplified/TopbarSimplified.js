@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { useIntl } from "react-intl";
-import classNames from "classnames";
+import React, { useState, useEffect } from 'react';
+import { useIntl } from 'react-intl';
+import classNames from 'classnames';
 
-import { useConfiguration } from "../../context/configurationContext";
+import { useConfiguration } from '../../context/configurationContext';
 
-import { LinkedLogo } from "../../components";
+import { LinkedLogo } from '../../components';
 
-import css from "./TopbarSimplified.module.css";
+import css from './TopbarSimplified.module.css';
 
 /**
  * A component that renders a simplified top bar. This is used on situations,
@@ -24,55 +24,55 @@ import css from "./TopbarSimplified.module.css";
  * @returns {JSX.Element}
  */
 const TopbarSimplified = props => {
-	const [isMobile, setIsMobile] = useState(false);
-	const [mounted, setMounted] = useState(false);
-	const intl = useIntl();
-	const config = useConfiguration();
+  const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const intl = useIntl();
+  const config = useConfiguration();
 
-	useEffect(() => {
-		setMounted(true);
-	}, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-	useEffect(() => {
-		let mediaQueryList = null;
-		let updateIsMobile = null;
+  useEffect(() => {
+    let mediaQueryList = null;
+    let updateIsMobile = null;
 
-		if (mounted) {
-			// set initial value
-			mediaQueryList = window.matchMedia("(max-width: 767px)");
-			setIsMobile(mediaQueryList.matches);
+    if (mounted) {
+      // set initial value
+      mediaQueryList = window.matchMedia('(max-width: 767px)');
+      setIsMobile(mediaQueryList.matches);
 
-			//watch for updates
-			updateIsMobile = e => {
-				setIsMobile(e.matches);
-			};
-			mediaQueryList.addEventListener("change", updateIsMobile);
-		}
+      //watch for updates
+      updateIsMobile = e => {
+        setIsMobile(e.matches);
+      };
+      mediaQueryList.addEventListener('change', updateIsMobile);
+    }
 
-		// clean up after ourselves
-		return () => {
-			if (mediaQueryList && updateIsMobile) {
-				mediaQueryList.removeEventListener("change", updateIsMobile);
-			}
-		};
-	}, [mounted]);
+    // clean up after ourselves
+    return () => {
+      if (mediaQueryList && updateIsMobile) {
+        mediaQueryList.removeEventListener('change', updateIsMobile);
+      }
+    };
+  }, [mounted]);
 
-	const { className, rootClassName } = props;
-	const linkToExternalSite = config?.topbar?.logoLink;
+  const { className, rootClassName } = props;
+  const linkToExternalSite = config?.topbar?.logoLink;
 
-	const classes = classNames(rootClassName || css.root, className);
+  const classes = classNames(rootClassName || css.root, className);
 
-	return (
-		<nav className={classes}>
-			<LinkedLogo
-				layout={isMobile ? "mobile" : "desktop"}
-				alt={intl.formatMessage({
-					id: "TopbarSimplified.goToLandingPage",
-				})}
-				linkToExternalSite={linkToExternalSite}
-			/>
-		</nav>
-	);
+  return (
+    <nav className={classes}>
+      <LinkedLogo
+        layout={isMobile ? 'mobile' : 'desktop'}
+        alt={intl.formatMessage({
+          id: 'TopbarSimplified.goToLandingPage',
+        })}
+        linkToExternalSite={linkToExternalSite}
+      />
+    </nav>
+  );
 };
 
 export default TopbarSimplified;

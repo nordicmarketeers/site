@@ -1,7 +1,7 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import css from "./MenuItem.module.css";
+import css from './MenuItem.module.css';
 
 /**
  * MenuItem is part of Menu and specifically a child of MenuContent.
@@ -21,15 +21,15 @@ import css from "./MenuItem.module.css";
  * @returns {JSX.Element} menu item
  */
 const MenuItem = props => {
-	const { children, className, rootClassName } = props;
-	const rootClass = rootClassName || css.root;
-	const classes = classNames(rootClass, className);
+  const { children, className, rootClassName } = props;
+  const rootClass = rootClassName || css.root;
+  const classes = classNames(rootClass, className);
 
-	return (
-		<li className={classes} role="menuitem">
-			{children}
-		</li>
-	);
+  return (
+    <li className={classes} role="menuitem">
+      {children}
+    </li>
+  );
 };
 
 export default MenuItem;

@@ -1,10 +1,10 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import LayoutComposer from "../LayoutComposer";
-import LayoutWrapperAccountSettingsSideNav from "./LayoutWrapperAccountSettingsSideNav";
+import LayoutComposer from '../LayoutComposer';
+import LayoutWrapperAccountSettingsSideNav from './LayoutWrapperAccountSettingsSideNav';
 
-import css from "./LayoutSideNavigation.module.css";
+import css from './LayoutSideNavigation.module.css';
 
 /**
  * Commonly used layout
@@ -25,78 +25,64 @@ import css from "./LayoutSideNavigation.module.css";
  * @returns {JSX.Element} LayoutComposer that expects children to be a function.
  */
 const LayoutSideNavigation = props => {
-	const {
-		className,
-		rootClassName,
-		containerClassName,
-		mainColumnClassName,
-		sideNavClassName,
-		children,
-		topbar: topbarContent,
-		footer: footerContent,
-		sideNav: sideNavContent,
-		useAccountSettingsNav,
-		accountSettingsNavProps,
-		intl,
-		...rest
-	} = props;
+  const {
+    className,
+    rootClassName,
+    containerClassName,
+    mainColumnClassName,
+    sideNavClassName,
+    children,
+    topbar: topbarContent,
+    footer: footerContent,
+    sideNav: sideNavContent,
+    useAccountSettingsNav,
+    accountSettingsNavProps,
+    intl,
+    ...rest
+  } = props;
 
-	const classes = classNames(rootClassName || css.root, className);
-	const containerClasses = containerClassName || css.container;
+  const classes = classNames(rootClassName || css.root, className);
+  const containerClasses = containerClassName || css.container;
 
-	// TODO: since responsiveAreas are still experimental,
-	//       we don't separate "aside" through layoutComposer
-	const layoutAreas = `
+  // TODO: since responsiveAreas are still experimental,
+  //       we don't separate "aside" through layoutComposer
+  const layoutAreas = `
     topbar
     main
     footer
   `;
 
-	return (
-		<LayoutComposer areas={layoutAreas} className={classes} {...rest}>
-			{layoutProps => {
-				const { Topbar, Main, Footer } = layoutProps;
-				return (
-					<>
-						<Topbar as="header" className={css.topbar}>
-							{topbarContent}
-						</Topbar>
-						<Main as="div" className={containerClasses}>
-							<aside
-								className={classNames(
-									css.sideNav,
-									sideNavClassName
-								)}
-							>
-								{useAccountSettingsNav ? (
-									<LayoutWrapperAccountSettingsSideNav
-										accountSettingsNavProps={
-											accountSettingsNavProps
-										}
-										ariaLabel={intl.formatMessage({
-											id:
-												"LayoutSideNavigation.screenreader.accountNavigation",
-										})}
-									/>
-								) : null}
-								{sideNavContent}
-							</aside>
-							<main
-								id="main-content"
-								className={classNames(
-									css.main,
-									mainColumnClassName
-								)}
-							>
-								{children}
-							</main>
-						</Main>
-						<Footer>{footerContent}</Footer>
-					</>
-				);
-			}}
-		</LayoutComposer>
-	);
+  return (
+    <LayoutComposer areas={layoutAreas} className={classes} {...rest}>
+      {layoutProps => {
+        const { Topbar, Main, Footer } = layoutProps;
+        return (
+          <>
+            <Topbar as="header" className={css.topbar}>
+              {topbarContent}
+            </Topbar>
+            <Main as="div" className={containerClasses}>
+              <aside className={classNames(css.sideNav, sideNavClassName)}>
+                {useAccountSettingsNav ? (
+                  <LayoutWrapperAccountSettingsSideNav
+                    accountSettingsNavProps={accountSettingsNavProps}
+                    ariaLabel={intl.formatMessage({
+                      id: 'LayoutSideNavigation.screenreader.accountNavigation',
+                    })}
+                  />
+                ) : null}
+                {sideNavContent}
+              </aside>
+              <main id="main-content" className={classNames(css.main, mainColumnClassName)}>
+                {children}
+              </main>
+            </Main>
+            <Footer>{footerContent}</Footer>
+          </>
+        );
+      }}
+    </LayoutComposer>
+  );
 };
 
 export default LayoutSideNavigation;

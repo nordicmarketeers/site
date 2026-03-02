@@ -1,198 +1,165 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import { FormattedMessage } from "../../../util/reactIntl";
-import { createSlug, stringify } from "../../../util/urlHelpers";
+import { FormattedMessage } from '../../../util/reactIntl';
+import { createSlug, stringify } from '../../../util/urlHelpers';
 
-import { H1, H2, NamedLink } from "../../../components";
+import { H1, H2, NamedLink } from '../../../components';
 
-import css from "./TransactionPanel.module.css";
-import { formatMoney } from "../../../util/currency";
+import css from './TransactionPanel.module.css';
+import { formatMoney } from '../../../util/currency';
 
-const createListingLink = (
-	listingId,
-	label,
-	listingDeleted,
-	searchParams = {},
-	className = ""
-) => {
-	if (!listingDeleted) {
-		const params = { id: listingId, slug: createSlug(label) };
-		const to = { search: stringify(searchParams) };
-		return (
-			<NamedLink
-				className={className}
-				name="ListingPage"
-				params={params}
-				to={to}
-			>
-				{label}
-			</NamedLink>
-		);
-	} else {
-		return (
-			<FormattedMessage id="TransactionPanel.deletedListingOrderTitle" />
-		);
-	}
+const createListingLink = (listingId, label, listingDeleted, searchParams = {}, className = '') => {
+  if (!listingDeleted) {
+    const params = { id: listingId, slug: createSlug(label) };
+    const to = { search: stringify(searchParams) };
+    return (
+      <NamedLink className={className} name="ListingPage" params={params} to={to}>
+        {label}
+      </NamedLink>
+    );
+  } else {
+    return <FormattedMessage id="TransactionPanel.deletedListingOrderTitle" />;
+  }
 };
 
 // Component to render the main heading for an order or a sale. Optionally also
 // renders an info message based on the transaction state.
 const PanelHeading = props => {
-	const {
-		className,
-		rootClassName,
-		processName,
-		processState,
-		showExtraInfo,
-		showPriceOnMobile,
-		price,
-		intl,
-		deliveryMethod,
-		isPendingPayment,
-		transactionRole,
-		providerName,
-		customerName,
-		listingId,
-		listingTitle,
-		listingDeleted,
-		isCustomerBanned,
-		customerNameLink,
-	} = props;
+  const {
+    className,
+    rootClassName,
+    processName,
+    processState,
+    showExtraInfo,
+    showPriceOnMobile,
+    price,
+    intl,
+    deliveryMethod,
+    isPendingPayment,
+    transactionRole,
+    providerName,
+    customerName,
+    listingId,
+    listingTitle,
+    listingDeleted,
+    isCustomerBanned,
+    customerNameLink,
+  } = props;
 
-	const isProvider = transactionRole === "provider";
-	const isCustomer = !isProvider;
+  const isProvider = transactionRole === 'provider';
+  const isCustomer = !isProvider;
 
-	const defaultRootClassName = isCustomer
-		? css.headingOrder
-		: css.headingSale;
-	const titleClasses = classNames(
-		rootClassName || defaultRootClassName,
-		className
-	);
-	const listingLink = createListingLink(
-		listingId,
-		listingTitle,
-		listingDeleted
-	);
-	const breakline = <br />;
+  const defaultRootClassName = isCustomer ? css.headingOrder : css.headingSale;
+  const titleClasses = classNames(rootClassName || defaultRootClassName, className);
+  const listingLink = createListingLink(listingId, listingTitle, listingDeleted);
+  const breakline = <br />;
 
-	return (
-		<>
-			<H1 className={titleClasses}>
-				<span className={css.mainTitle}>
-					{/* LINK TO CONSULTANT LISTING */}
-					{customerNameLink.consultant && (
-						<FormattedMessage
-							id={`TransactionPage.${processName}.${transactionRole}.${processState}.title`}
-							values={{
-								customerName: (
-									<NamedLink
-										name="ListingPage"
-										params={{
-											id: customerNameLink.id,
-											slug: "slug",
-										}}
-									>
-										{customerName}
-									</NamedLink>
-								),
-								providerName: (
-									<NamedLink
-										name="ListingPage"
-										params={{
-											id: customerNameLink.id,
-											slug: "slug",
-										}}
-									>
-										{providerName}
-									</NamedLink>
-								),
-							}}
-						/>
-					)}
+  return (
+    <>
+      <H1 className={titleClasses}>
+        <span className={css.mainTitle}>
+          {/* LINK TO CONSULTANT LISTING */}
+          {customerNameLink.consultant && (
+            <FormattedMessage
+              id={`TransactionPage.${processName}.${transactionRole}.${processState}.title`}
+              values={{
+                customerName: (
+                  <NamedLink
+                    name="ListingPage"
+                    params={{
+                      id: customerNameLink.id,
+                      slug: 'slug',
+                    }}
+                  >
+                    {customerName}
+                  </NamedLink>
+                ),
+                providerName: (
+                  <NamedLink
+                    name="ListingPage"
+                    params={{
+                      id: customerNameLink.id,
+                      slug: 'slug',
+                    }}
+                  >
+                    {providerName}
+                  </NamedLink>
+                ),
+              }}
+            />
+          )}
 
-					{/* LINK TO  CUSTOMER PROFILE */}
-					{!customerNameLink.consultant && (
-						<FormattedMessage
-							id={`TransactionPage.${processName}.${transactionRole}.${processState}.title`}
-							values={{
-								customerName: (
-									<NamedLink
-										name={"ProfilePage"}
-										params={{ id: customerNameLink.id }}
-									>
-										{customerName}
-									</NamedLink>
-								),
-								providerName: (
-									<NamedLink
-										name={"ProfilePage"}
-										params={{ id: customerNameLink.id }}
-									>
-										{providerName}
-									</NamedLink>
-								),
-							}}
-						/>
-					)}
+          {/* LINK TO  CUSTOMER PROFILE */}
+          {!customerNameLink.consultant && (
+            <FormattedMessage
+              id={`TransactionPage.${processName}.${transactionRole}.${processState}.title`}
+              values={{
+                customerName: (
+                  <NamedLink name={'ProfilePage'} params={{ id: customerNameLink.id }}>
+                    {customerName}
+                  </NamedLink>
+                ),
+                providerName: (
+                  <NamedLink name={'ProfilePage'} params={{ id: customerNameLink.id }}>
+                    {providerName}
+                  </NamedLink>
+                ),
+              }}
+            />
+          )}
 
-					{!customerNameLink && (
-						<FormattedMessage
-							id={`TransactionPage.${processName}.${transactionRole}.${processState}.title`}
-							values={{ customerName, providerName, breakline }}
-						/>
-					)}
-				</span>
-			</H1>
-			<H2 className={css.listingTitleMobile}>
-				<FormattedMessage
-					id="TransactionPage.listingTitleMobile"
-					values={{ listingLink }}
-				/>
+          {!customerNameLink && (
+            <FormattedMessage
+              id={`TransactionPage.${processName}.${transactionRole}.${processState}.title`}
+              values={{ customerName, providerName, breakline }}
+            />
+          )}
+        </span>
+      </H1>
+      <H2 className={css.listingTitleMobile}>
+        <FormattedMessage id="TransactionPage.listingTitleMobile" values={{ listingLink }} />
 
-				{showPriceOnMobile && price ? (
-					<>
-						<br />
-						<span className={css.inquiryPrice}>
-							{formatMoney(intl, price)}
-						</span>
-					</>
-				) : null}
-			</H2>
-			{isCustomer && listingDeleted ? (
-				<p className={css.transactionInfoMessage}>
-					<FormattedMessage id="TransactionPanel.messageDeletedListing" />
-				</p>
-			) : null}
-			{!listingDeleted && showExtraInfo ? (
-				<p className={css.transactionInfoMessage}>
-					<FormattedMessage
-						id={`TransactionPage.${processName}.${transactionRole}.${processState}.extraInfo`}
-						values={{
-							customerName,
-							providerName,
-							deliveryMethod,
-							breakline,
-						}}
-					/>
-				</p>
-			) : null}
-			{isProvider && isPendingPayment ? (
-				<p className={css.transactionInfoMessage}>
-					<FormattedMessage
-						id="TransactionPanel.salePaymentPendingInfo"
-						values={{ customerName }}
-					/>
-				</p>
-			) : null}
-			{isProvider && isCustomerBanned ? (
-				<p className={css.transactionInfoMessage}>
-					<FormattedMessage id="TransactionPanel.customerBannedStatus" />
-				</p>
-			) : null}
-		</>
-	);
+        {showPriceOnMobile && price ? (
+          <>
+            <br />
+            <span className={css.inquiryPrice}>{formatMoney(intl, price)}</span>
+          </>
+        ) : null}
+      </H2>
+      {isCustomer && listingDeleted ? (
+        <p className={css.transactionInfoMessage}>
+          <FormattedMessage id="TransactionPanel.messageDeletedListing" />
+        </p>
+      ) : null}
+      {!listingDeleted && showExtraInfo ? (
+        <p className={css.transactionInfoMessage}>
+          <FormattedMessage
+            id={`TransactionPage.${processName}.${transactionRole}.${processState}.extraInfo`}
+            values={{
+              customerName,
+              providerName,
+              deliveryMethod,
+              breakline,
+            }}
+          />
+        </p>
+      ) : null}
+      {isProvider && isPendingPayment ? (
+        <p className={css.transactionInfoMessage}>
+          <FormattedMessage
+            id="TransactionPanel.salePaymentPendingInfo"
+            values={{ customerName }}
+          />
+        </p>
+      ) : null}
+      {isProvider && isCustomerBanned ? (
+        <p className={css.transactionInfoMessage}>
+          <FormattedMessage id="TransactionPanel.customerBannedStatus" />
+        </p>
+      ) : null}
+    </>
+  );
 };
 
 export default PanelHeading;

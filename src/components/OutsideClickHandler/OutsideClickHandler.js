@@ -1,7 +1,7 @@
-import React, { Component } from "react";
-import classNames from "classnames";
+import React, { Component } from 'react';
+import classNames from 'classnames';
 
-import css from "./OutsideClickHandler.module.css";
+import css from './OutsideClickHandler.module.css';
 
 /**
  * A component that handles outside clicks.
@@ -15,38 +15,34 @@ import css from "./OutsideClickHandler.module.css";
  * @returns {JSX.Element}
  */
 export default class OutsideClickHandler extends Component {
-	constructor(props) {
-		super(props);
+  constructor(props) {
+    super(props);
 
-		this.handleClick = this.handleClick.bind(this);
-	}
+    this.handleClick = this.handleClick.bind(this);
+  }
 
-	componentDidMount() {
-		document.addEventListener("mousedown", this.handleClick, false);
-	}
+  componentDidMount() {
+    document.addEventListener('mousedown', this.handleClick, false);
+  }
 
-	componentWillUnmount() {
-		document.removeEventListener("mousedown", this.handleClick, false);
-	}
+  componentWillUnmount() {
+    document.removeEventListener('mousedown', this.handleClick, false);
+  }
 
-	handleClick(event) {
-		if (!this.node.contains(event.target)) {
-			this.props.onOutsideClick();
-		}
-	}
+  handleClick(event) {
+    if (!this.node.contains(event.target)) {
+      this.props.onOutsideClick();
+    }
+  }
 
-	render() {
-		const { rootClassName, className, children, onKeyDown } = this.props;
-		const classes = classNames(rootClassName || css.root, className);
+  render() {
+    const { rootClassName, className, children, onKeyDown } = this.props;
+    const classes = classNames(rootClassName || css.root, className);
 
-		return (
-			<div
-				className={classes}
-				ref={node => (this.node = node)}
-				onKeyDown={onKeyDown}
-			>
-				{children}
-			</div>
-		);
-	}
+    return (
+      <div className={classes} ref={node => (this.node = node)} onKeyDown={onKeyDown}>
+        {children}
+      </div>
+    );
+  }
 }

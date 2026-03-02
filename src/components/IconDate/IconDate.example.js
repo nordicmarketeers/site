@@ -1,7 +1,7 @@
-import IconDate from "./IconDate";
+import IconDate from './IconDate';
 
 export const Icon = {
-	component: IconDate,
-	props: {},
-	group: "icons",
+  component: IconDate,
+  props: {},
+  group: 'icons',
 };

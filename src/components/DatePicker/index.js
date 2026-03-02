@@ -1,9 +1,5 @@
-import FieldSingleDatePicker from "./FieldSingleDatePicker/FieldSingleDatePicker";
-import FieldDateRangePicker from "./FieldDateRangePicker/FieldDateRangePicker";
-import FieldDateRangeController from "./FieldDateRangeController/FieldDateRangeController";
+import FieldSingleDatePicker from './FieldSingleDatePicker/FieldSingleDatePicker';
+import FieldDateRangePicker from './FieldDateRangePicker/FieldDateRangePicker';
+import FieldDateRangeController from './FieldDateRangeController/FieldDateRangeController';
 
-export {
-	FieldSingleDatePicker,
-	FieldDateRangePicker,
-	FieldDateRangeController,
-};
+export { FieldSingleDatePicker, FieldDateRangePicker, FieldDateRangeController };

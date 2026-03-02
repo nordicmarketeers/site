@@ -1,16 +1,12 @@
-const { Readable } = require("stream");
-const {
-	SitemapIndexStream,
-	SitemapStream,
-	streamToPromise,
-} = require("sitemap");
-const log = require("../log.js");
-const { createTTLCache } = require("../api-util/cache.js");
-const { getRootURL } = require("../api-util/rootURL.js");
-const sdkUtils = require("../api-util/sdk.js");
+const { Readable } = require('stream');
+const { SitemapIndexStream, SitemapStream, streamToPromise } = require('sitemap');
+const log = require('../log.js');
+const { createTTLCache } = require('../api-util/cache.js');
+const { getRootURL } = require('../api-util/rootURL.js');
+const sdkUtils = require('../api-util/sdk.js');
 
-const isSitemapDisabled = process.env.SITEMAP_DISABLED === "true";
-const dev = process.env.REACT_APP_ENV === "development";
+const isSitemapDisabled = process.env.SITEMAP_DISABLED === 'true';
+const dev = process.env.REACT_APP_ENV === 'development';
 
 ///////////////////////////////////////////////////////////////////////////////
 // This file generates sitemaps.                                             //
@@ -49,12 +45,12 @@ const dev = process.env.REACT_APP_ENV === "development";
 // Note 3: You can add relevant searches here
 //         E.g. searchHats: { url: '/s?pub_category=hats' },
 const defaultPublicPaths = {
-	landingPage: { url: "/" },
-	termsOfService: { url: "/terms-of-service" },
-	privacyPolicy: { url: "/privacy-policy" },
-	signup: { url: "/signup" },
-	login: { url: "/login" },
-	search: { url: "/s" },
+  landingPage: { url: '/' },
+  termsOfService: { url: '/terms-of-service' },
+  privacyPolicy: { url: '/privacy-policy' },
+  signup: { url: '/signup' },
+  login: { url: '/login' },
+  search: { url: '/s' },
 };
 
 // Time-to-live (ttl) is set to one day aka 86400 seconds
@@ -77,49 +73,45 @@ const cache = createTTLCache(ttl);
  * @param {Boolean} isPrivateMarketplace is private marketplace mode set
  */
 const sitemapIndex = (req, res, rootUrl, isPrivateMarketplace) => {
-	res.set({
-		"Content-Type": "application/xml",
-		"Cache-Control": `public, max-age=${ttl}`,
-	});
+  res.set({
+    'Content-Type': 'application/xml',
+    'Cache-Control': `public, max-age=${ttl}`,
+  });
 
-	// If we have a cached content send it
-	const { data, timestamp } = cache.sitemapIndex;
-	if (data && timestamp) {
-		const age = Math.floor((Date.now() - timestamp) / 1000);
-		res.set("Age", age);
-		res.send(data);
-		return;
-	}
+  // If we have a cached content send it
+  const { data, timestamp } = cache.sitemapIndex;
+  if (data && timestamp) {
+    const age = Math.floor((Date.now() - timestamp) / 1000);
+    res.set('Age', age);
+    res.send(data);
+    return;
+  }
 
-	try {
-		const smiStream = new SitemapIndexStream({ level: "warn" });
+  try {
+    const smiStream = new SitemapIndexStream({ level: 'warn' });
 
-		// Sitemap-index will contain the following sitemaps:
-		const sitemaps = isPrivateMarketplace
-			? ["/sitemap-default.xml", "/sitemap-recent-pages.xml"]
-			: [
-					"/sitemap-default.xml",
-					"/sitemap-recent-listings.xml",
-					"/sitemap-recent-pages.xml",
-			  ];
+    // Sitemap-index will contain the following sitemaps:
+    const sitemaps = isPrivateMarketplace
+      ? ['/sitemap-default.xml', '/sitemap-recent-pages.xml']
+      : ['/sitemap-default.xml', '/sitemap-recent-listings.xml', '/sitemap-recent-pages.xml'];
 
-		// Add sitemaps to the index
-		sitemaps.forEach(sitemapPath => {
-			smiStream.write({ url: `${rootUrl}${sitemapPath}` });
-		});
+    // Add sitemaps to the index
+    sitemaps.forEach(sitemapPath => {
+      smiStream.write({ url: `${rootUrl}${sitemapPath}` });
+    });
 
-		streamToPromise(smiStream).then(sm => (cache.sitemapIndex = sm));
+    streamToPromise(smiStream).then(sm => (cache.sitemapIndex = sm));
 
-		smiStream.pipe(res).on("error", e => {
-			throw e;
-		});
+    smiStream.pipe(res).on('error', e => {
+      throw e;
+    });
 
-		// Since we manually add content to the stream, we need to close it.
-		smiStream.end();
-	} catch (e) {
-		log.error(e, "sitemap-index-render-failed");
-		res.status(500).end();
-	}
+    // Since we manually add content to the stream, we need to close it.
+    smiStream.end();
+  } catch (e) {
+    log.error(e, 'sitemap-index-render-failed');
+    res.status(500).end();
+  }
 };
 
 /**
@@ -133,44 +125,42 @@ const sitemapIndex = (req, res, rootUrl, isPrivateMarketplace) => {
  * @param {Boolean} isPrivateMarketplace is private marketplace mode set
  */
 const sitemapDefault = (req, res, rootUrl, isPrivateMarketplace) => {
-	res.set({
-		"Content-Type": "application/xml",
-		"Cache-Control": `public, max-age=${ttl}`,
-	});
+  res.set({
+    'Content-Type': 'application/xml',
+    'Cache-Control': `public, max-age=${ttl}`,
+  });
 
-	// If we have a cached content send it
-	const { data, timestamp } = cache.sitemapDefault;
-	if (data && timestamp) {
-		const age = Math.floor((Date.now() - timestamp) / 1000);
-		res.set("Age", age);
-		res.send(data);
-		return;
-	}
+  // If we have a cached content send it
+  const { data, timestamp } = cache.sitemapDefault;
+  if (data && timestamp) {
+    const age = Math.floor((Date.now() - timestamp) / 1000);
+    res.set('Age', age);
+    res.send(data);
+    return;
+  }
 
-	try {
-		const smStream = new SitemapStream({ hostname: rootUrl });
+  try {
+    const smStream = new SitemapStream({ hostname: rootUrl });
 
-		// Pass default public paths to SitemapStream.
-		// These are defined in the beginning of the page
-		const { search, ...restOfPaths } = defaultPublicPaths;
-		const publicPaths = isPrivateMarketplace
-			? restOfPaths
-			: defaultPublicPaths;
+    // Pass default public paths to SitemapStream.
+    // These are defined in the beginning of the page
+    const { search, ...restOfPaths } = defaultPublicPaths;
+    const publicPaths = isPrivateMarketplace ? restOfPaths : defaultPublicPaths;
 
-		const paths = Object.values(publicPaths);
-		Readable.from(paths).pipe(smStream);
+    const paths = Object.values(publicPaths);
+    Readable.from(paths).pipe(smStream);
 
-		// Save to in-memory cache
-		streamToPromise(smStream).then(sm => (cache.sitemapDefault = sm));
+    // Save to in-memory cache
+    streamToPromise(smStream).then(sm => (cache.sitemapDefault = sm));
 
-		// Write the stream to the response
-		smStream.pipe(res).on("error", e => {
-			throw e;
-		});
-	} catch (e) {
-		log.error(e, "sitemap-default-render-failed");
-		res.status(500).end();
-	}
+    // Write the stream to the response
+    smStream.pipe(res).on('error', e => {
+      throw e;
+    });
+  } catch (e) {
+    log.error(e, 'sitemap-default-render-failed');
+    res.status(500).end();
+  }
 };
 
 /**
@@ -182,59 +172,57 @@ const sitemapDefault = (req, res, rootUrl, isPrivateMarketplace) => {
  * @param {Object} sdk
  */
 const sitemapListings = (req, res, rootUrl, sdk) => {
-	res.set({
-		"Content-Type": "application/xml",
-		"Cache-Control": `public, max-age=${ttl}`,
-	});
+  res.set({
+    'Content-Type': 'application/xml',
+    'Cache-Control': `public, max-age=${ttl}`,
+  });
 
-	// If we have a cached content send it
-	const { data, timestamp } = cache.sitemapRecentListings;
-	if (data && timestamp) {
-		const age = Math.floor((Date.now() - timestamp) / 1000);
-		res.set("Age", age);
-		res.send(data);
-		return;
-	}
+  // If we have a cached content send it
+  const { data, timestamp } = cache.sitemapRecentListings;
+  if (data && timestamp) {
+    const age = Math.floor((Date.now() - timestamp) / 1000);
+    res.set('Age', age);
+    res.send(data);
+    return;
+  }
 
-	sdk.sitemapData
-		.queryListings()
-		.then(response => {
-			const listings = response.data.data || [];
-			// Use canonical URL: https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls
-			const ids = listings.map(l => `l/${l.id?.uuid}`);
+  sdk.sitemapData
+    .queryListings()
+    .then(response => {
+      const listings = response.data.data || [];
+      // Use canonical URL: https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls
+      const ids = listings.map(l => `l/${l.id?.uuid}`);
 
-			// If there's no listings, let's just return empty sitemap
-			const hasListingIds = ids.length > 0;
-			if (!hasListingIds) {
-				res.send(
-					`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"></urlset>`
-				);
-				return;
-			}
+      // If there's no listings, let's just return empty sitemap
+      const hasListingIds = ids.length > 0;
+      if (!hasListingIds) {
+        res.send(
+          `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"></urlset>`
+        );
+        return;
+      }
 
-			const smStream = new SitemapStream({ hostname: rootUrl });
-			Readable.from(ids).pipe(smStream);
+      const smStream = new SitemapStream({ hostname: rootUrl });
+      Readable.from(ids).pipe(smStream);
 
-			// Save to in-memory cache
-			streamToPromise(smStream).then(
-				sm => (cache.sitemapRecentListings = sm)
-			);
+      // Save to in-memory cache
+      streamToPromise(smStream).then(sm => (cache.sitemapRecentListings = sm));
 
-			// Write the stream to the response
-			smStream.pipe(res).on("error", e => {
-				throw e;
-			});
-		})
-		.catch(e => {
-			// Private marketplace mode might throw
-			if (e.status === 403) {
-				res.send(
-					`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"></urlset>`
-				);
-			}
-			log.error(e, "sitemap-recent-listings-render-failed");
-			res.status(500).end();
-		});
+      // Write the stream to the response
+      smStream.pipe(res).on('error', e => {
+        throw e;
+      });
+    })
+    .catch(e => {
+      // Private marketplace mode might throw
+      if (e.status === 403) {
+        res.send(
+          `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"></urlset>`
+        );
+      }
+      log.error(e, 'sitemap-recent-listings-render-failed');
+      res.status(500).end();
+    });
 };
 
 /**
@@ -248,68 +236,58 @@ const sitemapListings = (req, res, rootUrl, sdk) => {
  * @param {Object} sdk
  */
 const sitemapPages = (req, res, rootUrl, sdk) => {
-	res.set({
-		"Content-Type": "application/xml",
-		"Cache-Control": `public, max-age=${ttl}`,
-	});
+  res.set({
+    'Content-Type': 'application/xml',
+    'Cache-Control': `public, max-age=${ttl}`,
+  });
 
-	// If we have a cached content send it
-	const { data, timestamp } = cache.sitemapRecentPages;
-	if (data && timestamp) {
-		const age = Math.floor((Date.now() - timestamp) / 1000);
-		res.set("Age", age);
-		res.send(data);
-		return;
-	}
+  // If we have a cached content send it
+  const { data, timestamp } = cache.sitemapRecentPages;
+  if (data && timestamp) {
+    const age = Math.floor((Date.now() - timestamp) / 1000);
+    res.set('Age', age);
+    res.send(data);
+    return;
+  }
 
-	const pathPrefix = "/content/pages/";
-	sdk.sitemapData
-		.queryAssets({ pathPrefix })
-		.then(response => {
-			const assets = response.data.data || [];
+  const pathPrefix = '/content/pages/';
+  sdk.sitemapData
+    .queryAssets({ pathPrefix })
+    .then(response => {
+      const assets = response.data.data || [];
 
-			// If there's no Pages, let's just return empty sitemap
-			const hasAssets = assets.length > 0;
-			if (!hasAssets) {
-				res.send(
-					`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"></urlset>`
-				);
-				return;
-			}
+      // If there's no Pages, let's just return empty sitemap
+      const hasAssets = assets.length > 0;
+      if (!hasAssets) {
+        res.send(
+          `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"></urlset>`
+        );
+        return;
+      }
 
-			// Pick those asset paths that CMSPage component renders
-			const cmsPagePaths = assets.reduce((picked, asset) => {
-				const assetFileName = asset.attributes?.assetPath?.slice(
-					pathPrefix.length
-				);
-				const assetName = assetFileName.split(".")[0];
-				const permanentPaths = [
-					"landing-page",
-					"terms-of-service",
-					"privacy-policy",
-				];
-				return permanentPaths.includes(assetName)
-					? picked
-					: [...picked, `p/${assetName}`];
-			}, []);
+      // Pick those asset paths that CMSPage component renders
+      const cmsPagePaths = assets.reduce((picked, asset) => {
+        const assetFileName = asset.attributes?.assetPath?.slice(pathPrefix.length);
+        const assetName = assetFileName.split('.')[0];
+        const permanentPaths = ['landing-page', 'terms-of-service', 'privacy-policy'];
+        return permanentPaths.includes(assetName) ? picked : [...picked, `p/${assetName}`];
+      }, []);
 
-			const smStream = new SitemapStream({ hostname: rootUrl });
-			Readable.from(cmsPagePaths).pipe(smStream);
+      const smStream = new SitemapStream({ hostname: rootUrl });
+      Readable.from(cmsPagePaths).pipe(smStream);
 
-			// Save to in-memory cache
-			streamToPromise(smStream).then(
-				sm => (cache.sitemapRecentPages = sm)
-			);
+      // Save to in-memory cache
+      streamToPromise(smStream).then(sm => (cache.sitemapRecentPages = sm));
 
-			// stream write the response
-			smStream.pipe(res).on("error", e => {
-				throw e;
-			});
-		})
-		.catch(e => {
-			log.error(e, "sitemap-recent-pages-render-failed");
-			res.status(500).end();
-		});
+      // stream write the response
+      smStream.pipe(res).on('error', e => {
+        throw e;
+      });
+    })
+    .catch(e => {
+      log.error(e, 'sitemap-recent-pages-render-failed');
+      res.status(500).end();
+    });
 };
 
 /**
@@ -322,29 +300,24 @@ const sitemapPages = (req, res, rootUrl, sdk) => {
  * @param {Boolean} isPrivateMarketplace
  */
 const handleSitemaps = (req, res, next, sdk, isPrivateMarketplace) => {
-	const resource = req.params.resource;
-	const parts = resource.split(".");
-	const sitemapResource = parts[0];
-	// Resolve hostname inside the request
-	const rootUrl = getRootURL();
+  const resource = req.params.resource;
+  const parts = resource.split('.');
+  const sitemapResource = parts[0];
+  // Resolve hostname inside the request
+  const rootUrl = getRootURL();
 
-	if (sitemapResource === "index") {
-		sitemapIndex(
-			req,
-			res,
-			getRootURL({ useDevApiServerPort: true }),
-			isPrivateMarketplace
-		);
-	} else if (sitemapResource === "default") {
-		sitemapDefault(req, res, rootUrl, isPrivateMarketplace);
-	} else if (sitemapResource === "recent-listings" && !isPrivateMarketplace) {
-		sitemapListings(req, res, rootUrl, sdk);
-	} else if (sitemapResource === "recent-pages") {
-		sitemapPages(req, res, rootUrl, sdk);
-	} else {
-		// If none of the resource-routes mapped, we pass this forward.
-		next();
-	}
+  if (sitemapResource === 'index') {
+    sitemapIndex(req, res, getRootURL({ useDevApiServerPort: true }), isPrivateMarketplace);
+  } else if (sitemapResource === 'default') {
+    sitemapDefault(req, res, rootUrl, isPrivateMarketplace);
+  } else if (sitemapResource === 'recent-listings' && !isPrivateMarketplace) {
+    sitemapListings(req, res, rootUrl, sdk);
+  } else if (sitemapResource === 'recent-pages') {
+    sitemapPages(req, res, rootUrl, sdk);
+  } else {
+    // If none of the resource-routes mapped, we pass this forward.
+    next();
+  }
 };
 /**
  * Route: "sitemap-:resource". resouce can point to index, default, recent-listings, or recent-pages.
@@ -354,39 +327,37 @@ const handleSitemaps = (req, res, next, sdk, isPrivateMarketplace) => {
  * @param {function} next
  */
 module.exports = (req, res, next) => {
-	// Making it a bit faster to react to DDOS attacks, since the generation is a bit resource intensive.
-	// You might want to consider adding cron job and avoid sitemap generation on request time.
-	if (isSitemapDisabled) {
-		res.status(503).end();
-		console.log("Sitemap functionality is disabled.");
-		return;
-	}
+  // Making it a bit faster to react to DDOS attacks, since the generation is a bit resource intensive.
+  // You might want to consider adding cron job and avoid sitemap generation on request time.
+  if (isSitemapDisabled) {
+    res.status(503).end();
+    console.log('Sitemap functionality is disabled.');
+    return;
+  }
 
-	const sdk = sdkUtils.getSdk(req, res);
-	sdkUtils
-		.fetchAccessControlAsset(sdk)
-		.then(response => {
-			const accessControlAsset = response.data.data[0];
+  const sdk = sdkUtils.getSdk(req, res);
+  sdkUtils
+    .fetchAccessControlAsset(sdk)
+    .then(response => {
+      const accessControlAsset = response.data.data[0];
 
-			const { marketplace } =
-				accessControlAsset?.type === "jsonAsset"
-					? accessControlAsset.attributes.data
-					: {};
-			const isPrivateMarketplace = marketplace?.private === true;
-			handleSitemaps(req, res, next, sdk, isPrivateMarketplace);
-		})
-		.catch(e => {
-			const is404 = e.status === 404;
-			if (is404) {
-				// If access-control.json asset is not found, we default to "public" marketplace.
-				handleSitemaps(req, res, next, sdk, false);
+      const { marketplace } =
+        accessControlAsset?.type === 'jsonAsset' ? accessControlAsset.attributes.data : {};
+      const isPrivateMarketplace = marketplace?.private === true;
+      handleSitemaps(req, res, next, sdk, isPrivateMarketplace);
+    })
+    .catch(e => {
+      const is404 = e.status === 404;
+      if (is404) {
+        // If access-control.json asset is not found, we default to "public" marketplace.
+        handleSitemaps(req, res, next, sdk, false);
 
-				if (dev) {
-					// Log error
-					console.log("sitemap-render-failed-no-asset-found");
-				}
-			} else {
-				next();
-			}
-		});
+        if (dev) {
+          // Log error
+          console.log('sitemap-render-failed-no-asset-found');
+        }
+      } else {
+        next();
+      }
+    });
 };

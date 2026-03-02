@@ -909,8 +909,9 @@ enabling users to update the account so that it doesn't get restricted.
 ## [v3.6.1] 2019-11-26
 
 - [fix] Fix XSS-vulnerability on SearchPage where URL param 'address' was exposed directly to
-  schema, which is just a script tag: <script type="application/ld+json">. On server-side, this
-  could leak malformed HTML through to browsers and made it possible to inject own script tags.
+  schema, which is just a script tag:
+  <script type="application/ld+json">. On server-side, this could leak malformed
+  HTML through to browsers and made it possible to inject own script tags.
 
 However, CSP prevents any data breach: injected js can't send data to unknonwn 3rd party sites.
 

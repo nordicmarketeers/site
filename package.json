@@ -130,11 +130,16 @@
     "node": "^20.0.0"
   },
   "prettier": {
-    "editorconfig": true,
-    "singleQuote": false,
+    "endOfLine": "lf",
+    "printWidth": 100,
+    "tabWidth": 2,
+    "useTabs": false,
+    "semi": true,
+    "singleQuote": true,
     "trailingComma": "es5",
+    "bracketSpacing": true,
+    "arrowParens": "avoid",
     "proseWrap": "always",
-    "jsxSingleQuote": false,
-    "semi": true
+    "htmlWhitespaceSensitivity": "ignore"
   }
 }

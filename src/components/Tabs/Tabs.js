@@ -1,8 +1,8 @@
-import React from "react";
-import classNames from "classnames";
-import { TabNav } from "../../components";
+import React from 'react';
+import classNames from 'classnames';
+import { TabNav } from '../../components';
 
-import css from "./Tabs.module.css";
+import css from './Tabs.module.css';
 
 /**
  * Tabs creates view area that has tabs made out of its children.
@@ -29,60 +29,58 @@ import css from "./Tabs.module.css";
  * @returns {JSX.Element} Tab navigation component
  */
 const Tabs = props => {
-	const {
-		children,
-		className,
-		rootClassName,
-		navRootClassName,
-		tabRootClassName,
-		ariaLabel,
-	} = props;
-	const rootClasses = rootClassName || css.root;
-	const classes = classNames(rootClasses, className);
+  const {
+    children,
+    className,
+    rootClassName,
+    navRootClassName,
+    tabRootClassName,
+    ariaLabel,
+  } = props;
+  const rootClasses = rootClassName || css.root;
+  const classes = classNames(rootClasses, className);
 
-	const tabNavTabs = React.Children.map(children, child => {
-		const { tabId, tabLabel, tabLinkProps } = child.props;
+  const tabNavTabs = React.Children.map(children, child => {
+    const { tabId, tabLabel, tabLinkProps } = child.props;
 
-		// Child components need to have TabNav props included
-		if (!tabId || !tabLabel || !tabLinkProps) {
-			throw new Error(
-				`Tabs component: a child component is missing required props.
+    // Child components need to have TabNav props included
+    if (!tabId || !tabLabel || !tabLinkProps) {
+      throw new Error(
+        `Tabs component: a child component is missing required props.
         tabId: (${tabId})
         tabLabel: (${tabLabel})
         tabLinkProps: (${tabLinkProps})`
-			);
-		}
+      );
+    }
 
-		return {
-			id: tabId,
-			text: child.props.tabLabel,
-			linkProps: child.props.tabLinkProps,
-			disabled: child.props.disabled,
-			selected: child.props.selected,
-		};
-	});
+    return {
+      id: tabId,
+      text: child.props.tabLabel,
+      linkProps: child.props.tabLinkProps,
+      disabled: child.props.disabled,
+      selected: child.props.selected,
+    };
+  });
 
-	const childArray = React.Children.toArray(children);
-	const selectedTabPanel = childArray.find(c => c.props.selected);
+  const childArray = React.Children.toArray(children);
+  const selectedTabPanel = childArray.find(c => c.props.selected);
 
-	// One of the children needs to be selected
-	if (!selectedTabPanel) {
-		throw new Error(
-			`Tabs component: one Child should have 'selected' prop.`
-		);
-	}
+  // One of the children needs to be selected
+  if (!selectedTabPanel) {
+    throw new Error(`Tabs component: one Child should have 'selected' prop.`);
+  }
 
-	return (
-		<div className={classes}>
-			<TabNav
-				rootClassName={navRootClassName}
-				tabs={tabNavTabs}
-				tabRootClassName={tabRootClassName}
-				ariaLabel={ariaLabel}
-			/>
-			{selectedTabPanel}
-		</div>
-	);
+  return (
+    <div className={classes}>
+      <TabNav
+        rootClassName={navRootClassName}
+        tabs={tabNavTabs}
+        tabRootClassName={tabRootClassName}
+        ariaLabel={ariaLabel}
+      />
+      {selectedTabPanel}
+    </div>
+  );
 };
 
 export default Tabs;

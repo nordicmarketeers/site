@@ -1,7 +1,7 @@
-import IconAlert from "./IconAlert";
+import IconAlert from './IconAlert';
 
 export const Icon = {
-	component: IconAlert,
-	props: {},
-	group: "icons",
+  component: IconAlert,
+  props: {},
+  group: 'icons',
 };

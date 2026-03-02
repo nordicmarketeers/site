@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 /**
  * External link that opens in a new tab/window, ensuring that the
@@ -14,17 +14,17 @@ import React from "react";
  * @returns {JSX.Element} External link
  */
 const ExternalLink = props => {
-	const { children, target, ...rest } = props;
-	const targetProp = target || "_blank";
-	const anchorProps =
-		targetProp === "_blank"
-			? { target: "_blank", rel: "noopener noreferrer" }
-			: { target: targetProp };
-	return (
-		<a {...rest} {...anchorProps}>
-			{children}
-		</a>
-	);
+  const { children, target, ...rest } = props;
+  const targetProp = target || '_blank';
+  const anchorProps =
+    targetProp === '_blank'
+      ? { target: '_blank', rel: 'noopener noreferrer' }
+      : { target: targetProp };
+  return (
+    <a {...rest} {...anchorProps}>
+      {children}
+    </a>
+  );
 };
 
 export default ExternalLink;

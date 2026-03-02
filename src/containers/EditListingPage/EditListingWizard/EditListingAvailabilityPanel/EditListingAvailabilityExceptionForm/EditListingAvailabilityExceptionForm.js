@@ -1,19 +1,19 @@
-import React from "react";
-import { Form as FinalForm } from "react-final-form";
-import classNames from "classnames";
+import React from 'react';
+import { Form as FinalForm } from 'react-final-form';
+import classNames from 'classnames';
 
-import { FormattedMessage, useIntl } from "../../../../../util/reactIntl";
-import { AVAILABILITY_MULTIPLE_SEATS } from "../../../../../util/types";
-import { DAY } from "../../../../../transactions/transaction";
+import { FormattedMessage, useIntl } from '../../../../../util/reactIntl';
+import { AVAILABILITY_MULTIPLE_SEATS } from '../../../../../util/types';
+import { DAY } from '../../../../../transactions/transaction';
 
-import { Form, H3, PrimaryButton } from "../../../../../components";
+import { Form, H3, PrimaryButton } from '../../../../../components';
 
-import FieldSeatsInput from "../FieldSeatsInput/FieldSeatsInput";
-import AvailabilitySingleSeatSelector from "./AvailabilitySingleSeatSelector";
-import ExceptionDateTimeRange from "./ExceptionDateTimeRange";
-import ExceptionDateRange from "./ExceptionDateRange";
+import FieldSeatsInput from '../FieldSeatsInput/FieldSeatsInput';
+import AvailabilitySingleSeatSelector from './AvailabilitySingleSeatSelector';
+import ExceptionDateTimeRange from './ExceptionDateTimeRange';
+import ExceptionDateRange from './ExceptionDateRange';
 
-import css from "./EditListingAvailabilityExceptionForm.module.css";
+import css from './EditListingAvailabilityExceptionForm.module.css';
 
 //////////////////////////////////////////
 // EditListingAvailabilityExceptionForm //
@@ -57,163 +57,144 @@ import css from "./EditListingAvailabilityExceptionForm.module.css";
  * @returns {JSX.Element} containing form that allows adding availability exceptions
  */
 const EditListingAvailabilityExceptionForm = props => {
-	const intl = useIntl();
-	return (
-		<FinalForm
-			{...props}
-			render={formRenderProps => {
-				const {
-					className,
-					rootClassName,
-					form: formApi,
-					formId,
-					listingId,
-					disabled,
-					handleSubmit,
-					invalid,
-					onMonthChanged,
-					pristine,
-					monthlyExceptionQueries,
-					allExceptions = [],
-					onFetchExceptions,
-					useFullDays,
-					listingTypeConfig,
-					unitType,
-					timeZone,
-					updateInProgress,
-					fetchErrors,
-					values,
-				} = formRenderProps;
+  const intl = useIntl();
+  return (
+    <FinalForm
+      {...props}
+      render={formRenderProps => {
+        const {
+          className,
+          rootClassName,
+          form: formApi,
+          formId,
+          listingId,
+          disabled,
+          handleSubmit,
+          invalid,
+          onMonthChanged,
+          pristine,
+          monthlyExceptionQueries,
+          allExceptions = [],
+          onFetchExceptions,
+          useFullDays,
+          listingTypeConfig,
+          unitType,
+          timeZone,
+          updateInProgress,
+          fetchErrors,
+          values,
+        } = formRenderProps;
 
-				const idPrefix =
-					`${formId}` || "EditListingAvailabilityExceptionForm";
-				const isDaily = unitType === DAY;
+        const idPrefix = `${formId}` || 'EditListingAvailabilityExceptionForm';
+        const isDaily = unitType === DAY;
 
-				const {
-					availability,
-					exceptionStartDate,
-					exceptionStartTime = null,
-					exceptionEndDate,
-					exceptionEndTime,
-					exceptionRange,
-					seats,
-				} = values;
-				const hasMultipleSeatsInUSe =
-					listingTypeConfig?.availabilityType ===
-					AVAILABILITY_MULTIPLE_SEATS;
-				const hasSeats = hasMultipleSeatsInUSe
-					? seats != null
-					: availability;
+        const {
+          availability,
+          exceptionStartDate,
+          exceptionStartTime = null,
+          exceptionEndDate,
+          exceptionEndTime,
+          exceptionRange,
+          seats,
+        } = values;
+        const hasMultipleSeatsInUSe =
+          listingTypeConfig?.availabilityType === AVAILABILITY_MULTIPLE_SEATS;
+        const hasSeats = hasMultipleSeatsInUSe ? seats != null : availability;
 
-				const { updateListingError } = fetchErrors || {};
+        const { updateListingError } = fetchErrors || {};
 
-				const submitInProgress = updateInProgress;
-				const hasData =
-					hasSeats &&
-					(exceptionRange ||
-						(exceptionStartDate &&
-							exceptionStartTime &&
-							exceptionEndDate &&
-							exceptionEndTime));
-				const submitDisabled =
-					!hasData || invalid || disabled || submitInProgress;
+        const submitInProgress = updateInProgress;
+        const hasData =
+          hasSeats &&
+          (exceptionRange ||
+            (exceptionStartDate && exceptionStartTime && exceptionEndDate && exceptionEndTime));
+        const submitDisabled = !hasData || invalid || disabled || submitInProgress;
 
-				const classes = classNames(
-					rootClassName || css.root,
-					className
-				);
+        const classes = classNames(rootClassName || css.root, className);
 
-				return (
-					<Form
-						className={classes}
-						onSubmit={e => {
-							handleSubmit(e).then(() => {
-								formApi.initialize({
-									exceptionStartDate: null,
-									exceptionStartTime: null,
-									exceptionEndDate: null,
-									exceptionEndTime: null,
-								});
-							});
-						}}
-					>
-						<H3 as="h2" className={css.heading}>
-							<FormattedMessage id="EditListingAvailabilityExceptionForm.title" />
-						</H3>
+        return (
+          <Form
+            className={classes}
+            onSubmit={e => {
+              handleSubmit(e).then(() => {
+                formApi.initialize({
+                  exceptionStartDate: null,
+                  exceptionStartTime: null,
+                  exceptionEndDate: null,
+                  exceptionEndTime: null,
+                });
+              });
+            }}
+          >
+            <H3 as="h2" className={css.heading}>
+              <FormattedMessage id="EditListingAvailabilityExceptionForm.title" />
+            </H3>
 
-						{!hasMultipleSeatsInUSe ? (
-							<AvailabilitySingleSeatSelector
-								idPrefix={idPrefix}
-								rootClassName={css.radioButtons}
-								pristine={pristine}
-								intl={intl}
-							/>
-						) : null}
+            {!hasMultipleSeatsInUSe ? (
+              <AvailabilitySingleSeatSelector
+                idPrefix={idPrefix}
+                rootClassName={css.radioButtons}
+                pristine={pristine}
+                intl={intl}
+              />
+            ) : null}
 
-						<div className={css.section}>
-							{useFullDays ? (
-								<ExceptionDateRange
-									formId={formId}
-									listingId={listingId}
-									intl={intl}
-									allExceptions={allExceptions}
-									monthlyExceptionQueries={
-										monthlyExceptionQueries
-									}
-									onFetchExceptions={onFetchExceptions}
-									onMonthChanged={onMonthChanged}
-									timeZone={timeZone}
-									isDaily={isDaily}
-									values={values}
-								/>
-							) : (
-								<ExceptionDateTimeRange
-									formId={formId}
-									listingId={listingId}
-									intl={intl}
-									formApi={formApi}
-									allExceptions={allExceptions}
-									monthlyExceptionQueries={
-										monthlyExceptionQueries
-									}
-									onFetchExceptions={onFetchExceptions}
-									onMonthChanged={onMonthChanged}
-									timeZone={timeZone}
-									values={values}
-								/>
-							)}
-						</div>
+            <div className={css.section}>
+              {useFullDays ? (
+                <ExceptionDateRange
+                  formId={formId}
+                  listingId={listingId}
+                  intl={intl}
+                  allExceptions={allExceptions}
+                  monthlyExceptionQueries={monthlyExceptionQueries}
+                  onFetchExceptions={onFetchExceptions}
+                  onMonthChanged={onMonthChanged}
+                  timeZone={timeZone}
+                  isDaily={isDaily}
+                  values={values}
+                />
+              ) : (
+                <ExceptionDateTimeRange
+                  formId={formId}
+                  listingId={listingId}
+                  intl={intl}
+                  formApi={formApi}
+                  allExceptions={allExceptions}
+                  monthlyExceptionQueries={monthlyExceptionQueries}
+                  onFetchExceptions={onFetchExceptions}
+                  onMonthChanged={onMonthChanged}
+                  timeZone={timeZone}
+                  values={values}
+                />
+              )}
+            </div>
 
-						{hasMultipleSeatsInUSe ? (
-							<FieldSeatsInput
-								id={`${idPrefix}.seats`}
-								name="seats"
-								rootClassName={css.seatsInput}
-								pristine={pristine}
-								unitType={unitType}
-								intl={intl}
-							/>
-						) : null}
+            {hasMultipleSeatsInUSe ? (
+              <FieldSeatsInput
+                id={`${idPrefix}.seats`}
+                name="seats"
+                rootClassName={css.seatsInput}
+                pristine={pristine}
+                unitType={unitType}
+                intl={intl}
+              />
+            ) : null}
 
-						<div className={css.submitButton}>
-							{updateListingError ? (
-								<p className={css.error}>
-									<FormattedMessage id="EditListingAvailabilityExceptionForm.updateFailed" />
-								</p>
-							) : null}
-							<PrimaryButton
-								type="submit"
-								inProgress={submitInProgress}
-								disabled={submitDisabled}
-							>
-								<FormattedMessage id="EditListingAvailabilityExceptionForm.addException" />
-							</PrimaryButton>
-						</div>
-					</Form>
-				);
-			}}
-		/>
-	);
+            <div className={css.submitButton}>
+              {updateListingError ? (
+                <p className={css.error}>
+                  <FormattedMessage id="EditListingAvailabilityExceptionForm.updateFailed" />
+                </p>
+              ) : null}
+              <PrimaryButton type="submit" inProgress={submitInProgress} disabled={submitDisabled}>
+                <FormattedMessage id="EditListingAvailabilityExceptionForm.addException" />
+              </PrimaryButton>
+            </div>
+          </Form>
+        );
+      }}
+    />
+  );
 };
 
 export default EditListingAvailabilityExceptionForm;

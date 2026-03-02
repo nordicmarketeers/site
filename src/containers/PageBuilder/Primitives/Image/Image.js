@@ -1,13 +1,10 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import {
-	AspectRatioWrapper,
-	ResponsiveImage,
-} from "../../../../components/index.js";
-import { Link } from "../Link";
+import { AspectRatioWrapper, ResponsiveImage } from '../../../../components/index.js';
+import { Link } from '../Link';
 
-import css from "./Image.module.css";
+import css from './Image.module.css';
 
 /**
  * Images in markdown point to elsewhere (they don't support responsive image variants)
@@ -21,21 +18,13 @@ import css from "./Image.module.css";
  * @returns {JSX.Element} image element for markdown processor
  */
 export const MarkdownImage = React.forwardRef((props, ref) => {
-	const { className, rootClassName, alt = "image", ...otherProps } = props;
-	const classes = classNames(rootClassName || css.markdownImage, className);
+  const { className, rootClassName, alt = 'image', ...otherProps } = props;
+  const classes = classNames(rootClassName || css.markdownImage, className);
 
-	return (
-		<img
-			className={classes}
-			alt={alt}
-			{...otherProps}
-			ref={ref}
-			crossOrigin="anonymous"
-		/>
-	);
+  return <img className={classes} alt={alt} {...otherProps} ref={ref} crossOrigin="anonymous" />;
 });
 
-MarkdownImage.displayName = "MarkdownImage";
+MarkdownImage.displayName = 'MarkdownImage';
 
 /**
  * @typedef {Object} ImageVariant
@@ -61,63 +50,46 @@ MarkdownImage.displayName = "MarkdownImage";
  * @returns {JSX.Element} image element
  */
 export const FieldImage = React.forwardRef((props, ref) => {
-	const {
-		className,
-		rootClassName,
-		alt = "image",
-		image,
-		sizes,
-		link,
-		...otherProps
-	} = props;
+  const { className, rootClassName, alt = 'image', image, sizes, link, ...otherProps } = props;
 
-	const { variants } = image?.attributes || {};
-	const variantNames = Object.keys(variants);
+  const { variants } = image?.attributes || {};
+  const variantNames = Object.keys(variants);
 
-	// We assume aspect ratio from the first image variant
-	const firstImageVariant = variants[variantNames[0]];
-	const { width: aspectWidth, height: aspectHeight } =
-		firstImageVariant || {};
+  // We assume aspect ratio from the first image variant
+  const firstImageVariant = variants[variantNames[0]];
+  const { width: aspectWidth, height: aspectHeight } = firstImageVariant || {};
 
-	const imageLinkHref = link?.href || null;
-	const imageLinkFieldType = link?.fieldType || null;
+  const imageLinkHref = link?.href || null;
+  const imageLinkFieldType = link?.fieldType || null;
 
-	const classes = classNames(
-		rootClassName || css.fieldImage,
-		className,
-		{ [css.imageHoverEffect]: imageLinkHref } // Add a hover effect for the image if it is wrapped in a link
-	);
+  const classes = classNames(
+    rootClassName || css.fieldImage,
+    className,
+    { [css.imageHoverEffect]: imageLinkHref } // Add a hover effect for the image if it is wrapped in a link
+  );
 
-	const responsiveImage = (
-		<ResponsiveImage
-			className={css.fieldImage}
-			ref={ref}
-			alt={alt}
-			image={image}
-			variants={variantNames}
-			sizes={sizes}
-			{...otherProps}
-		/>
-	);
-	return (
-		<AspectRatioWrapper
-			className={classes}
-			width={aspectWidth || 1}
-			height={aspectHeight || 1}
-		>
-			{imageLinkHref ? (
-				<Link
-					href={imageLinkHref}
-					title={alt}
-					fieldType={imageLinkFieldType}
-				>
-					{responsiveImage}
-				</Link>
-			) : (
-				responsiveImage
-			)}
-		</AspectRatioWrapper>
-	);
+  const responsiveImage = (
+    <ResponsiveImage
+      className={css.fieldImage}
+      ref={ref}
+      alt={alt}
+      image={image}
+      variants={variantNames}
+      sizes={sizes}
+      {...otherProps}
+    />
+  );
+  return (
+    <AspectRatioWrapper className={classes} width={aspectWidth || 1} height={aspectHeight || 1}>
+      {imageLinkHref ? (
+        <Link href={imageLinkHref} title={alt} fieldType={imageLinkFieldType}>
+          {responsiveImage}
+        </Link>
+      ) : (
+        responsiveImage
+      )}
+    </AspectRatioWrapper>
+  );
 });
 
-FieldImage.displayName = "FieldImage";
+FieldImage.displayName = 'FieldImage';

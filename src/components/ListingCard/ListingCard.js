@@ -1,110 +1,94 @@
-import React, { useState } from "react";
-import classNames from "classnames";
+import React, { useState } from 'react';
+import classNames from 'classnames';
 
-import { useConfiguration } from "../../context/configurationContext";
+import { useConfiguration } from '../../context/configurationContext';
 
-import { FormattedMessage, useIntl } from "../../util/reactIntl";
+import { FormattedMessage, useIntl } from '../../util/reactIntl';
 import {
-	displayPrice,
-	isPriceVariationsEnabled,
-	requireListingImage,
-} from "../../util/configHelpers";
-import { lazyLoadWithDimensions } from "../../util/uiHelpers";
-import { formatMoney } from "../../util/currency";
-import { ensureListing, ensureUser } from "../../util/data";
-import { richText } from "../../util/richText";
-import { createSlug } from "../../util/urlHelpers";
-import { isBookingProcessAlias } from "../../transactions/transaction";
+  displayPrice,
+  isPriceVariationsEnabled,
+  requireListingImage,
+} from '../../util/configHelpers';
+import { lazyLoadWithDimensions } from '../../util/uiHelpers';
+import { formatMoney } from '../../util/currency';
+import { ensureListing, ensureUser } from '../../util/data';
+import { richText } from '../../util/richText';
+import { createSlug } from '../../util/urlHelpers';
+import { isBookingProcessAlias } from '../../transactions/transaction';
 
 import {
-	AspectRatioWrapper,
-	NamedLink,
-	ResponsiveImage,
-	ListingCardThumbnail,
-	AvatarLarge,
-} from "../../components";
+  AspectRatioWrapper,
+  NamedLink,
+  ResponsiveImage,
+  ListingCardThumbnail,
+  AvatarLarge,
+} from '../../components';
 
-import { IoLanguage, IoLocationSharp } from "react-icons/io5";
+import { IoLanguage, IoLocationSharp } from 'react-icons/io5';
 
-import css from "./ListingCard.module.css";
-import ProfileListingCard from "./ProfileListingCard";
-import JobListingCard from "./JobListingCard";
+import css from './ListingCard.module.css';
+import ProfileListingCard from './ProfileListingCard';
+import JobListingCard from './JobListingCard';
 
 const MIN_LENGTH_FOR_LONG_WORDS = 10;
 
 const priceData = (price, currency, intl) => {
-	if (price && price.currency === currency) {
-		const formattedPrice = formatMoney(intl, price);
-		return { formattedPrice, priceTitle: formattedPrice };
-	} else if (price) {
-		return {
-			formattedPrice: intl.formatMessage(
-				{ id: "ListingCard.unsupportedPrice" },
-				{ currency: price.currency }
-			),
-			priceTitle: intl.formatMessage(
-				{ id: "ListingCard.unsupportedPriceTitle" },
-				{ currency: price.currency }
-			),
-		};
-	}
-	return {};
+  if (price && price.currency === currency) {
+    const formattedPrice = formatMoney(intl, price);
+    return { formattedPrice, priceTitle: formattedPrice };
+  } else if (price) {
+    return {
+      formattedPrice: intl.formatMessage(
+        { id: 'ListingCard.unsupportedPrice' },
+        { currency: price.currency }
+      ),
+      priceTitle: intl.formatMessage(
+        { id: 'ListingCard.unsupportedPriceTitle' },
+        { currency: price.currency }
+      ),
+    };
+  }
+  return {};
 };
 
 const LazyImage = lazyLoadWithDimensions(ResponsiveImage, {
-	loadAfterInitialRendering: 3000,
+  loadAfterInitialRendering: 3000,
 });
 
 const PriceMaybe = props => {
-	const { price, publicData, config, intl, listingTypeConfig } = props;
-	const showPrice = displayPrice(listingTypeConfig);
-	if (!showPrice && price) {
-		return null;
-	}
+  const { price, publicData, config, intl, listingTypeConfig } = props;
+  const showPrice = displayPrice(listingTypeConfig);
+  if (!showPrice && price) {
+    return null;
+  }
 
-	const isPriceVariationsInUse = isPriceVariationsEnabled(
-		publicData,
-		listingTypeConfig
-	);
-	const hasMultiplePriceVariants =
-		isPriceVariationsInUse && publicData?.priceVariants?.length > 1;
+  const isPriceVariationsInUse = isPriceVariationsEnabled(publicData, listingTypeConfig);
+  const hasMultiplePriceVariants = isPriceVariationsInUse && publicData?.priceVariants?.length > 1;
 
-	const isBookable = isBookingProcessAlias(
-		publicData?.transactionProcessAlias
-	);
-	const { formattedPrice, priceTitle } = priceData(
-		price,
-		config.currency,
-		intl
-	);
+  const isBookable = isBookingProcessAlias(publicData?.transactionProcessAlias);
+  const { formattedPrice, priceTitle } = priceData(price, config.currency, intl);
 
-	const priceValue = <span className={css.priceValue}>{formattedPrice}</span>;
-	const pricePerUnit = isBookable ? (
-		<span className={css.perUnit}>
-			<FormattedMessage
-				id="ListingCard.perUnit"
-				values={{ unitType: publicData?.unitType }}
-			/>
-		</span>
-	) : (
-		""
-	);
+  const priceValue = <span className={css.priceValue}>{formattedPrice}</span>;
+  const pricePerUnit = isBookable ? (
+    <span className={css.perUnit}>
+      <FormattedMessage id="ListingCard.perUnit" values={{ unitType: publicData?.unitType }} />
+    </span>
+  ) : (
+    ''
+  );
 
-	return (
-		<div className={css.price} title={priceTitle}>
-			{hasMultiplePriceVariants ? (
-				<FormattedMessage
-					id="ListingCard.priceStartingFrom"
-					values={{ priceValue, pricePerUnit }}
-				/>
-			) : (
-				<FormattedMessage
-					id="ListingCard.price"
-					values={{ priceValue, pricePerUnit }}
-				/>
-			)}
-		</div>
-	);
+  return (
+    <div className={css.price} title={priceTitle}>
+      {hasMultiplePriceVariants ? (
+        <FormattedMessage
+          id="ListingCard.priceStartingFrom"
+          values={{ priceValue, pricePerUnit }}
+        />
+      ) : (
+        <FormattedMessage id="ListingCard.price" values={{ priceValue, pricePerUnit }} />
+      )}
+    </div>
+  );
 };
 
 /**
@@ -127,54 +111,50 @@ const PriceMaybe = props => {
  * @returns {JSX.Element} listing image with fixed aspect ratio or fallback preview
  */
 const ListingCardImage = props => {
-	const {
-		currentListing,
-		setActivePropsMaybe,
-		title,
-		renderSizes,
-		aspectWidth,
-		aspectHeight,
-		variantPrefix,
-		showListingImage,
-		style,
-	} = props;
+  const {
+    currentListing,
+    setActivePropsMaybe,
+    title,
+    renderSizes,
+    aspectWidth,
+    aspectHeight,
+    variantPrefix,
+    showListingImage,
+    style,
+  } = props;
 
-	const firstImage =
-		currentListing.images && currentListing.images.length > 0
-			? currentListing.images[0]
-			: null;
-	const variants = firstImage
-		? Object.keys(firstImage?.attributes?.variants).filter(k =>
-				k.startsWith(variantPrefix)
-		  )
-		: [];
+  const firstImage =
+    currentListing.images && currentListing.images.length > 0 ? currentListing.images[0] : null;
+  const variants = firstImage
+    ? Object.keys(firstImage?.attributes?.variants).filter(k => k.startsWith(variantPrefix))
+    : [];
 
-	// Render the listing image only if listing images are enabled in the listing type
-	return showListingImage ? (
-		<AspectRatioWrapper
-			className={css.aspectRatioWrapper}
-			width={aspectWidth}
-			height={aspectHeight}
-			{...setActivePropsMaybe}
-		>
-			<LazyImage
-				rootClassName={css.rootForImage}
-				alt={title}
-				image={firstImage}
-				variants={variants}
-				sizes={renderSizes}
-			/>
-		</AspectRatioWrapper>
-	) : (
-		<ListingCardThumbnail
-			style={style}
-			listingTitle={title}
-			className={css.aspectRatioWrapper}
-			width={aspectWidth}
-			height={aspectHeight}
-			setActivePropsMaybe={setActivePropsMaybe}
-		/>
-	);
+  // Render the listing image only if listing images are enabled in the listing type
+  return showListingImage ? (
+    <AspectRatioWrapper
+      className={css.aspectRatioWrapper}
+      width={aspectWidth}
+      height={aspectHeight}
+      {...setActivePropsMaybe}
+    >
+      <LazyImage
+        rootClassName={css.rootForImage}
+        alt={title}
+        image={firstImage}
+        variants={variants}
+        sizes={renderSizes}
+      />
+    </AspectRatioWrapper>
+  ) : (
+    <ListingCardThumbnail
+      style={style}
+      listingTitle={title}
+      className={css.aspectRatioWrapper}
+      width={aspectWidth}
+      height={aspectHeight}
+      setActivePropsMaybe={setActivePropsMaybe}
+    />
+  );
 };
 
 /**
@@ -191,114 +171,93 @@ const ListingCardImage = props => {
  * @returns {JSX.Element} listing card to be used in search result panel etc.
  */
 export const ListingCard = props => {
-	const config = useConfiguration();
-	const intl = props.intl || useIntl();
+  const config = useConfiguration();
+  const intl = props.intl || useIntl();
 
-	const {
-		className,
-		rootClassName,
-		listing,
-		renderSizes,
-		setActiveListing,
-		showAuthorInfo = true,
-	} = props;
+  const {
+    className,
+    rootClassName,
+    listing,
+    renderSizes,
+    setActiveListing,
+    showAuthorInfo = true,
+  } = props;
 
-	const classes = classNames(rootClassName || css.root, className);
+  const classes = classNames(rootClassName || css.root, className);
 
-	const currentListing = ensureListing(listing);
-	const id = currentListing.id.uuid;
-	const { title = "", price, publicData } = currentListing.attributes;
+  const currentListing = ensureListing(listing);
+  const id = currentListing.id.uuid;
+  const { title = '', price, publicData } = currentListing.attributes;
 
-	const slug = createSlug(title);
+  const slug = createSlug(title);
 
-	const author = ensureUser(listing.author);
-	const authorName = author.attributes.profile.displayName;
+  const author = ensureUser(listing.author);
+  const authorName = author.attributes.profile.displayName;
 
-	const { listingType, cardStyle } = publicData || {};
-	const validListingTypes = config.listing.listingTypes;
-	const foundListingTypeConfig = validListingTypes.find(
-		conf => conf.listingType === listingType
-	);
-	const showListingImage = requireListingImage(foundListingTypeConfig);
+  const { listingType, cardStyle } = publicData || {};
+  const validListingTypes = config.listing.listingTypes;
+  const foundListingTypeConfig = validListingTypes.find(conf => conf.listingType === listingType);
+  const showListingImage = requireListingImage(foundListingTypeConfig);
 
-	const {
-		aspectWidth = 1,
-		aspectHeight = 1,
-		variantPrefix = "listing-card",
-	} = config.layout.listingImage;
+  const {
+    aspectWidth = 1,
+    aspectHeight = 1,
+    variantPrefix = 'listing-card',
+  } = config.layout.listingImage;
 
-	// Sets the listing as active in the search map when hovered (if the search map is enabled)
-	const setActivePropsMaybe = setActiveListing
-		? {
-				onMouseEnter: () => setActiveListing(currentListing.id),
-				onMouseLeave: () => setActiveListing(null),
-		  }
-		: null;
+  // Sets the listing as active in the search map when hovered (if the search map is enabled)
+  const setActivePropsMaybe = setActiveListing
+    ? {
+        onMouseEnter: () => setActiveListing(currentListing.id),
+        onMouseLeave: () => setActiveListing(null),
+      }
+    : null;
 
-	if (listingType === "consultant_profile") {
-		return (
-			<ProfileListingCard
-				author={author}
-				classes={classes}
-				currentListing={currentListing}
-			/>
-		);
-	} else if (listingType === "consultant_job") {
-		return (
-			<JobListingCard
-				author={author}
-				classes={classes}
-				currentListing={currentListing}
-			/>
-		);
-	} else
-		return (
-			<NamedLink
-				className={classes}
-				name="ListingPage"
-				params={{ id, slug }}
-			>
-				<ListingCardImage
-					renderSizes={renderSizes}
-					title={title}
-					currentListing={currentListing}
-					config={config}
-					setActivePropsMaybe={setActivePropsMaybe}
-					aspectWidth={aspectWidth}
-					aspectHeight={aspectHeight}
-					variantPrefix={variantPrefix}
-					style={cardStyle}
-					showListingImage={showListingImage}
-				/>
-				<div className={css.info}>
-					<PriceMaybe
-						price={price}
-						publicData={publicData}
-						config={config}
-						intl={intl}
-						listingTypeConfig={foundListingTypeConfig}
-					/>
-					<div className={css.mainInfo}>
-						{showListingImage && (
-							<div className={css.title}>
-								{richText(title, {
-									longWordMinLength: MIN_LENGTH_FOR_LONG_WORDS,
-									longWordClass: css.longWord,
-								})}
-							</div>
-						)}
-						{showAuthorInfo ? (
-							<div className={css.authorInfo}>
-								<FormattedMessage
-									id="ListingCard.author"
-									values={{ authorName }}
-								/>
-							</div>
-						) : null}
-					</div>
-				</div>
-			</NamedLink>
-		);
+  if (listingType === 'consultant_profile') {
+    return <ProfileListingCard author={author} classes={classes} currentListing={currentListing} />;
+  } else if (listingType === 'consultant_job') {
+    return <JobListingCard author={author} classes={classes} currentListing={currentListing} />;
+  } else
+    return (
+      <NamedLink className={classes} name="ListingPage" params={{ id, slug }}>
+        <ListingCardImage
+          renderSizes={renderSizes}
+          title={title}
+          currentListing={currentListing}
+          config={config}
+          setActivePropsMaybe={setActivePropsMaybe}
+          aspectWidth={aspectWidth}
+          aspectHeight={aspectHeight}
+          variantPrefix={variantPrefix}
+          style={cardStyle}
+          showListingImage={showListingImage}
+        />
+        <div className={css.info}>
+          <PriceMaybe
+            price={price}
+            publicData={publicData}
+            config={config}
+            intl={intl}
+            listingTypeConfig={foundListingTypeConfig}
+          />
+          <div className={css.mainInfo}>
+            {showListingImage && (
+              <div className={css.title}>
+                {richText(title, {
+                  longWordMinLength: MIN_LENGTH_FOR_LONG_WORDS,
+                  longWordClass: css.longWord,
+                })}
+              </div>
+            )}
+            {showAuthorInfo ? (
+              <div className={css.authorInfo}>
+                <FormattedMessage id="ListingCard.author" values={{ authorName }} />
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </NamedLink>
+    );
 };
 
 export default ListingCard;

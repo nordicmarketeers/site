@@ -2,9 +2,9 @@
 }
 
 .selectError {
-	border: var(--borderErrorField);
+  border: var(--borderErrorField);
 }
 
 .labelDisabled {
-	color: var(--colorGrey600);
+  color: var(--colorGrey600);
 }

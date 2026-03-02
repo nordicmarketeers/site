@@ -1,20 +1,20 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
 // Import configs and util modules
-import { FormattedMessage } from "../../../../util/reactIntl";
-import { LISTING_STATE_DRAFT } from "../../../../util/types";
+import { FormattedMessage } from '../../../../util/reactIntl';
+import { LISTING_STATE_DRAFT } from '../../../../util/types';
 
 // Import shared components
-import { H3, ListingLink } from "../../../../components";
+import { H3, ListingLink } from '../../../../components';
 
 // Import modules from this directory
-import EditListingPhotosForm from "./EditListingPhotosForm";
-import css from "./EditListingPhotosPanel.module.css";
+import EditListingPhotosForm from './EditListingPhotosForm';
+import css from './EditListingPhotosPanel.module.css';
 
 const getInitialValues = params => {
-	const { images = [] } = params;
-	return { images };
+  const { images = [] } = params;
+  return { images };
 };
 
 /**
@@ -39,59 +39,55 @@ const getInitialValues = params => {
  * @returns {JSX.Element}
  */
 const EditListingPhotosPanel = props => {
-	const {
-		className,
-		rootClassName,
-		errors,
-		disabled,
-		ready,
-		listing,
-		onImageUpload,
-		submitButtonText,
-		panelUpdated,
-		updateInProgress,
-		onSubmit,
-		onRemoveImage,
-		listingImageConfig,
-		updatePageTitle: UpdatePageTitle,
-		intl,
-	} = props;
+  const {
+    className,
+    rootClassName,
+    errors,
+    disabled,
+    ready,
+    listing,
+    onImageUpload,
+    submitButtonText,
+    panelUpdated,
+    updateInProgress,
+    onSubmit,
+    onRemoveImage,
+    listingImageConfig,
+    updatePageTitle: UpdatePageTitle,
+    intl,
+  } = props;
 
-	const rootClass = rootClassName || css.root;
-	const classes = classNames(rootClass, className);
-	const isPublished =
-		listing?.id && listing?.attributes?.state !== LISTING_STATE_DRAFT;
+  const rootClass = rootClassName || css.root;
+  const classes = classNames(rootClass, className);
+  const isPublished = listing?.id && listing?.attributes?.state !== LISTING_STATE_DRAFT;
 
-	const panelHeadingProps = isPublished
-		? {
-				id: "EditListingPhotosPanel.title",
-				values: {
-					listingTitle: <ListingLink listing={listing} />,
-					lineBreak: <br />,
-				},
-				messageProps: { listingTitle: listing.attributes.title },
-		  }
-		: {
-				id: "EditListingPhotosPanel.createListingTitle",
-				values: { lineBreak: <br /> },
-				messageProps: {},
-		  };
+  const panelHeadingProps = isPublished
+    ? {
+        id: 'EditListingPhotosPanel.title',
+        values: {
+          listingTitle: <ListingLink listing={listing} />,
+          lineBreak: <br />,
+        },
+        messageProps: { listingTitle: listing.attributes.title },
+      }
+    : {
+        id: 'EditListingPhotosPanel.createListingTitle',
+        values: { lineBreak: <br /> },
+        messageProps: {},
+      };
 
-	return (
-		<main className={classes}>
-			<UpdatePageTitle
-				panelHeading={intl.formatMessage(
-					{ id: panelHeadingProps.id },
-					{ ...panelHeadingProps.messageProps }
-				)}
-			/>
-			<H3 as="h1">
-				<FormattedMessage
-					id={panelHeadingProps.id}
-					values={{ ...panelHeadingProps.values }}
-				/>
-			</H3>
-			{/* <H3 as="h1">
+  return (
+    <main className={classes}>
+      <UpdatePageTitle
+        panelHeading={intl.formatMessage(
+          { id: panelHeadingProps.id },
+          { ...panelHeadingProps.messageProps }
+        )}
+      />
+      <H3 as="h1">
+        <FormattedMessage id={panelHeadingProps.id} values={{ ...panelHeadingProps.values }} />
+      </H3>
+      {/* <H3 as="h1">
         {isPublished ? (
           <FormattedMessage
             id="EditListingPhotosPanel.title"
@@ -104,25 +100,25 @@ const EditListingPhotosPanel = props => {
           />
         )}
       </H3> */}
-			<EditListingPhotosForm
-				className={css.form}
-				disabled={disabled}
-				ready={ready}
-				fetchErrors={errors}
-				initialValues={getInitialValues(props)}
-				onImageUpload={onImageUpload}
-				onSubmit={values => {
-					const { addImage, ...updateValues } = values;
-					onSubmit(updateValues);
-				}}
-				onRemoveImage={onRemoveImage}
-				saveActionMsg={submitButtonText}
-				updated={panelUpdated}
-				updateInProgress={updateInProgress}
-				listingImageConfig={listingImageConfig}
-			/>
-		</main>
-	);
+      <EditListingPhotosForm
+        className={css.form}
+        disabled={disabled}
+        ready={ready}
+        fetchErrors={errors}
+        initialValues={getInitialValues(props)}
+        onImageUpload={onImageUpload}
+        onSubmit={values => {
+          const { addImage, ...updateValues } = values;
+          onSubmit(updateValues);
+        }}
+        onRemoveImage={onRemoveImage}
+        saveActionMsg={submitButtonText}
+        updated={panelUpdated}
+        updateInProgress={updateInProgress}
+        listingImageConfig={listingImageConfig}
+      />
+    </main>
+  );
 };
 
 export default EditListingPhotosPanel;

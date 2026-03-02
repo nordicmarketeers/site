@@ -1,7 +1,7 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import css from "./Code.module.css";
+import css from './Code.module.css';
 
 /**
  * HTML element <code> represents an inline code.
@@ -14,12 +14,12 @@ import css from "./Code.module.css";
  * @returns {JSX.Element} 'code' type of component
  */
 export const Code = React.forwardRef((props, ref) => {
-	const { className, rootClassName, ...otherProps } = props;
-	const classes = classNames(rootClassName || css.code, className);
+  const { className, rootClassName, ...otherProps } = props;
+  const classes = classNames(rootClassName || css.code, className);
 
-	return <code className={classes} {...otherProps} ref={ref} />;
+  return <code className={classes} {...otherProps} ref={ref} />;
 });
-Code.displayName = "Code";
+Code.displayName = 'Code';
 
 /**
  * HTML element <pre> represents a preformatted text.
@@ -33,9 +33,9 @@ Code.displayName = "Code";
  * @returns {JSX.Element} CodeBlock type of component rendered with 'pre' element
  */
 export const CodeBlock = React.forwardRef((props, ref) => {
-	const { className, rootClassName, ...otherProps } = props;
-	const classes = classNames(rootClassName || css.codeBlock, className);
+  const { className, rootClassName, ...otherProps } = props;
+  const classes = classNames(rootClassName || css.codeBlock, className);
 
-	return <pre className={classes} {...otherProps} ref={ref} />;
+  return <pre className={classes} {...otherProps} ref={ref} />;
 });
-CodeBlock.displayName = "CodeBlock";
+CodeBlock.displayName = 'CodeBlock';

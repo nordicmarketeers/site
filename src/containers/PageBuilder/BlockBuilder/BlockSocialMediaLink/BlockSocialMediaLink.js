@@ -1,10 +1,10 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import Field from "../../Field";
-import BlockContainer from "../BlockContainer";
+import Field from '../../Field';
+import BlockContainer from '../BlockContainer';
 
-import css from "./BlockSocialMediaLink.module.css";
+import css from './BlockSocialMediaLink.module.css';
 
 /**
  * @typedef {Object} FieldComponentConfig
@@ -31,15 +31,15 @@ import css from "./BlockSocialMediaLink.module.css";
  * @returns {JSX.Element} component that renders block type: 'socialMediaLink'
  */
 const BlockSocialMediaLink = props => {
-	const { blockId, className, rootClassName, link, options } = props;
+  const { blockId, className, rootClassName, link, options } = props;
 
-	const classes = classNames(rootClassName || css.root, className);
+  const classes = classNames(rootClassName || css.root, className);
 
-	return (
-		<BlockContainer id={blockId} className={classes}>
-			<Field data={link} options={options} className={css.link} />
-		</BlockContainer>
-	);
+  return (
+    <BlockContainer id={blockId} className={classes}>
+      <Field data={link} options={options} className={css.link} />
+    </BlockContainer>
+  );
 };
 
 export default BlockSocialMediaLink;

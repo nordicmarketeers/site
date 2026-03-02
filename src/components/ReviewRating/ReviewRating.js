@@ -1,8 +1,8 @@
-import React from "react";
-import classNames from "classnames";
-import { REVIEW_RATINGS } from "../../util/types";
+import React from 'react';
+import classNames from 'classnames';
+import { REVIEW_RATINGS } from '../../util/types';
 
-import { IconReviewStar } from "../../components";
+import { IconReviewStar } from '../../components';
 
 /**
  * A component that renders a review rating.
@@ -16,22 +16,22 @@ import { IconReviewStar } from "../../components";
  * @returns {JSX.Element}
  */
 const ReviewRating = props => {
-	const { className, rootClassName, reviewStarClassName, rating } = props;
-	const classes = classNames(rootClassName, className);
+  const { className, rootClassName, reviewStarClassName, rating } = props;
+  const classes = classNames(rootClassName, className);
 
-	const stars = REVIEW_RATINGS;
-	return (
-		<span className={classes} title={`${rating}/5`}>
-			{stars.map(star => (
-				<IconReviewStar
-					key={`star-${star}`}
-					className={reviewStarClassName}
-					isFilled={star <= rating}
-					ariaLabel={`${star}/5`}
-				/>
-			))}
-		</span>
-	);
+  const stars = REVIEW_RATINGS;
+  return (
+    <span className={classes} title={`${rating}/5`}>
+      {stars.map(star => (
+        <IconReviewStar
+          key={`star-${star}`}
+          className={reviewStarClassName}
+          isFilled={star <= rating}
+          ariaLabel={`${star}/5`}
+        />
+      ))}
+    </span>
+  );
 };
 
 export default ReviewRating;

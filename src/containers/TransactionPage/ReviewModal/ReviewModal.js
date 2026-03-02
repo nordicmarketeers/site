@@ -1,13 +1,13 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import { FormattedMessage, useIntl } from "../../../util/reactIntl";
-import { propTypes } from "../../../util/types";
-import { IconReviewUser, Modal } from "../../../components";
+import { FormattedMessage, useIntl } from '../../../util/reactIntl';
+import { propTypes } from '../../../util/types';
+import { IconReviewUser, Modal } from '../../../components';
 
-import ReviewForm from "../ReviewForm/ReviewForm";
+import ReviewForm from '../ReviewForm/ReviewForm';
 
-import css from "./ReviewModal.module.css";
+import css from './ReviewModal.module.css';
 
 /**
  * Review modal
@@ -29,60 +29,54 @@ import css from "./ReviewModal.module.css";
  * @returns {JSX.Element} The ReviewModal component
  */
 const ReviewModal = props => {
-	const intl = useIntl();
-	const {
-		className,
-		rootClassName,
-		id,
-		marketplaceName,
-		isOpen,
-		focusElementId,
-		onCloseModal,
-		onManageDisableScrolling,
-		onSubmitReview,
-		revieweeName,
-		reviewSent = false,
-		sendReviewInProgress = false,
-		sendReviewError,
-	} = props;
+  const intl = useIntl();
+  const {
+    className,
+    rootClassName,
+    id,
+    marketplaceName,
+    isOpen,
+    focusElementId,
+    onCloseModal,
+    onManageDisableScrolling,
+    onSubmitReview,
+    revieweeName,
+    reviewSent = false,
+    sendReviewInProgress = false,
+    sendReviewError,
+  } = props;
 
-	const classes = classNames(rootClassName || css.root, className);
-	const closeButtonMessage = intl.formatMessage({ id: "ReviewModal.later" });
-	const reviewee = <span className={css.reviewee}>{revieweeName}</span>;
+  const classes = classNames(rootClassName || css.root, className);
+  const closeButtonMessage = intl.formatMessage({ id: 'ReviewModal.later' });
+  const reviewee = <span className={css.reviewee}>{revieweeName}</span>;
 
-	return (
-		<Modal
-			id={id}
-			containerClassName={classes}
-			contentClassName={css.modalContent}
-			isOpen={isOpen}
-			onClose={onCloseModal}
-			onManageDisableScrolling={onManageDisableScrolling}
-			focusElementId={focusElementId}
-			usePortal
-			closeButtonMessage={closeButtonMessage}
-		>
-			<IconReviewUser className={css.modalIcon} />
-			<p className={css.modalTitle}>
-				<FormattedMessage
-					id="ReviewModal.title"
-					values={{ revieweeName: reviewee }}
-				/>
-			</p>
-			<p className={css.modalMessage}>
-				<FormattedMessage
-					id="ReviewModal.description"
-					values={{ marketplaceName }}
-				/>
-			</p>
-			<ReviewForm
-				onSubmit={onSubmitReview}
-				reviewSent={reviewSent}
-				sendReviewInProgress={sendReviewInProgress}
-				sendReviewError={sendReviewError}
-			/>
-		</Modal>
-	);
+  return (
+    <Modal
+      id={id}
+      containerClassName={classes}
+      contentClassName={css.modalContent}
+      isOpen={isOpen}
+      onClose={onCloseModal}
+      onManageDisableScrolling={onManageDisableScrolling}
+      focusElementId={focusElementId}
+      usePortal
+      closeButtonMessage={closeButtonMessage}
+    >
+      <IconReviewUser className={css.modalIcon} />
+      <p className={css.modalTitle}>
+        <FormattedMessage id="ReviewModal.title" values={{ revieweeName: reviewee }} />
+      </p>
+      <p className={css.modalMessage}>
+        <FormattedMessage id="ReviewModal.description" values={{ marketplaceName }} />
+      </p>
+      <ReviewForm
+        onSubmit={onSubmitReview}
+        reviewSent={reviewSent}
+        sendReviewInProgress={sendReviewInProgress}
+        sendReviewError={sendReviewError}
+      />
+    </Modal>
+  );
 };
 
 export default ReviewModal;

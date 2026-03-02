@@ -1,18 +1,18 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import { propTypes } from "../../../util/types";
-import { createSlug } from "../../../util/urlHelpers";
+import { propTypes } from '../../../util/types';
+import { createSlug } from '../../../util/urlHelpers';
 
 import {
-	AspectRatioWrapper,
-	AvatarMedium,
-	H4,
-	NamedLink,
-	ResponsiveImage,
-} from "../../../components";
+  AspectRatioWrapper,
+  AvatarMedium,
+  H4,
+  NamedLink,
+  ResponsiveImage,
+} from '../../../components';
 
-import css from "./DetailsSideCard.module.css";
+import css from './DetailsSideCard.module.css';
 
 // Not in use at the moment.
 // TODO: this needs a couple of imports, translation and css classes.
@@ -47,72 +47,67 @@ import css from "./DetailsSideCard.module.css";
  * @param {intlShape} props.intl - The intl object
  */
 const DetailsSideCard = props => {
-	const {
-		listing,
-		listingTitle,
-		author,
-		firstImage,
-		layoutListingImageConfig,
-		speculateTransactionErrorMessage,
-		showListingImage,
-	} = props;
+  const {
+    listing,
+    listingTitle,
+    author,
+    firstImage,
+    layoutListingImageConfig,
+    speculateTransactionErrorMessage,
+    showListingImage,
+  } = props;
 
-	const {
-		aspectWidth = 1,
-		aspectHeight = 1,
-		variantPrefix = "listing-card",
-	} = layoutListingImageConfig || {};
-	const variants = firstImage
-		? Object.keys(firstImage?.attributes?.variants).filter(k =>
-				k.startsWith(variantPrefix)
-		  )
-		: [];
+  const { aspectWidth = 1, aspectHeight = 1, variantPrefix = 'listing-card' } =
+    layoutListingImageConfig || {};
+  const variants = firstImage
+    ? Object.keys(firstImage?.attributes?.variants).filter(k => k.startsWith(variantPrefix))
+    : [];
 
-	return (
-		<div className={css.detailsContainerDesktop} role="complementary">
-			{showListingImage && (
-				<AspectRatioWrapper
-					width={aspectWidth}
-					height={aspectHeight}
-					className={css.detailsAspectWrapper}
-				>
-					<ResponsiveImage
-						rootClassName={css.rootForImage}
-						alt={listingTitle}
-						image={firstImage}
-						variants={variants}
-					/>
-				</AspectRatioWrapper>
-			)}
-			<div className={css.listingDetailsWrapper}>
-				<div
-					className={classNames(css.avatarWrapper, {
-						[css.noListingImage]: !showListingImage,
-					})}
-				>
-					<AvatarMedium user={author} disableProfileLink />
-				</div>
-				<div
-					className={classNames(css.detailsHeadings, {
-						[css.noListingImage]: !showListingImage,
-					})}
-				>
-					<H4 as="h2">
-						<NamedLink
-							name="ListingPage"
-							params={{
-								id: listing?.id?.uuid,
-								slug: createSlug(listingTitle),
-							}}
-						>
-							{listingTitle}
-						</NamedLink>
-					</H4>
-				</div>
-				{speculateTransactionErrorMessage}
-			</div>
-		</div>
-	);
+  return (
+    <div className={css.detailsContainerDesktop} role="complementary">
+      {showListingImage && (
+        <AspectRatioWrapper
+          width={aspectWidth}
+          height={aspectHeight}
+          className={css.detailsAspectWrapper}
+        >
+          <ResponsiveImage
+            rootClassName={css.rootForImage}
+            alt={listingTitle}
+            image={firstImage}
+            variants={variants}
+          />
+        </AspectRatioWrapper>
+      )}
+      <div className={css.listingDetailsWrapper}>
+        <div
+          className={classNames(css.avatarWrapper, {
+            [css.noListingImage]: !showListingImage,
+          })}
+        >
+          <AvatarMedium user={author} disableProfileLink />
+        </div>
+        <div
+          className={classNames(css.detailsHeadings, {
+            [css.noListingImage]: !showListingImage,
+          })}
+        >
+          <H4 as="h2">
+            <NamedLink
+              name="ListingPage"
+              params={{
+                id: listing?.id?.uuid,
+                slug: createSlug(listingTitle),
+              }}
+            >
+              {listingTitle}
+            </NamedLink>
+          </H4>
+        </div>
+        {speculateTransactionErrorMessage}
+      </div>
+    </div>
+  );
 };
 
 export default DetailsSideCard;

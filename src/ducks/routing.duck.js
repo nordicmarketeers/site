@@ -1,22 +1,22 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 
 // ================ Redux Toolkit Slice ================ //
 
 const initialState = {
-	currentLocation: null,
-	currentCanonicalPath: null,
+  currentLocation: null,
+  currentCanonicalPath: null,
 };
 
 const routingSlice = createSlice({
-	name: "routing",
-	initialState,
-	reducers: {
-		locationChanged: (state, action) => {
-			const { location, canonicalPath } = action.payload;
-			state.currentLocation = location;
-			state.currentCanonicalPath = canonicalPath;
-		},
-	},
+  name: 'routing',
+  initialState,
+  reducers: {
+    locationChanged: (state, action) => {
+      const { location, canonicalPath } = action.payload;
+      state.currentLocation = location;
+      state.currentCanonicalPath = canonicalPath;
+    },
+  },
 });
 
 // ================ Exports ================ //

@@ -199,7 +199,7 @@ exports[`ManageListingCard matches snapshot (purchase) 1`] = `
           >
             listing1
           </span>
-           title
+          title
         </button>
       </div>
     </div>

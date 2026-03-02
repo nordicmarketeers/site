@@ -17,22 +17,22 @@
  * will be added to the element className if the current URL matches
  * the one in the generated pathname of the link.
  */
-import React from "react";
-import { Link, withRouter } from "react-router-dom";
-import classNames from "classnames";
-import { useRouteConfiguration } from "../../context/routeConfigurationContext";
+import React from 'react';
+import { Link, withRouter } from 'react-router-dom';
+import classNames from 'classnames';
+import { useRouteConfiguration } from '../../context/routeConfigurationContext';
 
-import { pathByRouteName, findRouteByRouteName } from "../../util/routes";
+import { pathByRouteName, findRouteByRouteName } from '../../util/routes';
 
 const handleFocus = event => {
-	if (event.currentTarget.contains(event.target)) {
-		window.__focusedElementId__ = event.currentTarget?.id;
-	}
+  if (event.currentTarget.contains(event.target)) {
+    window.__focusedElementId__ = event.currentTarget?.id;
+  }
 };
 const handleBlur = event => {
-	if (event.relatedTarget !== null) {
-		window.__focusedElementId__ = null;
-	}
+  if (event.relatedTarget !== null) {
+    window.__focusedElementId__ = null;
+  }
 };
 
 /**
@@ -55,63 +55,54 @@ const handleBlur = event => {
  * @returns {JSX.Element} containing form that allows adding availability exceptions
  */
 export const NamedLink = withRouter(props => {
-	const routeConfiguration = useRouteConfiguration();
-	const {
-		id,
-		holdFocus,
-		name,
-		params = {}, // pathParams
-		title,
-		ariaLabel,
-		// Link props
-		to = {},
-		children,
-		match = {},
-		// <a> element props
-		className,
-		style = {},
-		activeClassName = "NamedLink_active",
-	} = props;
+  const routeConfiguration = useRouteConfiguration();
+  const {
+    id,
+    holdFocus,
+    name,
+    params = {}, // pathParams
+    title,
+    ariaLabel,
+    // Link props
+    to = {},
+    children,
+    match = {},
+    // <a> element props
+    className,
+    style = {},
+    activeClassName = 'NamedLink_active',
+  } = props;
 
-	const onOver = () => {
-		const { component: Page } = findRouteByRouteName(
-			name,
-			routeConfiguration
-		);
-		// Loadable Component has a "preload" function.
-		if (Page.preload) {
-			Page.preload();
-		}
-	};
+  const onOver = () => {
+    const { component: Page } = findRouteByRouteName(name, routeConfiguration);
+    // Loadable Component has a "preload" function.
+    if (Page.preload) {
+      Page.preload();
+    }
+  };
 
-	// Link props
-	const pathname = pathByRouteName(name, routeConfiguration, params);
-	const active = match.url && match.url === pathname;
+  // Link props
+  const pathname = pathByRouteName(name, routeConfiguration, params);
+  const active = match.url && match.url === pathname;
 
-	const focusHandlers =
-		id && holdFocus ? { onFocus: handleFocus, onBlur: handleBlur } : {};
-	const ariaLabelMaybe = ariaLabel ? { ["aria-label"]: ariaLabel } : {};
+  const focusHandlers = id && holdFocus ? { onFocus: handleFocus, onBlur: handleBlur } : {};
+  const ariaLabelMaybe = ariaLabel ? { ['aria-label']: ariaLabel } : {};
 
-	// <a> element props
-	const aElemProps = {
-		id,
-		className: classNames(className, { [activeClassName]: active }),
-		style,
-		title,
-		...ariaLabelMaybe,
-		...focusHandlers,
-	};
+  // <a> element props
+  const aElemProps = {
+    id,
+    className: classNames(className, { [activeClassName]: active }),
+    style,
+    title,
+    ...ariaLabelMaybe,
+    ...focusHandlers,
+  };
 
-	return (
-		<Link
-			onMouseOver={onOver}
-			onTouchStart={onOver}
-			to={{ pathname, ...to }}
-			{...aElemProps}
-		>
-			{children}
-		</Link>
-	);
+  return (
+    <Link onMouseOver={onOver} onTouchStart={onOver} to={{ pathname, ...to }} {...aElemProps}>
+      {children}
+    </Link>
+  );
 });
 
 export default NamedLink;

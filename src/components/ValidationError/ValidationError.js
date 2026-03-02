@@ -1,7 +1,7 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import css from "./ValidationError.module.css";
+import css from './ValidationError.module.css';
 
 /**
  * This component can be used to show validation errors next to form
@@ -19,10 +19,10 @@ import css from "./ValidationError.module.css";
  * @returns {JSX.Element} Validation error component
  */
 const ValidationError = props => {
-	const { rootClassName, className, fieldMeta } = props;
-	const { touched, error } = fieldMeta;
-	const classes = classNames(rootClassName || css.root, className);
-	return touched && error ? <div className={classes}>{error}</div> : null;
+  const { rootClassName, className, fieldMeta } = props;
+  const { touched, error } = fieldMeta;
+  const classes = classNames(rootClassName || css.root, className);
+  return touched && error ? <div className={classes}>{error}</div> : null;
 };
 
 export default ValidationError;

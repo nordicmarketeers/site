@@ -1,9 +1,9 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import { FormattedMessage } from "../../../util/reactIntl";
+import { FormattedMessage } from '../../../util/reactIntl';
 
-import css from "./MainPanelHeader.module.css";
+import css from './MainPanelHeader.module.css';
 
 /**
  * MainPanelHeader component
@@ -22,50 +22,50 @@ import css from "./MainPanelHeader.module.css";
  * @returns {JSX.Element}
  */
 const MainPanelHeader = props => {
-	const {
-		rootClassName,
-		className,
-		children,
-		sortByComponent,
-		isSortByActive,
-		listingsAreLoaded,
-		resultsCount,
-		searchInProgress = false,
-		noResultsInfo,
-	} = props;
+  const {
+    rootClassName,
+    className,
+    children,
+    sortByComponent,
+    isSortByActive,
+    listingsAreLoaded,
+    resultsCount,
+    searchInProgress = false,
+    noResultsInfo,
+  } = props;
 
-	const classes = classNames(rootClassName || css.root, className);
+  const classes = classNames(rootClassName || css.root, className);
 
-	return (
-		<div className={classes}>
-			<div className={css.searchOptions}>
-				<h1 className={css.searchResultSummary}>
-					<span className={css.resultsFound}>
-						{searchInProgress ? (
-							<FormattedMessage id="MainPanelHeader.loadingResults" />
-						) : (
-							<FormattedMessage
-								id="MainPanelHeader.foundResults"
-								values={{ count: resultsCount }}
-							/>
-						)}
-					</span>
-				</h1>
-				{isSortByActive ? (
-					<div className={css.sortyByWrapper}>
-						<span className={css.sortyBy}>
-							<FormattedMessage id="MainPanelHeader.sortBy" />
-						</span>
-						{sortByComponent}
-					</div>
-				) : null}
-			</div>
+  return (
+    <div className={classes}>
+      <div className={css.searchOptions}>
+        <h1 className={css.searchResultSummary}>
+          <span className={css.resultsFound}>
+            {searchInProgress ? (
+              <FormattedMessage id="MainPanelHeader.loadingResults" />
+            ) : (
+              <FormattedMessage
+                id="MainPanelHeader.foundResults"
+                values={{ count: resultsCount }}
+              />
+            )}
+          </span>
+        </h1>
+        {isSortByActive ? (
+          <div className={css.sortyByWrapper}>
+            <span className={css.sortyBy}>
+              <FormattedMessage id="MainPanelHeader.sortBy" />
+            </span>
+            {sortByComponent}
+          </div>
+        ) : null}
+      </div>
 
-			{children}
+      {children}
 
-			{noResultsInfo ? noResultsInfo : null}
-		</div>
-	);
+      {noResultsInfo ? noResultsInfo : null}
+    </div>
+  );
 };
 
 export default MainPanelHeader;

@@ -1,12 +1,12 @@
-import React from "react";
+import React from 'react';
 
 // Import contexts and util modules
-import { FormattedMessage } from "../../../util/reactIntl.js";
+import { FormattedMessage } from '../../../util/reactIntl.js';
 
 // Import shared components
-import { Heading } from "../../../components/index.js";
+import { Heading } from '../../../components/index.js';
 
-import css from "./LocationDetails.module.css";
+import css from './LocationDetails.module.css';
 
 /**
  * LocationDetails component
@@ -19,22 +19,22 @@ import css from "./LocationDetails.module.css";
  * @returns {React.ReactElement} The LocationDetails component
  */
 const LocationDetails = props => {
-	const { showLocation, listingLocation, sectionHeadingClassName } = props;
+  const { showLocation, listingLocation, sectionHeadingClassName } = props;
 
-	const locationDetails = listingLocation?.building
-		? `${listingLocation.building}, ${listingLocation.address}`
-		: listingLocation?.address
-		? listingLocation.address
-		: null;
+  const locationDetails = listingLocation?.building
+    ? `${listingLocation.building}, ${listingLocation.address}`
+    : listingLocation?.address
+    ? listingLocation.address
+    : null;
 
-	return showLocation && locationDetails ? (
-		<div className={css.locationContainer}>
-			<Heading as="h3" rootClassName={sectionHeadingClassName}>
-				<FormattedMessage id="MakeOfferPage.locationDetailsTitle" />
-			</Heading>
-			<p className={css.locationDetails}>{locationDetails}</p>
-		</div>
-	) : null;
+  return showLocation && locationDetails ? (
+    <div className={css.locationContainer}>
+      <Heading as="h3" rootClassName={sectionHeadingClassName}>
+        <FormattedMessage id="MakeOfferPage.locationDetailsTitle" />
+      </Heading>
+      <p className={css.locationDetails}>{locationDetails}</p>
+    </div>
+  ) : null;
 };
 
 export default LocationDetails;

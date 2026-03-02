@@ -1,10 +1,10 @@
-import React from "react";
-import classNames from "classnames";
+import React from 'react';
+import classNames from 'classnames';
 
-import Field, { hasDataInFields } from "../../Field";
+import Field, { hasDataInFields } from '../../Field';
 
-import SectionContainer from "../SectionContainer";
-import css from "./SectionHero.module.css";
+import SectionContainer from '../SectionContainer';
+import css from './SectionHero.module.css';
 
 /**
  * @typedef {Object} FieldComponentConfig
@@ -36,57 +36,42 @@ import css from "./SectionHero.module.css";
  * @returns {JSX.Element} Section for article content
  */
 const SectionHero = props => {
-	const {
-		sectionId,
-		className,
-		rootClassName,
-		defaultClasses,
-		title,
-		description,
-		appearance,
-		callToAction,
-		options,
-	} = props;
+  const {
+    sectionId,
+    className,
+    rootClassName,
+    defaultClasses,
+    title,
+    description,
+    appearance,
+    callToAction,
+    options,
+  } = props;
 
-	// If external mapping has been included for fields
-	// E.g. { h1: { component: MyAwesomeHeader } }
-	const fieldComponents = options?.fieldComponents;
-	const fieldOptions = { fieldComponents };
+  // If external mapping has been included for fields
+  // E.g. { h1: { component: MyAwesomeHeader } }
+  const fieldComponents = options?.fieldComponents;
+  const fieldOptions = { fieldComponents };
 
-	const hasHeaderFields = hasDataInFields(
-		[title, description, callToAction],
-		fieldOptions
-	);
+  const hasHeaderFields = hasDataInFields([title, description, callToAction], fieldOptions);
 
-	return (
-		<SectionContainer
-			id={sectionId}
-			className={className}
-			rootClassName={classNames(rootClassName || css.root)}
-			appearance={appearance}
-			options={fieldOptions}
-		>
-			{hasHeaderFields ? (
-				<header className={defaultClasses.sectionDetails}>
-					<Field
-						data={title}
-						className={defaultClasses.title}
-						options={fieldOptions}
-					/>
-					<Field
-						data={description}
-						className={defaultClasses.description}
-						options={fieldOptions}
-					/>
-					<Field
-						data={callToAction}
-						className={defaultClasses.ctaButton}
-						options={fieldOptions}
-					/>
-				</header>
-			) : null}
-		</SectionContainer>
-	);
+  return (
+    <SectionContainer
+      id={sectionId}
+      className={className}
+      rootClassName={classNames(rootClassName || css.root)}
+      appearance={appearance}
+      options={fieldOptions}
+    >
+      {hasHeaderFields ? (
+        <header className={defaultClasses.sectionDetails}>
+          <Field data={title} className={defaultClasses.title} options={fieldOptions} />
+          <Field data={description} className={defaultClasses.description} options={fieldOptions} />
+          <Field data={callToAction} className={defaultClasses.ctaButton} options={fieldOptions} />
+        </header>
+      ) : null}
+    </SectionContainer>
+  );
 };
 
 export default SectionHero;

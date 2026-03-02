@@ -1,6 +1,6 @@
-import React from "react";
-import { getTimeZoneNames } from "../../../../../util/dates";
-import { FieldSelect } from "../../../../../components";
+import React from 'react';
+import { getTimeZoneNames } from '../../../../../util/dates';
+import { FieldSelect } from '../../../../../components';
 
 /**
  * Field to allow selecting an IANA time zone name.
@@ -18,23 +18,23 @@ import { FieldSelect } from "../../../../../components";
  * @returns {JSX.Element} containing FieldSelect
  */
 const FieldTimeZoneSelect = props => {
-	// IANA database contains irrelevant time zones too.
-	const relevantZonesPattern = new RegExp(
-		"^(Africa|America(?!/(Argentina/ComodRivadavia|Knox_IN|Nuuk))|Antarctica(?!/(DumontDUrville|McMurdo))|Asia(?!/Qostanay)|Atlantic|Australia(?!/(ACT|LHI|NSW))|Europe|Indian|Pacific)"
-	);
+  // IANA database contains irrelevant time zones too.
+  const relevantZonesPattern = new RegExp(
+    '^(Africa|America(?!/(Argentina/ComodRivadavia|Knox_IN|Nuuk))|Antarctica(?!/(DumontDUrville|McMurdo))|Asia(?!/Qostanay)|Atlantic|Australia(?!/(ACT|LHI|NSW))|Europe|Indian|Pacific)'
+  );
 
-	return (
-		<FieldSelect {...props}>
-			<option disabled value="">
-				Pick something...
-			</option>
-			{getTimeZoneNames(relevantZonesPattern).map(tz => (
-				<option key={tz} value={tz}>
-					{tz}
-				</option>
-			))}
-		</FieldSelect>
-	);
+  return (
+    <FieldSelect {...props}>
+      <option disabled value="">
+        Pick something...
+      </option>
+      {getTimeZoneNames(relevantZonesPattern).map(tz => (
+        <option key={tz} value={tz}>
+          {tz}
+        </option>
+      ))}
+    </FieldSelect>
+  );
 };
 
 export default FieldTimeZoneSelect;

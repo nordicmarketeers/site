@@ -1,4 +1,4 @@
 .finePrint {
-	composes: marketplaceTinyFontStyles from global;
-	text-align: center;
+  composes: marketplaceTinyFontStyles from global;
+  text-align: center;
 }
