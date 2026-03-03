@@ -14,6 +14,11 @@ const baseUrl = process.env.REACT_APP_SHARETRIBE_SDK_BASE_URL || 'https://flex-a
 // If assetCdnBaseUrl is used to initialize SDK (for proxy purposes), then that URL needs to be in CSP
 const assetCdnBaseUrl = process.env.REACT_APP_SHARETRIBE_SDK_ASSET_CDN_BASE_URL;
 
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+
+// Extract hostname from full URL (e.g. https://xyz.supabase.co → xyz.supabase.co)
+const supabaseHost = supabaseUrl ? new URL(supabaseUrl).host : null;
+
 exports.generateCSPNonce = (req, res, next) => {
   // Asynchronously generate a unique nonce for each request.
   crypto.randomBytes(32, (err, randomBytes) => {
@@ -148,8 +153,11 @@ exports.csp = (reportUri, reportOnly) => {
   // const exampleImgSrc = imgSrc.concat('my-custom-domain.example.com');
 
   const customDirectives = {
-    // Example: Add custom directive override
-    // imgSrc: exampleImgSrc,
+    connectSrc: supabaseHost
+      ? [...defaultDirectives.connectSrc, supabaseHost]
+      : defaultDirectives.connectSrc,
+
+    imgSrc: supabaseHost ? [...defaultDirectives.imgSrc, supabaseHost] : defaultDirectives.imgSrc,
   };
 
   // ================ END CUSTOM CSP URLs ================ //
