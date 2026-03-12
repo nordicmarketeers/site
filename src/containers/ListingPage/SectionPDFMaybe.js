@@ -3,7 +3,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import css from './ListingPage.module.css';
 
 // PDF.js imports
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf';
+let pdfjsLib;
+
+if (typeof window !== 'undefined') {
+  pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
+}
+
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@4.7.76/build/pdf.worker.mjs';
 
 const THUMBNAIL_WIDTH = 80;
