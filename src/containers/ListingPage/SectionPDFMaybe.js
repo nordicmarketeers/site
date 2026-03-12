@@ -1,31 +1,31 @@
 import React, { useState, useEffect, useRef } from 'react';
-
 import css from './ListingPage.module.css';
-
-// PDF.js imports
-let pdfjsLib;
-
-if (typeof window !== 'undefined') {
-  pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
-}
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@4.7.76/build/pdf.worker.mjs';
 
 const THUMBNAIL_WIDTH = 80;
 const THUMBNAIL_HEIGHT = 110;
 
-const SectionPDFMaybe = props => {
-  const { text: pdfUrlsRaw, heading = 'Portfolio' } = props;
+const SectionPDFMaybe = ({ text: pdfUrlsRaw, heading = 'Portfolio' }) => {
+  const [pdfjsLib, setPdfjsLib] = useState(null);
 
+  // Load PDF.js dynamically in the browser only
+  useEffect(() => {
+    import('pdfjs-dist/legacy/build/pdf.mjs').then(module => {
+      module.GlobalWorkerOptions.workerSrc =
+        'https://unpkg.com/pdfjs-dist@4.7.76/build/pdf.worker.mjs';
+      setPdfjsLib(module);
+    });
+  }, []);
+
+  // Parse PDF URLs
   let pdfUrls = [];
   try {
     pdfUrls = JSON.parse(pdfUrlsRaw || '[]');
     if (!Array.isArray(pdfUrls)) pdfUrls = [];
-  } catch (err) {
+  } catch {
     pdfUrls = [];
   }
 
-  if (pdfUrls.length === 0) return null;
+  if (!pdfjsLib || pdfUrls.length === 0) return null;
 
   return (
     <section className={css.sectionPDF}>
@@ -40,7 +40,7 @@ const SectionPDFMaybe = props => {
             rel="noopener noreferrer"
             className={css.pdfThumbLink}
           >
-            <PDFImage pdfUrl={url} />
+            <PDFImage pdfUrl={url} pdfjsLib={pdfjsLib} />
           </a>
         ))}
       </div>
@@ -48,11 +48,13 @@ const SectionPDFMaybe = props => {
   );
 };
 
-const PDFImage = ({ pdfUrl }) => {
+const PDFImage = ({ pdfUrl, pdfjsLib }) => {
   const canvasRef = useRef(null);
   const [dataUrl, setDataUrl] = useState(null);
 
   useEffect(() => {
+    if (!pdfjsLib) return;
+
     const renderFirstPage = async () => {
       try {
         const loadingTask = pdfjsLib.getDocument({ url: pdfUrl });
@@ -64,20 +66,16 @@ const PDFImage = ({ pdfUrl }) => {
           THUMBNAIL_WIDTH / viewport.width,
           THUMBNAIL_HEIGHT / viewport.height
         );
-
         const scaledViewport = page.getViewport({ scale });
+
         const canvas = canvasRef.current;
         if (!canvas) return;
 
         const context = canvas.getContext('2d');
-        canvas.height = scaledViewport.height;
         canvas.width = scaledViewport.width;
+        canvas.height = scaledViewport.height;
 
-        await page.render({
-          canvasContext: context,
-          viewport: scaledViewport,
-        }).promise;
-
+        await page.render({ canvasContext: context, viewport: scaledViewport }).promise;
         setDataUrl(canvas.toDataURL('image/png'));
         pdf.destroy();
       } catch (err) {
@@ -86,7 +84,7 @@ const PDFImage = ({ pdfUrl }) => {
     };
 
     renderFirstPage();
-  }, [pdfUrl]);
+  }, [pdfUrl, pdfjsLib]);
 
   return (
     <>
