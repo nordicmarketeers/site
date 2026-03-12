@@ -203,7 +203,7 @@ const ProfileMenu = ({
  * @returns {JSX.Element} search icon
  */
 const TopbarDesktop = props => {
-  const {
+  let {
     className,
     config,
     customLinks,
@@ -222,6 +222,7 @@ const TopbarDesktop = props => {
     location,
   } = props;
   const [mounted, setMounted] = useState(false);
+  showSearchForm = false;
 
   const showCreateListingsLink = rawShowCreateListingsLink && !isConsultant(currentUser);
 

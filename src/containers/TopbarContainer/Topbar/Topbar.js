@@ -294,7 +294,7 @@ const TopbarComponent = props => {
     resolvedCurrentPage
   );
 
-  const showSearchForm = showSearchOnSearchPage;
+  const showSearchForm = false;
 
   const mobileSearchButtonMaybe = showSearchForm ? (
     <Button
