@@ -160,6 +160,8 @@ exports.csp = (reportUri, reportOnly) => {
     imgSrc: supabaseHost
       ? [...defaultDirectives.imgSrc, supabaseHost, '*.supabase.co']
       : defaultDirectives.imgSrc,
+
+    scriptSrc: ['unpkg.com'],
   };
 
   // ================ END CUSTOM CSP URLs ================ //
