@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Field, Form as FinalForm } from 'react-final-form';
 import arrayMutators from 'final-form-arrays';
 import classNames from 'classnames';
@@ -24,6 +24,8 @@ import {
 } from '../../../../components';
 // Import modules from this directory
 import css from './EditListingDetailsForm.module.css';
+import { useSelector } from 'react-redux';
+import { supabase } from '../../../../lib/supabaseClient';
 
 const TITLE_MAX_LENGTH = 60;
 
@@ -223,7 +225,7 @@ const FieldSelectCategory = props => {
   // Checks if initial values exist for categories and sets the state accordingly.
   // If initial values exist, it sets `allCategoriesChosen` state to true; otherwise, it sets it to false
   const checkIfInitialValuesExist = () => {
-    const count = countSelectedCategories(values, prefix);
+    const count = countSelectedCategories();
     setAllCategoriesChosen(count > 0);
   };
 
@@ -253,7 +255,18 @@ const FieldSelectCategory = props => {
 
 // Add collect data for listing fields (both publicData and privateData) based on configuration
 const AddListingFields = props => {
-  const { listingType, listingFieldsConfig, selectedCategories, formId, intl } = props;
+  const {
+    listingType,
+    listingFieldsConfig,
+    selectedCategories,
+    formId,
+    intl,
+    pdfUploaderRef,
+    pendingFiles,
+    setPendingFiles,
+    toDeletePaths,
+    setToDeletePaths,
+  } = props;
   const targetCategoryIds = Object.values(selectedCategories);
 
   const fields = listingFieldsConfig.reduce((pickedFields, fieldConfig) => {
@@ -276,6 +289,11 @@ const AddListingFields = props => {
               id: 'EditListingDetailsForm.defaultRequiredMessage',
             })}
             formId={formId}
+            pdfUploaderRef={key === 'portfolio' ? pdfUploaderRef : null}
+            pendingFiles={key === 'portfolio' ? pendingFiles : null}
+            setPendingFiles={key === 'portfolio' ? setPendingFiles : null}
+            toDeletePaths={key === 'portfolio' ? toDeletePaths : null}
+            setToDeletePaths={key === 'portfolio' ? setToDeletePaths : null}
           />,
         ]
       : pickedFields;
@@ -311,227 +329,361 @@ const AddListingFields = props => {
  * @param {Function} props.onSubmit - The submit function
  * @returns {JSX.Element}
  */
-const EditListingDetailsForm = props => (
-  <FinalForm
-    {...props}
-    mutators={{ ...arrayMutators }}
-    render={formRenderProps => {
-      const {
-        autoFocus,
-        className,
-        disabled,
-        ready,
-        formId = 'EditListingDetailsForm',
-        form: formApi,
-        handleSubmit,
-        onListingTypeChange,
-        invalid,
-        pristine,
-        marketplaceCurrency,
-        marketplaceName,
-        selectableListingTypes,
-        selectableCategories,
-        hasExistingListingType = false,
-        pickSelectedCategories,
-        categoryPrefix,
-        saveActionMsg,
-        updated,
-        updateInProgress,
-        fetchErrors,
-        listingFieldsConfig = [],
-        listingCurrency,
-        values,
-      } = formRenderProps;
+const EditListingDetailsForm = props => {
+  const pdfUploaderRef = useRef(null);
+  const currentUser = useSelector(state => state.user.currentUser);
+  const userId = currentUser?.id?.uuid;
+  const [pendingFiles, setPendingFiles] = useState([]);
+  const [toDeletePaths, setToDeletePaths] = useState([]);
 
-      const intl = useIntl();
-      const { listingType, transactionProcessAlias, unitType } = values;
-      const [allCategoriesChosen, setAllCategoriesChosen] = useState(false);
+  return (
+    <FinalForm
+      {...props}
+      mutators={{ ...arrayMutators }}
+      render={formRenderProps => {
+        const {
+          autoFocus,
+          className,
+          disabled,
+          ready,
+          formId = 'EditListingDetailsForm',
+          form: formApi,
+          handleSubmit,
+          onListingTypeChange,
+          invalid,
+          pristine,
+          marketplaceCurrency,
+          marketplaceName,
+          selectableListingTypes,
+          selectableCategories,
+          hasExistingListingType = false,
+          pickSelectedCategories,
+          categoryPrefix,
+          saveActionMsg,
+          updated,
+          updateInProgress,
+          fetchErrors,
+          listingFieldsConfig = [],
+          listingCurrency,
+          values,
+        } = formRenderProps;
 
-      const titleRequiredMessage = intl.formatMessage({
-        id: 'EditListingDetailsForm.titleRequired',
-      });
-      const maxLengthMessage = intl.formatMessage(
-        { id: 'EditListingDetailsForm.maxLength' },
-        {
-          maxLength: TITLE_MAX_LENGTH,
-        }
-      );
+        const intl = useIntl();
+        const { listingType, transactionProcessAlias, unitType } = values;
+        const [allCategoriesChosen, setAllCategoriesChosen] = useState(false);
 
-      // Determine the currency to validate:
-      // - If editing an existing listing, use the listing's currency.
-      // - If creating a new listing, fall back to the default marketplace currency.
-      const currencyToCheck = listingCurrency || marketplaceCurrency;
+        const titleRequiredMessage = intl.formatMessage({
+          id: 'EditListingDetailsForm.titleRequired',
+        });
+        const maxLengthMessage = intl.formatMessage(
+          { id: 'EditListingDetailsForm.maxLength' },
+          {
+            maxLength: TITLE_MAX_LENGTH,
+          }
+        );
 
-      // Verify if the selected listing type's transaction process supports the chosen currency.
-      // This checks compatibility between the transaction process
-      // and the marketplace or listing currency.
-      const isCompatibleCurrency = isValidCurrencyForTransactionProcess(
-        transactionProcessAlias,
-        currencyToCheck
-      );
+        // Determine the currency to validate:
+        // - If editing an existing listing, use the listing's currency.
+        // - If creating a new listing, fall back to the default marketplace currency.
+        const currencyToCheck = listingCurrency || marketplaceCurrency;
 
-      const maxLength60Message = maxLength(maxLengthMessage, TITLE_MAX_LENGTH);
+        // Verify if the selected listing type's transaction process supports the chosen currency.
+        // This checks compatibility between the transaction process
+        // and the marketplace or listing currency.
+        const isCompatibleCurrency = isValidCurrencyForTransactionProcess(
+          transactionProcessAlias,
+          currencyToCheck
+        );
 
-      const hasCategories = selectableCategories && selectableCategories.length > 0;
-      const showCategories = listingType && hasCategories;
+        const maxLength60Message = maxLength(maxLengthMessage, TITLE_MAX_LENGTH);
 
-      const showTitle = hasCategories ? allCategoriesChosen : listingType;
-      const showDescription = hasCategories ? allCategoriesChosen : listingType;
-      const showListingFields = hasCategories ? allCategoriesChosen : listingType;
+        const hasCategories = selectableCategories && selectableCategories.length > 0;
+        const showCategories = listingType && hasCategories;
 
-      const classes = classNames(css.root, className);
-      const submitReady = (updated && pristine) || ready;
-      const submitInProgress = updateInProgress;
-      const hasMandatoryListingTypeData = listingType && transactionProcessAlias && unitType;
-      const submitDisabled =
-        invalid ||
-        disabled ||
-        submitInProgress ||
-        !hasMandatoryListingTypeData ||
-        !isCompatibleCurrency;
+        const showTitle = hasCategories ? allCategoriesChosen : listingType;
+        const showDescription = hasCategories ? allCategoriesChosen : listingType;
+        const showListingFields = hasCategories ? allCategoriesChosen : listingType;
 
-      // Only show the part time percentage if part time is selected
-      // Uncomment code to make percentage required
-      const handlePartTime = e => {
-        if (e.target.name !== 'pub_extent_job') return;
+        const classes = classNames(css.root, className);
+        const submitReady = (updated && pristine) || ready;
+        const submitInProgress = updateInProgress;
+        const hasMandatoryListingTypeData = listingType && transactionProcessAlias && unitType;
+        const submitDisabled =
+          invalid ||
+          disabled ||
+          submitInProgress ||
+          !hasMandatoryListingTypeData ||
+          !isCompatibleCurrency;
 
-        const partTimePercentEl = document.getElementsByName('pub_part_time_percent')[0];
+        // Only show the part time percentage if part time is selected
+        // Uncomment code to make percentage required
+        const handlePartTime = e => {
+          if (e.target.name !== 'pub_extent_job') return;
 
-        // const label = partTimePercentEl.previousSibling.textContent;
+          const partTimePercentEl = document.getElementsByName('pub_part_time_percent')[0];
 
-        // partTimePercentEl.previousSibling.textContent = !label.includes(
-        // 	"*"
-        // )
-        // 	? label + " *"
-        // 	: label;
+          // const label = partTimePercentEl.previousSibling.textContent;
 
-        const parentNo = partTimePercentEl.parentNode;
+          // partTimePercentEl.previousSibling.textContent = !label.includes(
+          // 	"*"
+          // )
+          // 	? label + " *"
+          // 	: label;
 
-        if (e.target.value === 'deltid') {
-          // partTimePercentEl.required = true;
-          parentNo.style = 'display: block';
-        } else {
-          partTimePercentEl.selectedIndex = 0;
-          // partTimePercentEl.required = false;
-          parentNo.style = 'display: none';
-        }
+          const parentNo = partTimePercentEl.parentNode;
 
-        partTimePercentEl.dispatchEvent(new Event('change', { bubbles: true }));
-      };
+          if (e.target.value === 'deltid') {
+            // partTimePercentEl.required = true;
+            parentNo.style = 'display: block';
+          } else {
+            partTimePercentEl.selectedIndex = 0;
+            // partTimePercentEl.required = false;
+            parentNo.style = 'display: none';
+          }
 
-      return (
-        <Form className={classes} onSubmit={handleSubmit} onChange={handlePartTime}>
-          <ErrorMessage fetchErrors={fetchErrors} />
+          partTimePercentEl.dispatchEvent(new Event('change', { bubbles: true }));
+        };
 
-          <FieldSelectListingType
-            name="listingType"
-            listingTypes={selectableListingTypes}
-            hasExistingListingType={hasExistingListingType}
-            onListingTypeChange={onListingTypeChange}
-            formApi={formApi}
-            formId={formId}
-            intl={intl}
-          />
+        return (
+          <Form
+            className={classes}
+            onSubmit={async e => {
+              e.preventDefault();
 
-          {showCategories && isCompatibleCurrency && (
-            <FieldSelectCategory
-              values={values}
-              prefix={categoryPrefix}
-              listingCategories={selectableCategories}
+              if (pdfUploaderRef.current && userId) {
+                const {
+                  existingUrls,
+                  pendingFiles,
+                  toDeletePaths,
+                } = pdfUploaderRef.current.getFilesData();
+
+                // console.log('Uploader data:', {
+                //   existingUrls,
+                //   pendingFiles: pendingFiles.map(f => f.name),
+                //   toDeletePaths,
+                // });
+
+                try {
+                  // 1. Batch delete removed files via proxy
+                  if (toDeletePaths.length > 0) {
+                    const deleteResponse = await fetch('/api/supabase/delete-pdf', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ paths: toDeletePaths }),
+                    });
+
+                    if (!deleteResponse.ok) {
+                      const errText = await deleteResponse.text();
+                      throw new Error(`Delete proxy failed: ${deleteResponse.status} - ${errText}`);
+                    }
+                  }
+
+                  // 2. Upload pending files one by one via proxy (multipart + XMLHttpRequest for progress)
+                  const newUrls = [];
+                  for (const item of pendingFiles) {
+                    const file = item.file;
+                    const timestamp = Date.now();
+                    let uniqueId;
+                    try {
+                      uniqueId = crypto.randomUUID();
+                    } catch (uuidErr) {
+                      console.warn('crypto.randomUUID failed, using fallback');
+                      uniqueId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+                        const r = (Math.random() * 16) | 0;
+                        return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+                      });
+                    }
+                    const sanitizedName = file.name
+                      .replace(/[^a-zA-Z0-9._-]/g, '_')
+                      .substring(0, 100);
+                    const path = `listings/user_${userId}/temp_${timestamp}_${uniqueId}/${sanitizedName}`;
+
+                    // console.log('Attempting upload via proxy:', {
+                    //   path,
+                    //   fileName: file.name,
+                    //   fileSize: file.size,
+                    //   mime: file.type,
+                    // });
+
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('path', path);
+
+                    const uploadPromise = new Promise((resolve, reject) => {
+                      const xhr = new XMLHttpRequest();
+                      xhr.open('POST', '/api/supabase/upload-pdf');
+
+                      xhr.upload.onprogress = event => {
+                        if (event.lengthComputable) {
+                          console.log(
+                            `Upload progress for ${file.name}: ${Math.round(
+                              (event.loaded / event.total) * 100
+                            )}%`
+                          );
+                        }
+                      };
+
+                      xhr.onload = () => {
+                        if (xhr.status === 200) {
+                          const { url } = JSON.parse(xhr.responseText);
+                          console.log('Multipart upload success:', url);
+                          resolve(url);
+                        } else {
+                          reject(
+                            new Error(
+                              `Upload proxy failed for ${file.name}: ${xhr.status} - ${xhr.responseText}`
+                            )
+                          );
+                        }
+                      };
+
+                      xhr.onerror = () => {
+                        reject(new Error(`Upload proxy network error for ${file.name}`));
+                      };
+
+                      xhr.send(formData);
+                    });
+
+                    const url = await uploadPromise;
+                    newUrls.push(url);
+                  }
+
+                  // 3. Final URLs
+                  const finalUrls = [...existingUrls, ...newUrls];
+                  formApi.change('pub_portfolio', JSON.stringify(finalUrls));
+
+                  // console.log('Final portfolio URLs saved to form:', finalUrls);
+                  setPendingFiles([]);
+                } catch (err) {
+                  console.error('PDF processing error:', err);
+                  alert('Error processing PDFs: ' + (err.message || 'Unknown error'));
+                }
+              } else {
+                console.warn('No uploader ref or userId available');
+              }
+
+              // Always return handleSubmit promise — this tells Sharetribe we handled it
+              return handleSubmit();
+            }}
+            onChange={handlePartTime}
+          >
+            <ErrorMessage fetchErrors={fetchErrors} />
+
+            <FieldSelectListingType
+              name="listingType"
+              listingTypes={selectableListingTypes}
+              hasExistingListingType={hasExistingListingType}
+              onListingTypeChange={onListingTypeChange}
               formApi={formApi}
-              intl={intl}
-              allCategoriesChosen={allCategoriesChosen}
-              setAllCategoriesChosen={setAllCategoriesChosen}
-            />
-          )}
-
-          {showTitle && isCompatibleCurrency && (
-            <FieldTextInput
-              id={`${formId}title`}
-              name="title"
-              className={css.title}
-              type="text"
-              label={
-                <>
-                  {intl.formatMessage({
-                    id: 'EditListingDetailsForm.title',
-                  })}{' '}
-                  <span aria-label="required" role="img">
-                    *
-                  </span>
-                </>
-              }
-              placeholder={intl.formatMessage({
-                id: 'EditListingDetailsForm.titlePlaceholder',
-              })}
-              maxLength={TITLE_MAX_LENGTH}
-              validate={composeValidators(required(titleRequiredMessage), maxLength60Message)}
-              autoFocus={autoFocus}
-            />
-          )}
-
-          {showDescription && isCompatibleCurrency && (
-            <FieldTextInput
-              id={`${formId}description`}
-              name="description"
-              className={css.description}
-              type="textarea"
-              label={
-                <>
-                  {intl.formatMessage({
-                    id: 'EditListingDetailsForm.description',
-                  })}{' '}
-                  <span aria-label="required" role="img">
-                    *
-                  </span>
-                </>
-              }
-              placeholder={intl.formatMessage({
-                id: 'EditListingDetailsForm.descriptionPlaceholder',
-              })}
-              validate={required(
-                intl.formatMessage({
-                  id: 'EditListingDetailsForm.descriptionRequired',
-                })
-              )}
-            />
-          )}
-
-          {showListingFields && isCompatibleCurrency && (
-            <AddListingFields
-              listingType={listingType}
-              listingFieldsConfig={listingFieldsConfig}
-              selectedCategories={pickSelectedCategories(values)}
               formId={formId}
               intl={intl}
             />
-          )}
 
-          {!isCompatibleCurrency && listingType && (
-            <p className={css.error}>
-              <FormattedMessage
-                id="EditListingDetailsForm.incompatibleCurrency"
-                values={{
-                  marketplaceName,
-                  marketplaceCurrency,
-                }}
+            {showCategories && isCompatibleCurrency && (
+              <FieldSelectCategory
+                values={values}
+                prefix={categoryPrefix}
+                listingCategories={selectableCategories}
+                formApi={formApi}
+                intl={intl}
+                allCategoriesChosen={allCategoriesChosen}
+                setAllCategoriesChosen={setAllCategoriesChosen}
               />
-            </p>
-          )}
+            )}
 
-          <Button
-            className={css.submitButton}
-            type="submit"
-            inProgress={submitInProgress}
-            disabled={submitDisabled}
-            ready={submitReady}
-          >
-            {saveActionMsg}
-          </Button>
-        </Form>
-      );
-    }}
-  />
-);
+            {showTitle && isCompatibleCurrency && (
+              <FieldTextInput
+                id={`${formId}title`}
+                name="title"
+                className={css.title}
+                type="text"
+                label={
+                  <>
+                    {intl.formatMessage({
+                      id: 'EditListingDetailsForm.title',
+                    })}{' '}
+                    <span aria-label="required" role="img">
+                      *
+                    </span>
+                  </>
+                }
+                placeholder={intl.formatMessage({
+                  id: 'EditListingDetailsForm.titlePlaceholder',
+                })}
+                maxLength={TITLE_MAX_LENGTH}
+                validate={composeValidators(required(titleRequiredMessage), maxLength60Message)}
+                autoFocus={autoFocus}
+              />
+            )}
+
+            {showDescription && isCompatibleCurrency && (
+              <FieldTextInput
+                id={`${formId}description`}
+                name="description"
+                className={css.description}
+                type="textarea"
+                label={
+                  <>
+                    {intl.formatMessage({
+                      id: 'EditListingDetailsForm.description',
+                    })}{' '}
+                    <span aria-label="required" role="img">
+                      *
+                    </span>
+                  </>
+                }
+                placeholder={intl.formatMessage({
+                  id: 'EditListingDetailsForm.descriptionPlaceholder',
+                })}
+                validate={required(
+                  intl.formatMessage({
+                    id: 'EditListingDetailsForm.descriptionRequired',
+                  })
+                )}
+              />
+            )}
+
+            {showListingFields && isCompatibleCurrency && (
+              <AddListingFields
+                listingType={listingType}
+                listingFieldsConfig={listingFieldsConfig}
+                selectedCategories={pickSelectedCategories(values)}
+                formId={formId}
+                intl={intl}
+                pdfUploaderRef={pdfUploaderRef}
+                pendingFiles={pendingFiles}
+                setPendingFiles={setPendingFiles}
+                toDeletePaths={toDeletePaths}
+                setToDeletePaths={setToDeletePaths}
+              />
+            )}
+
+            {!isCompatibleCurrency && listingType && (
+              <p className={css.error}>
+                <FormattedMessage
+                  id="EditListingDetailsForm.incompatibleCurrency"
+                  values={{
+                    marketplaceName,
+                    marketplaceCurrency,
+                  }}
+                />
+              </p>
+            )}
+
+            <Button
+              className={css.submitButton}
+              type="submit"
+              inProgress={submitInProgress}
+              disabled={submitDisabled}
+              ready={submitReady}
+            >
+              {saveActionMsg}
+            </Button>
+          </Form>
+        );
+      }}
+    />
+  );
+};
 
 export default EditListingDetailsForm;

@@ -1,0 +1,102 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.labelSubtitle {
+  color: var(--colorGrey500);
+}
+
+.emptyState {
+  font-size: 14px;
+  color: var(--colorGrey600);
+  text-align: center;
+  padding: 20px 0;
+  border: 1px dashed var(--colorGrey300);
+  border-radius: 8px;
+  background: var(--colorGrey50);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 12px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--colorGrey50);
+  border: 1px solid var(--colorGrey200);
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.item:hover {
+  background: var(--colorGrey100);
+  border-color: var(--colorGrey400);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.filename {
+  flex: 1;
+  font-size: 14px;
+  color: var(--colorBlack);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 12px;
+}
+
+.uploading {
+  color: var(--colorGrey600);
+  font-style: italic;
+  margin-left: 8px;
+}
+
+.removeButton {
+  background: none;
+  border: none;
+  color: var(--colorFail);
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0 8px;
+  line-height: 1;
+  transition: color 0.15s ease;
+}
+
+.removeButton:hover {
+  color: #c82333;
+}
+
+.addButton {
+  align-self: flex-start;
+  padding: 10px 20px;
+  background: var(--marketplaceColor) !important;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.addButton:hover:not(:disabled) {
+  background: var(--marketplaceColorDark) !important;
+}
+
+.addButton:disabled {
+  background: var(--colorGrey400);
+  cursor: not-allowed;
+}
+
+.error {
+  color: var(--colorFail);
+  font-size: 14px;
+  margin-top: 4px;
+}

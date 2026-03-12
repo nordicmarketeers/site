@@ -154,10 +154,12 @@ exports.csp = (reportUri, reportOnly) => {
 
   const customDirectives = {
     connectSrc: supabaseHost
-      ? [...defaultDirectives.connectSrc, supabaseHost]
+      ? [...defaultDirectives.connectSrc, supabaseHost, '*.supabase.co']
       : defaultDirectives.connectSrc,
 
-    imgSrc: supabaseHost ? [...defaultDirectives.imgSrc, supabaseHost] : defaultDirectives.imgSrc,
+    imgSrc: supabaseHost
+      ? [...defaultDirectives.imgSrc, supabaseHost, '*.supabase.co']
+      : defaultDirectives.imgSrc,
   };
 
   // ================ END CUSTOM CSP URLs ================ //

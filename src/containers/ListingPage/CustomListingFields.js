@@ -12,6 +12,7 @@ import SectionDetailsMaybe from './SectionDetailsMaybe';
 import SectionMultiEnumMaybe from './SectionMultiEnumMaybe';
 import SectionTextMaybe from './SectionTextMaybe';
 import SectionYoutubeVideoMaybe from './SectionYoutubeVideoMaybe';
+import SectionPDFMaybe from './SectionPDFMaybe';
 
 /**
  * Renders custom listing fields.
@@ -60,6 +61,8 @@ const CustomListingFields = props => {
         const { schemaType, key, ...fieldProps } = customFieldProps;
         return schemaType === SCHEMA_TYPE_MULTI_ENUM ? (
           <SectionMultiEnumMaybe key={key} {...fieldProps} />
+        ) : key === 'portfolio' ? (
+          <SectionPDFMaybe key={key} {...fieldProps} />
         ) : schemaType === SCHEMA_TYPE_TEXT ? (
           <SectionTextMaybe key={key} {...fieldProps} />
         ) : schemaType === SCHEMA_TYPE_YOUTUBE ? (

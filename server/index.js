@@ -115,6 +115,7 @@ if (cspEnabled) {
   app.use(
     bodyParser.json({
       type: ['json', 'application/csp-report'],
+      limit: '10mb',
     })
   );
 
@@ -228,6 +229,9 @@ if (!dev) {
 // We use passport to enable authenticating with
 // a 3rd party identity provider (e.g. Facebook or Google)
 app.use(passport.initialize());
+
+const supabaseProxy = require('./supabase-proxy');
+app.use('/api/supabase', supabaseProxy);
 
 // Server-side routes that do not render the application
 app.use('/api', apiRouter);

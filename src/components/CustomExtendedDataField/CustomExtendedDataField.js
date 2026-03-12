@@ -21,6 +21,7 @@ import { FieldCheckboxGroup, FieldSelect, FieldTextInput, FieldBoolean } from '.
 // Import modules from this directory
 import css from './CustomExtendedDataField.module.css';
 import classNames from 'classnames';
+import FileUploadPDF from '../FieldUploadPDF/FieldUploadPDF';
 
 const createFilterOptions = options => options.map(o => ({ key: `${o.option}`, label: o.label }));
 
@@ -245,6 +246,48 @@ const CustomFieldYoutube = props => {
   );
 };
 
+const CustomFieldFileUploadPDF = props => {
+  const {
+    name,
+    fieldConfig,
+    defaultRequiredMessage,
+    formId,
+    intl,
+    pdfUploaderRef,
+    pendingFiles,
+    setPendingFiles,
+    toDeletePaths,
+    setToDeletePaths,
+  } = props;
+
+  const { placeholderMessage, isRequired, requiredMessage } = fieldConfig?.saveConfig || {};
+  const validateMaybe = isRequired
+    ? { validate: required(requiredMessage || defaultRequiredMessage) }
+    : {};
+  const placeholder = placeholderMessage || null;
+
+  const label = getAccessibleLabel(fieldConfig);
+
+  return (
+    <FileUploadPDF
+      className={css.customField}
+      id={formId ? `${formId}.${name}` : name}
+      name={name}
+      label={label}
+      placeholder={placeholder}
+      {...validateMaybe}
+      fieldConfig={fieldConfig}
+      intl={intl}
+      pdfUploaderRef={pdfUploaderRef}
+      pendingFiles={pendingFiles}
+      setPendingFiles={setPendingFiles}
+      toDeletePaths={toDeletePaths}
+      setToDeletePaths={setToDeletePaths}
+      ref={pdfUploaderRef}
+    />
+  );
+};
+
 /**
  * Return Final Form field for each configuration according to schema type.
  *
@@ -257,22 +300,26 @@ const CustomFieldYoutube = props => {
  */
 const CustomExtendedDataField = props => {
   const intl = useIntl();
-  const { enumOptions = [], schemaType } = props?.fieldConfig || {};
+  const { enumOptions = [], schemaType, key } = props?.fieldConfig || {};
   const renderFieldComponent = (FieldComponent, props) => <FieldComponent {...props} intl={intl} />;
 
-  return schemaType === SCHEMA_TYPE_ENUM && enumOptions
-    ? renderFieldComponent(CustomFieldEnum, props)
-    : schemaType === SCHEMA_TYPE_MULTI_ENUM && enumOptions
-    ? renderFieldComponent(CustomFieldMultiEnum, props)
-    : schemaType === SCHEMA_TYPE_TEXT
-    ? renderFieldComponent(CustomFieldText, props)
-    : schemaType === SCHEMA_TYPE_LONG
-    ? renderFieldComponent(CustomFieldLong, props)
-    : schemaType === SCHEMA_TYPE_BOOLEAN
-    ? renderFieldComponent(CustomFieldBoolean, props)
-    : schemaType === SCHEMA_TYPE_YOUTUBE
-    ? renderFieldComponent(CustomFieldYoutube, props)
-    : null;
+  return schemaType === SCHEMA_TYPE_ENUM && enumOptions ? (
+    renderFieldComponent(CustomFieldEnum, props)
+  ) : schemaType === SCHEMA_TYPE_MULTI_ENUM && enumOptions ? (
+    renderFieldComponent(CustomFieldMultiEnum, props)
+  ) : schemaType === SCHEMA_TYPE_TEXT ? (
+    key === 'portfolio' ? (
+      <CustomFieldFileUploadPDF {...props} />
+    ) : (
+      renderFieldComponent(CustomFieldText, props)
+    )
+  ) : schemaType === SCHEMA_TYPE_LONG ? (
+    renderFieldComponent(CustomFieldLong, props)
+  ) : schemaType === SCHEMA_TYPE_BOOLEAN ? (
+    renderFieldComponent(CustomFieldBoolean, props)
+  ) : schemaType === SCHEMA_TYPE_YOUTUBE ? (
+    renderFieldComponent(CustomFieldYoutube, props)
+  ) : null;
 };
 
 export default CustomExtendedDataField;
