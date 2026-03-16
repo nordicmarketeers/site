@@ -53,7 +53,7 @@ const JobListingCard = props => {
             {restRoles.length > 0 && (
               <span className={css.restRolesTooltip}>
                 {restRoles.map(r => (
-                  <span>
+                  <span key={r}>
                     {capitalize(r.replace('_', ' '))}
                     <br />
                   </span>
