@@ -42,14 +42,24 @@ class SearchFiltersMobileComponent extends Component {
       location
     );
 
+    const currentParams = new URLSearchParams(location.search);
+
+    // Only keep "pub_listingType"
+    const nextParams = new URLSearchParams();
+    const listingType = currentParams.get('pub_listingType');
+    if (listingType) {
+      nextParams.set('pub_listingType', listingType);
+    }
+
     history.push(
       createResourceLocatorString(
         routeName,
         routeConfiguration,
         pathParams,
-        this.state.initialQueryParams
+        Object.fromEntries(nextParams.entries())
       )
     );
+
     onCloseModal();
     this.setState({
       isFiltersOpenOnMobile: false,
@@ -65,7 +75,6 @@ class SearchFiltersMobileComponent extends Component {
 
   // Reset all filter query parameters
   resetAll(e) {
-    console.log(this.props);
     this.props.resetAll(e);
 
     // Do a hard reset of URL if a location was searched
