@@ -7,6 +7,15 @@ export const cityCountryFormat = rawlocation => {
     : '';
 };
 
+export const cityFormat = rawlocation => {
+  return rawlocation
+    ? rawlocation
+        .split(', ')
+        .filter((_, i) => i === 0)
+        .join('')
+    : '';
+};
+
 export const capitalize = str => {
   return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
 };

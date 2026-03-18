@@ -10,6 +10,7 @@ import FilterPlain from '../FilterPlain/FilterPlain';
 import FilterPopup from '../FilterPopup/FilterPopup';
 
 import css from './LocationFilter.module.css';
+import { cityFormat } from '../../../util/listingCardHelpers';
 
 const { LatLng, LatLngBounds } = sdkTypes;
 
@@ -29,7 +30,7 @@ class LocationFilter extends Component {
   constructor(props) {
     super(props);
     this.mobileInputRef = React.createRef();
-    this.state = { isFocused: false };
+    this.state = { isFocused: false, isSelected: false, currentCity: '' };
   }
 
   handleFocus = () => {
@@ -38,6 +39,14 @@ class LocationFilter extends Component {
 
   handleBlur = () => {
     this.setState({ isFocused: false });
+  };
+
+  activeCheck = () => {
+    const currentParams = new URLSearchParams(window.location.search);
+    const searchParams = Object.fromEntries(currentParams);
+    return searchParams.address
+      ? { isSelected: true, currentCity: cityFormat(searchParams.address) }
+      : { isSelected: false, currentCity: null };
   };
 
   render() {
@@ -59,6 +68,8 @@ class LocationFilter extends Component {
 
     const classes = classNames(rootClassName || css.root, className);
 
+    const { isSelected, currentCity } = this.activeCheck();
+    const labelSelection = isSelected ? '• ' + currentCity : '';
     const propsInitial = propsInitialValues || {};
     const initialAddress = propsInitial.address;
     const initialOrigin = parseLatLng(propsInitial.origin);
@@ -136,7 +147,8 @@ class LocationFilter extends Component {
         name="location"
         label={label}
         ariaLabel={getAriaLabel(label, rawInitialValues)}
-        isSelected={hasInitialValues}
+        isSelected={isSelected}
+        labelSelection={labelSelection}
         id={`${id}.popup`}
         showAsPopup
         contentPlacementOffset={contentPlacementOffset}
@@ -187,7 +199,8 @@ class LocationFilter extends Component {
         rootClassName={rootClassName}
         label={label}
         ariaLabel={getAriaLabel(label, rawInitialValues)}
-        isSelected={hasInitialValues}
+        isSelected={isSelected}
+        labelSelection={labelSelection}
         id={`${id}.plain`}
         liveEdit={false}
         onSubmit={values => {
