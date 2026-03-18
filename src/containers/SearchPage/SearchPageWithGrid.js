@@ -277,24 +277,28 @@ export class SearchPageComponent extends Component {
     // Page transition might initially use values from previous search
     // urlQueryParams doesn't contain page specific url params
     // like mapSearch, page or origin (origin depends on config.maps.search.sortSearchByDistance)
-    const { searchParamsAreInSync, urlQueryParams, searchParamsInURL } = searchParamsPicker(
+    const { urlQueryParams, searchParamsInURL } = searchParamsPicker(
       location.search,
       searchParams,
       filterConfigs,
       sortConfig,
       isOriginInUse(config)
     );
+    // Needed for location search
+    let searchParamsAreInSync = true;
     const validQueryParams = urlQueryParams;
 
     const isKeywordSearch = isMainSearchTypeKeywords(config);
     const builtInPrimaryFilters = defaultFiltersConfig.filter(f =>
-      ['categoryLevel', 'listingType'].includes(f.key)
+      ['categoryLevel', 'listingType', 'location'].includes(f.key)
     );
     const builtInFilters = isKeywordSearch
       ? defaultFiltersConfig.filter(
-          f => !['keywords', 'categoryLevel', 'listingType'].includes(f.key)
+          f => !['keywords', 'categoryLevel', 'listingType', 'location'].includes(f.key)
         )
-      : defaultFiltersConfig.filter(f => !['categoryLevel', 'listingType'].includes(f.key));
+      : defaultFiltersConfig.filter(
+          f => !['categoryLevel', 'listingType', 'location'].includes(f.key)
+        );
     const [customPrimaryFilters, customSecondaryFilters] = groupListingFieldConfigs(
       listingFieldsConfig,
       activeListingTypes

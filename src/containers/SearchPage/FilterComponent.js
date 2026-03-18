@@ -12,6 +12,7 @@ import KeywordFilter from './KeywordFilter/KeywordFilter';
 import PriceFilter from './PriceFilter/PriceFilter';
 import IntegerRangeFilter from './IntegerRangeFilter/IntegerRangeFilter';
 import SeatsFilter from './SeatsFilter/SeatsFilter';
+import LocationFilter from './LocationFilter/LocationFilter';
 
 /**
  * FilterComponent is used to map configured filter types
@@ -226,6 +227,22 @@ const FilterComponent = props => {
           max={maximum}
           step={step}
           getAriaLabel={getAriaLabel}
+          {...rest}
+        />
+      );
+    }
+    case 'location': {
+      const { scope, filterConfig = {} } = config;
+      const { label } = filterConfig;
+      const queryParamNames = [constructQueryParamName(key, scope)];
+      return (
+        <LocationFilter
+          label={label}
+          getAriaLabel={getAriaLabel}
+          name={name}
+          queryParamNames={queryParamNames}
+          initialValues={initialValues(queryParamNames, liveEdit)}
+          onSubmit={getHandleChangedValueFn(useHistoryPush)}
           {...rest}
         />
       );

@@ -1321,6 +1321,17 @@ const validKeywordsConfig = config => {
   return { key: 'keywords', schemaType: 'keywords' };
 };
 
+const validLocationConfig = config => {
+  const { enabled = true, label = 'Location' } = config;
+  const isValidLabel = typeof label === 'string';
+
+  if (!(enabled && isValidLabel)) {
+    return null;
+  }
+
+  return { key: 'location', schemaType: 'location', label };
+};
+
 const validDefaultFilters = (defaultFilters, categoryConfiguration, listingTypeConfig) => {
   return defaultFilters
     .map(data => {
@@ -1407,6 +1418,8 @@ const mergeSearchConfig = (
       ? [defaultSearchConfig.keywordsFilter]
       : [];
 
+  const locationFilterMaybe = validLocationConfig(defaultSearchConfig.locationFilter) || {};
+
   const seatsFilterMaybe = typeof seatsFilter?.enabled === 'boolean' ? [seatsFilter] : [];
 
   const listingTypeFilterMaybe =
@@ -1419,6 +1432,7 @@ const mergeSearchConfig = (
   //       It might be somewhat strange experience if a primary filter is among those filters
   //       that are affected by category selection.
   const defaultFilters = [
+    locationFilterMaybe,
     ...listingTypeFilterMaybe,
     ...categoryFilterMaybe,
     dateRangeFilter,

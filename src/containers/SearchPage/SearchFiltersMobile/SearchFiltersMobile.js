@@ -65,7 +65,28 @@ class SearchFiltersMobileComponent extends Component {
 
   // Reset all filter query parameters
   resetAll(e) {
+    console.log(this.props);
     this.props.resetAll(e);
+
+    // Do a hard reset of URL if a location was searched
+    if (this.props.location.search.includes('address')) {
+      if (this.mobileInputRef && this.mobileInputRef.current) {
+        this.mobileInputRef.current.value = '';
+      }
+
+      // Build clean URL without location params
+      const currentParams = new URLSearchParams(window.location.search);
+      currentParams.delete('address');
+      currentParams.delete('origin');
+      currentParams.delete('bounds');
+
+      const newSearch = currentParams.toString() ? `?${currentParams.toString()}` : '';
+      const newUrl = `/s${newSearch}`;
+
+      console.log('Clearing → reloading with:', newUrl);
+
+      window.location.href = newUrl;
+    }
 
     // blur event target if event is passed
     if (e && e.currentTarget) {

@@ -134,6 +134,12 @@ export const validURLParamForExtendedData = (
     return paramValue ? { [queryParamName]: paramValue } : {};
   } else if (queryParamName === 'pub_listingType') {
     return paramValue.length > 0 ? { [queryParamName]: paramValue } : {};
+  } else if (
+    queryParamName === 'address' ||
+    queryParamName === 'origin' ||
+    queryParamName === 'bounds'
+  ) {
+    return paramValue.length > 0 ? { [queryParamName]: paramValue } : {};
   }
 
   // Resolve configurations for extended data filters
@@ -343,11 +349,13 @@ export const pickSearchParamsOnly = (params, filterConfigs, sortConfig, isOrigin
   const { address, origin, bounds, ...rest } = params || {};
   const boundsMaybe = bounds ? { bounds } : {};
   const originMaybe = isOriginInUse && origin ? { origin } : {};
+  const addressMaybe = address ? { address } : {};
   const filterParams = validFilterParams(rest, filterConfigs);
   const sort = rest[sortConfig.queryParamName];
   const sortMaybe = sort ? { sort } : {};
 
   return {
+    ...addressMaybe,
     ...boundsMaybe,
     ...originMaybe,
     ...filterParams,

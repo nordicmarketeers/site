@@ -5,7 +5,7 @@ import debounce from 'lodash/debounce';
 import { useConfiguration } from '../../context/configurationContext';
 import { FormattedMessage, useIntl } from '../../util/reactIntl';
 
-import { IconSpinner } from '../../components';
+import { IconSpinner, OutsideClickHandler } from '../../components';
 
 import IconLookingGlass from './IconLookingGlass';
 import IconCurrentLocation from './IconCurrentLocation';
@@ -134,9 +134,7 @@ const currentValue = props => {
 class LocationAutocompleteInputImplementation extends Component {
   constructor(props) {
     super(props);
-
     this._isMounted = false;
-
     this.state = {
       inputHasFocus: false,
       selectionInProgress: false,
@@ -145,11 +143,9 @@ class LocationAutocompleteInputImplementation extends Component {
       fetchingPlaceDetails: false,
       fetchingPredictions: false,
     };
-
     // Ref to the input element.
     this.input = null;
     this.shortQueryTimeout = null;
-
     this.getGeocoder = this.getGeocoder.bind(this);
     this.currentPredictions = this.currentPredictions.bind(this);
     this.changeHighlight = this.changeHighlight.bind(this);
@@ -162,41 +158,34 @@ class LocationAutocompleteInputImplementation extends Component {
     this.handlePredictionsSelectMove = this.handlePredictionsSelectMove.bind(this);
     this.handlePredictionsSelectEnd = this.handlePredictionsSelectEnd.bind(this);
     this.finalizeSelection = this.finalizeSelection.bind(this);
-
     // Debounce the method to avoid calling the API too many times
     // when the user is typing fast.
     this.predict = debounce(this.predict.bind(this), DEBOUNCE_WAIT_TIME, {
       leading: true,
     });
   }
-
   componentDidMount() {
     this._isMounted = true;
   }
-
   componentWillUnmount() {
     window.clearTimeout(this.shortQueryTimeout);
     this._isMounted = false;
   }
-
   getGeocoder() {
     const geocoderVariant = getGeocoderVariant(this.props.config.maps.mapProvider);
     const Geocoder = geocoderVariant.default;
-
     // Create the Geocoder as late as possible only when it is needed.
     if (!this._geocoder) {
       this._geocoder = new Geocoder();
     }
     return this._geocoder;
   }
-
   currentPredictions() {
     const { search, predictions: fetchedPredictions } = currentValue(this.props);
-    const { useDefaultPredictions = true, config } = this.props;
+    const { useDefaultPredictions = false, config } = this.props;
     const hasFetchedPredictions = fetchedPredictions && fetchedPredictions.length > 0;
     const showDefaultPredictions = !search && !hasFetchedPredictions && useDefaultPredictions;
     const geocoderVariant = getGeocoderVariant(config.maps.mapProvider);
-
     // A list of default predictions that can be shown when the user
     // focuses on the autocomplete input without typing a search. This can
     // be used to reduce typing and Geocoding API calls for common
@@ -205,10 +194,8 @@ class LocationAutocompleteInputImplementation extends Component {
       ? [{ id: geocoderVariant.CURRENT_LOCATION_ID, predictionPlace: {} }]
       : []
     ).concat(config.maps.search.defaults);
-
     return showDefaultPredictions ? defaultPredictions : fetchedPredictions;
   }
-
   // Interpret input key event
   onKeyDown(e) {
     if (e.keyCode === KEY_CODE_ARROW_UP) {
@@ -221,7 +208,6 @@ class LocationAutocompleteInputImplementation extends Component {
       this.changeHighlight(DIRECTION_DOWN);
     } else if (e.keyCode === KEY_CODE_ENTER) {
       const { selectedPlace } = currentValue(this.props);
-
       if (!selectedPlace) {
         // Prevent form submit, try to select value instead.
         e.preventDefault();
@@ -237,29 +223,24 @@ class LocationAutocompleteInputImplementation extends Component {
       this.input.blur();
     }
   }
-
   // Handle input text change, fetch predictions if the value isn't empty
   onChange(e) {
     const onChange = this.props.input.onChange;
     const predictions = this.currentPredictions();
     const newValue = e.target.value;
-
     // Clear the current values since the input content is changed
     onChange({
       search: newValue,
       predictions: newValue ? predictions : [],
       selectedPlace: null,
     });
-
     // Clear highlighted prediction since the input value changed and
     // results will change as well
     this.setState({ highlightedIndex: -1 });
-
     if (!newValue) {
       // No need to fetch predictions on empty input
       return;
     }
-
     if (newValue.length >= 3) {
       if (this.shortQueryTimeout) {
         window.clearTimeout(this.shortQueryTimeout);
@@ -271,7 +252,6 @@ class LocationAutocompleteInputImplementation extends Component {
       }, DEBOUNCE_WAIT_TIME_FOR_SHORT_QUERIES);
     }
   }
-
   // Change the currently highlighted item by calculating the new
   // index from the current state and the given direction number
   // (DIRECTION_UP or DIRECTION_DOWN)
@@ -280,25 +260,21 @@ class LocationAutocompleteInputImplementation extends Component {
       const predictions = this.currentPredictions();
       const currentIndex = prevState.highlightedIndex;
       let index = currentIndex;
-
       if (direction === DIRECTION_UP) {
         // Keep the first position if already highlighted
         index = currentIndex === 0 ? 0 : currentIndex - 1;
       } else if (direction === DIRECTION_DOWN) {
         index = currentIndex + 1;
       }
-
       // Check that the index is within the bounds
       if (index < 0) {
         index = -1;
       } else if (index >= predictions.length) {
         index = predictions.length - 1;
       }
-
       return { highlightedIndex: index };
     });
   }
-
   // Select the prediction in the given item. This will fetch/read the
   // place details and set it as the selected place.
   selectPrediction(prediction) {
@@ -308,9 +284,7 @@ class LocationAutocompleteInputImplementation extends Component {
       ...this.props.input,
       selectedPlace: null,
     });
-
     this.setState({ fetchingPlaceDetails: true });
-
     this.getGeocoder()
       .getPlaceDetails(prediction, currentLocationBoundsDistance)
       .then(place => {
@@ -324,15 +298,19 @@ class LocationAutocompleteInputImplementation extends Component {
           predictions: [],
           selectedPlace: place,
         });
+        // Call prop on success
+        this.props.onPlaceSelected?.(place);
       })
       .catch(e => {
         this.setState({ fetchingPlaceDetails: false });
-        // eslint-disable-next-line no-console
         console.error(e);
         this.props.input.onChange({
           ...this.props.input.value,
+          predictions: [],
           selectedPlace: null,
         });
+        // Call prop on error
+        this.props.onPlaceSelected?.(null);
       });
   }
   selectItemIfNoneSelected() {
@@ -340,7 +318,6 @@ class LocationAutocompleteInputImplementation extends Component {
       // No need to select anything since prediction fetch is still going on
       return;
     }
-
     const { search, selectedPlace } = currentValue(this.props);
     const predictions = this.currentPredictions();
     if (!selectedPlace) {
@@ -365,13 +342,11 @@ class LocationAutocompleteInputImplementation extends Component {
     const config = this.props.config;
     const onChange = this.props.input.onChange;
     this.setState({ fetchingPredictions: true });
-
     return this.getGeocoder()
       .getPlacePredictions(search, config.maps.search.countryLimit, config.localization.locale)
       .then(results => {
         const { search: currentSearch } = currentValue(this.props);
         this.setState({ fetchingPredictions: false });
-
         // If the earlier predictions arrive when the user has already
         // changed the search term, ignore and wait until the latest
         // predictions arrive. Without this logic, results for earlier
@@ -399,18 +374,20 @@ class LocationAutocompleteInputImplementation extends Component {
         });
       });
   }
-
   finalizeSelection() {
     this.setState({ inputHasFocus: false, highlightedIndex: -1 });
     this.props.input.onBlur(currentValue(this.props));
   }
-
   handleOnBlur() {
+    const value = currentValue(this.props);
+    const onChange = this.props.input.onChange;
     if (this.props.closeOnBlur && !this.state.selectionInProgress) {
       this.finalizeSelection();
     }
+    if (!value.selectedPlace && value.predictions.length > 0) {
+      onChange({ ...value, predictions: [] });
+    }
   }
-
   handlePredictionsSelectStart(touchCoordinates) {
     this.setState({
       selectionInProgress: true,
@@ -418,7 +395,6 @@ class LocationAutocompleteInputImplementation extends Component {
       isSwipe: false,
     });
   }
-
   handlePredictionsSelectMove(touchCoordinates) {
     this.setState(prevState => {
       const touchStartedFrom = prevState.touchStartedFrom;
@@ -426,11 +402,9 @@ class LocationAutocompleteInputImplementation extends Component {
       const isSwipe = isTouchAction
         ? Math.abs(touchStartedFrom.y - touchCoordinates.y) > TOUCH_TAP_RADIUS
         : false;
-
       return { selectionInProgress: false, isSwipe };
     });
   }
-
   handlePredictionsSelectEnd(prediction) {
     let selectAndFinalize = false;
     this.setState(
@@ -452,7 +426,6 @@ class LocationAutocompleteInputImplementation extends Component {
       }
     );
   }
-
   render() {
     const {
       autoFocus,
@@ -461,6 +434,7 @@ class LocationAutocompleteInputImplementation extends Component {
       useDarkText,
       iconClassName,
       CustomIcon,
+      ShowCustomIcon,
       inputClassName,
       predictionsClassName,
       predictionsAttributionClassName,
@@ -481,21 +455,17 @@ class LocationAutocompleteInputImplementation extends Component {
     const { touched, valid } = meta || {};
     const isValid = valid && touched;
     const predictions = this.currentPredictions();
-
     const ariaLabelMaybe = ariaLabel ? { ['aria-label']: ariaLabel } : {};
-
     const handleOnFocus = e => {
       this.setState({ inputHasFocus: true });
       onFocus(e);
     };
-
     const rootClass = classNames(rootClassName || css.root, className);
     const iconClass = classNames(iconClassName || css.icon);
     const inputClass = classNames(inputClassName || css.input, {
       [validClassName]: isValid,
     });
     const predictionsClass = classNames(predictionsClassName);
-
     // Only render predictions when the input has focus. For
     // development and easier workflow with the browser devtools, you
     // might want to hardcode this to `true`. Otherwise the dropdown
@@ -518,26 +488,26 @@ class LocationAutocompleteInputImplementation extends Component {
         : inputRef
         ? { ref: inputRef }
         : {};
-
     const predictionsId = `${id}.predictions`;
-
     return (
       <div className={rootClass}>
-        <div className={iconClass}>
-          {this.state.fetchingPlaceDetails ? (
-            <IconSpinner className={css.iconSpinner} />
-          ) : CustomIcon ? (
-            <CustomIcon />
-          ) : SubmitButton ? (
-            <SubmitButton />
-          ) : (
-            <IconLookingGlass
-              ariaLabel={intl.formatMessage({
-                id: 'LocationAutocompleteInput.screenreader.search',
-              })}
-            />
-          )}
-        </div>
+        {ShowCustomIcon !== false && (
+          <div className={iconClass}>
+            {this.state.fetchingPlaceDetails ? (
+              <IconSpinner className={css.iconSpinner} />
+            ) : CustomIcon ? (
+              <CustomIcon />
+            ) : SubmitButton ? (
+              <SubmitButton />
+            ) : (
+              <IconLookingGlass
+                ariaLabel={intl.formatMessage({
+                  id: 'LocationAutocompleteInput.screenreader.search',
+                })}
+              />
+            )}
+          </div>
+        )}
         <input
           className={inputClass}
           type="search"
@@ -563,24 +533,26 @@ class LocationAutocompleteInputImplementation extends Component {
           aria-activedescendant={predictions[this.state.highlightedIndex]?.id}
         />
         {renderPredictions ? (
-          <LocationPredictionsList
-            id={predictionsId}
-            rootClassName={predictionsClass}
-            useDarkText={useDarkText}
-            predictions={predictions}
-            currentLocationId={geocoderVariant.CURRENT_LOCATION_ID}
-            isGoogleMapsInUse={config.maps.mapProvider === 'googleMaps'}
-            geocoder={this.getGeocoder()}
-            highlightedIndex={this.state.highlightedIndex}
-            onSelectStart={this.handlePredictionsSelectStart}
-            onSelectMove={this.handlePredictionsSelectMove}
-            onSelectEnd={this.handlePredictionsSelectEnd}
-          >
-            <GeocoderAttribution
-              className={predictionsAttributionClassName}
+          <OutsideClickHandler onOutsideClick={this.handleOnBlur}>
+            <LocationPredictionsList
+              id={predictionsId}
+              rootClassName={predictionsClass}
               useDarkText={useDarkText}
-            />
-          </LocationPredictionsList>
+              predictions={predictions}
+              currentLocationId={geocoderVariant.CURRENT_LOCATION_ID}
+              isGoogleMapsInUse={config.maps.mapProvider === 'googleMaps'}
+              geocoder={this.getGeocoder()}
+              highlightedIndex={this.state.highlightedIndex}
+              onSelectStart={this.handlePredictionsSelectStart}
+              onSelectMove={this.handlePredictionsSelectMove}
+              onSelectEnd={this.handlePredictionsSelectEnd}
+            >
+              <GeocoderAttribution
+                className={predictionsAttributionClassName}
+                useDarkText={useDarkText}
+              />
+            </LocationPredictionsList>
+          </OutsideClickHandler>
         ) : null}
       </div>
     );
@@ -643,8 +615,6 @@ class LocationAutocompleteInputImplementation extends Component {
 const LocationAutocompleteInputImpl = props => {
   const config = useConfiguration();
   const intl = useIntl();
-
   return <LocationAutocompleteInputImplementation config={config} intl={intl} {...props} />;
 };
-
 export default LocationAutocompleteInputImpl;
