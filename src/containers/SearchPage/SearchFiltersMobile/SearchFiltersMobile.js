@@ -26,6 +26,7 @@ class SearchFiltersMobileComponent extends Component {
   // Open filters modal, set the initial parameters to current ones
   openFilters() {
     const { onOpenModal, urlQueryParams } = this.props;
+    console.log({ urlQueryParams });
     onOpenModal();
     this.setState({
       isFiltersOpenOnMobile: true,
@@ -52,12 +53,10 @@ class SearchFiltersMobileComponent extends Component {
     }
 
     history.push(
-      createResourceLocatorString(
-        routeName,
-        routeConfiguration,
-        pathParams,
-        Object.fromEntries(nextParams.entries())
-      )
+      createResourceLocatorString(routeName, routeConfiguration, pathParams, {
+        ...Object.fromEntries(nextParams.entries()),
+        ...this.state.initialQueryParams,
+      })
     );
 
     onCloseModal();
