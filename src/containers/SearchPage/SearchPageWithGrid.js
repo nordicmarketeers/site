@@ -112,36 +112,46 @@ export class SearchPageComponent extends Component {
     // Reset state
     this.setState({ currentQueryParams: {} });
 
-    // Reset routing params
-    const queryParams = omit(urlQueryParams, filterQueryParamNames);
+    const currentParams = new URLSearchParams(location.search);
+
+    // Remove location params if present
+    const hasLocation = currentParams.has('address');
+    if (hasLocation) {
+      currentParams.delete('address');
+      currentParams.delete('origin');
+      currentParams.delete('bounds');
+
+      if (this.mobileInputRef && this.mobileInputRef.current) {
+        this.mobileInputRef.current.value = '';
+      }
+    }
+
+    // Reset other filters
+    const queryParams = {};
+    for (const [key, value] of currentParams.entries()) {
+      if (!filterQueryParamNames.includes(key)) {
+        queryParams[key] = value;
+      }
+    }
 
     const { routeName, pathParams } = getSearchPageResourceLocatorStringParams(
       routeConfiguration,
       location
     );
 
-    history.push(
-      createResourceLocatorString(routeName, routeConfiguration, pathParams, queryParams)
+    const newUrl = createResourceLocatorString(
+      routeName,
+      routeConfiguration,
+      pathParams,
+      queryParams
     );
 
-    // Do a hard reset of URL if a location was searched
-    if (this.props.location.search.includes('address')) {
-      if (this.mobileInputRef && this.mobileInputRef.current) {
-        this.mobileInputRef.current.value = '';
-      }
-
-      // Build clean URL without location params
-      const currentParams = new URLSearchParams(window.location.search);
-      currentParams.delete('address');
-      currentParams.delete('origin');
-      currentParams.delete('bounds');
-
-      const newSearch = currentParams.toString() ? `?${currentParams.toString()}` : '';
-      const newUrl = `/s${newSearch}`;
-
-      // console.log('Clearing → reloading with:', newUrl);
-
+    if (hasLocation) {
+      // Hard reload once without location
       window.location.href = newUrl;
+    } else {
+      // Just push to history if no location to clear
+      history.push(newUrl);
     }
 
     // blur event target if event is passed
