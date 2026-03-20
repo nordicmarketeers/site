@@ -25,13 +25,22 @@ import {
   isUnauthedCustomer,
 } from '../../../../util/userTypeHelper';
 
-const CustomLinkComponent = ({ linkConfig, currentPage }) => {
+const CustomLinkComponent = ({ linkConfig, currentPage, location }) => {
   const { group, text, type, href, route } = linkConfig;
   const getCurrentPageClass = page => {
     const hasPageName = name => currentPage?.indexOf(name) === 0;
     const isCMSPage = pageId => hasPageName('CMSPage') && currentPage === `${page}:${pageId}`;
     const isInboxPage = tab => hasPageName('InboxPage') && currentPage === `${page}:${tab}`;
-    const isCurrentPage = currentPage === page;
+    let isCurrentPage = currentPage === page;
+
+    // Handle the specific search pages
+    if (location.search.includes('listingType')) {
+      if (location.search.includes(href.slice(3))) {
+        isCurrentPage = true;
+      } else {
+        isCurrentPage = false;
+      }
+    }
 
     return isCMSPage(route?.params?.pageId) || isInboxPage(route?.params?.tab) || isCurrentPage
       ? css.currentPage
@@ -98,6 +107,7 @@ const TopbarMobileMenu = props => {
         key={`${linkConfig.text}_${index}`}
         linkConfig={linkConfig}
         currentPage={currentPage}
+        location={location}
       />
     );
   });
