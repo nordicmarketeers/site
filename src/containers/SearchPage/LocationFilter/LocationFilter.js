@@ -30,8 +30,37 @@ class LocationFilter extends Component {
   constructor(props) {
     super(props);
     this.mobileInputRef = React.createRef();
-    this.state = { isFocused: false, isSelected: false, currentCity: '' };
+
+    const isBrowser = typeof window !== 'undefined';
+    const { isSelected, currentCity } = isBrowser
+      ? (() => {
+          const currentParams = new URLSearchParams(window.location.search);
+          const searchParams = Object.fromEntries(currentParams);
+          return searchParams.address
+            ? { isSelected: true, currentCity: cityFormat(searchParams.address) }
+            : { isSelected: false, currentCity: '' };
+        })()
+      : { isSelected: false, currentCity: '' };
+
+    this.state = { isFocused: false, isSelected, currentCity };
   }
+
+  componentDidMount() {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('popstate', this.handlePopState);
+    }
+  }
+
+  componentWillUnmount() {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('popstate', this.handlePopState);
+    }
+  }
+
+  handlePopState = () => {
+    const { isSelected, currentCity } = this.activeCheck();
+    this.setState({ isSelected, currentCity });
+  };
 
   handleFocus = () => {
     this.setState({ isFocused: true });
@@ -42,6 +71,10 @@ class LocationFilter extends Component {
   };
 
   activeCheck = () => {
+    if (typeof window === 'undefined') {
+      return { isSelected: false, currentCity: null };
+    }
+
     const currentParams = new URLSearchParams(window.location.search);
     const searchParams = Object.fromEntries(currentParams);
     return searchParams.address
@@ -68,7 +101,7 @@ class LocationFilter extends Component {
 
     const classes = classNames(rootClassName || css.root, className);
 
-    const { isSelected, currentCity } = this.activeCheck();
+    const { isSelected, currentCity } = this.state;
     const labelSelection = isSelected ? '• ' + currentCity : '';
     const propsInitial = propsInitialValues || {};
     const initialAddress = propsInitial.address;
@@ -90,6 +123,10 @@ class LocationFilter extends Component {
     const placeholder = intl.formatMessage({ id: 'TopbarSearchForm.placeholder' });
 
     const handleSubmit = values => {
+      if (typeof window === 'undefined') {
+        return;
+      }
+
       const { search, selectedPlace } = values.location || {};
       const address = selectedPlace?.address || search?.trim() || null;
       const origin = selectedPlace?.origin
@@ -119,6 +156,10 @@ class LocationFilter extends Component {
     };
 
     const handleClear = () => {
+      if (typeof window === 'undefined') {
+        return;
+      }
+
       if (this.mobileInputRef && this.mobileInputRef.current) {
         this.mobileInputRef.current.value = '';
       }
