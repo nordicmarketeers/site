@@ -618,7 +618,7 @@ export const ManageListingCard = props => {
                       event.preventDefault();
                       event.stopPropagation();
 
-                      const url = `/l/${title}/${id}/edit/details`;
+                      const url = `/l/${slug}/${id}/edit/details`;
                       window.location.assign(url);
                     }}
                   >
