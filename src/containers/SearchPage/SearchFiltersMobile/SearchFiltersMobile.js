@@ -26,7 +26,6 @@ class SearchFiltersMobileComponent extends Component {
   // Open filters modal, set the initial parameters to current ones
   openFilters() {
     const { onOpenModal, urlQueryParams } = this.props;
-    console.log({ urlQueryParams });
     onOpenModal();
     this.setState({
       isFiltersOpenOnMobile: true,
@@ -78,20 +77,22 @@ class SearchFiltersMobileComponent extends Component {
 
     // Do a hard reset of URL if a location was searched
     if (this.props.location.search.includes('address')) {
-      if (this.mobileInputRef && this.mobileInputRef.current) {
+      if (this.mobileInputRef?.current) {
         this.mobileInputRef.current.value = '';
       }
 
-      // Build clean URL without location params
       const currentParams = new URLSearchParams(window.location.search);
-      currentParams.delete('address');
-      currentParams.delete('origin');
-      currentParams.delete('bounds');
 
-      const newSearch = currentParams.toString() ? `?${currentParams.toString()}` : '';
+      const listingType = currentParams.get('pub_listingType');
+
+      const newParams = new URLSearchParams();
+
+      if (listingType) {
+        newParams.set('pub_listingType', listingType);
+      }
+
+      const newSearch = newParams.toString() ? `?${newParams.toString()}` : '';
       const newUrl = `/s${newSearch}`;
-
-      console.log('Clearing → reloading with:', newUrl);
 
       window.location.href = newUrl;
     }

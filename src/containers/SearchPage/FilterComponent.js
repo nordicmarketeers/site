@@ -70,7 +70,8 @@ const FilterComponent = props => {
         />
       );
     }
-    case 'listingType': {
+    // Hide listingType option, having filter by listingType enabled is required for filters restricted to certain types to work
+    case 'listingType_': {
       const { scope, options } = config;
       const paramNames = [constructQueryParamName(key, scope)];
       const label = intl.formatMessage({

@@ -126,9 +126,12 @@ export class SearchPageComponent extends Component {
       }
     }
 
-    // Reset other filters
-    const queryParams = {};
+    // Reset filters except for listingType
+    let queryParams = {};
     for (const [key, value] of currentParams.entries()) {
+      if (key === 'pub_listingType') {
+        queryParams = { pub_listingType: value };
+      }
       if (!filterQueryParamNames.includes(key)) {
         queryParams[key] = value;
       }
