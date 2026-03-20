@@ -18,7 +18,7 @@ const JobListingCard = props => {
 
   const cityCountry = cityCountryFormat(publicData?.location?.address);
 
-  const [firstRole, ...restRoles] = publicData.role;
+  const [firstRole, ...restRoles] = publicData?.role;
 
   const displayRole = capitalize(firstRole.replace('_', ' '));
 

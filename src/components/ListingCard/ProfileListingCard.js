@@ -15,11 +15,11 @@ const ProfileListingCard = props => {
 
   const cityCountry = cityCountryFormat(publicData?.location?.address);
 
-  const languages = languagesFormat(publicData.languages);
+  const languages = languagesFormat(publicData?.languages);
 
   const authorName = author.attributes.profile.displayName;
 
-  const seniorLevel = capitalize(publicData.senior_level);
+  const seniorLevel = capitalize(publicData?.senior_level);
 
   return (
     <NamedLink className={classes} name="ListingPage" params={{ id, slug }}>
