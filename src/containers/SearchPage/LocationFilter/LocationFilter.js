@@ -43,11 +43,25 @@ class LocationFilter extends Component {
       : { isSelected: false, currentCity: '' };
 
     this.state = { isFocused: false, isSelected, currentCity };
+    this.currentSearch = isBrowser ? window.location.search : '';
   }
 
   componentDidMount() {
     if (typeof window !== 'undefined') {
       window.addEventListener('popstate', this.handlePopState);
+    }
+  }
+
+  componentDidUpdate() {
+    if (typeof window === 'undefined') return;
+
+    const newSearch = window.location.search;
+
+    if (newSearch !== this.currentSearch) {
+      this.currentSearch = newSearch;
+
+      const { isSelected, currentCity } = this.activeCheck();
+      this.setState({ isSelected, currentCity });
     }
   }
 
