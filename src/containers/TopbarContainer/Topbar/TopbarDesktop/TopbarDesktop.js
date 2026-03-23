@@ -45,23 +45,6 @@ const LoginLink = () => {
   );
 };
 
-const InboxLink = ({ notificationCount, inboxTab }) => {
-  const notificationDot = notificationCount > 0 ? <div className={css.notificationDot} /> : null;
-  return (
-    <NamedLink
-      id="inbox-link"
-      className={css.topbarLink}
-      name="InboxPage"
-      params={{ tab: inboxTab }}
-    >
-      <span className={css.topbarLinkLabel}>
-        <FormattedMessage id="TopbarDesktop.inbox" />
-        {notificationDot}
-      </span>
-    </NamedLink>
-  );
-};
-
 const ProfileMenu = ({
   currentPage,
   currentUser,
@@ -69,6 +52,8 @@ const ProfileMenu = ({
   showManageListingsLink,
   intl,
   location,
+  notificationCount,
+  inboxTab,
 }) => {
   const currentPageClass = page => {
     const isAccountSettingsPage =
@@ -82,13 +67,17 @@ const ProfileMenu = ({
       isConsultantWithPost(currentUser) &&
       location.pathname.includes(currentUser.attributes?.profile?.publicData?.latestListing) &&
       !location.pathname.includes('edit');
+    const isInboxPage = page === 'InboxPage' && location.pathname.includes('/inbox');
     return currentPage === page ||
       isAccountSettingsPage ||
       isConsultantProfile ||
-      isConsultantCreatingProfile
+      isConsultantCreatingProfile ||
+      isInboxPage
       ? css.currentPage
       : null;
   };
+
+  const notificationDot = notificationCount > 0 ? <div className={css.notificationDot} /> : null;
 
   return (
     <Menu skipFocusOnNavigation={true}>
@@ -103,6 +92,18 @@ const ProfileMenu = ({
         <Avatar className={css.avatar} user={currentUser} disableProfileLink />
       </MenuLabel>
       <MenuContent className={css.profileMenuContent}>
+        <MenuItem key="InboxPage">
+          <NamedLink
+            id="inbox-link"
+            name="InboxPage"
+            params={{ tab: inboxTab }}
+            className={classNames(css.menuLink, currentPageClass('InboxPage'))}
+          >
+            <span className={css.menuItemBorder} />
+            <FormattedMessage id="TopbarDesktop.inbox" />
+            {notificationDot}
+          </NamedLink>
+        </MenuItem>
         {showManageListingsLink ? (
           <MenuItem key="ManageListingsPage">
             {currentUser && isCustomer(currentUser) && (
@@ -237,10 +238,6 @@ const TopbarDesktop = props => {
   const giveSpaceForSearch = customLinks == null || customLinks?.length === 0;
   const classes = classNames(rootClassName || css.root, className);
 
-  const inboxLinkMaybe = authenticatedOnClientSide ? (
-    <InboxLink notificationCount={notificationCount} inboxTab={inboxTab} />
-  ) : null;
-
   const profileMenuMaybe = authenticatedOnClientSide ? (
     <ProfileMenu
       currentPage={currentPage}
@@ -249,6 +246,8 @@ const TopbarDesktop = props => {
       showManageListingsLink={true}
       intl={intl}
       location={location}
+      notificationCount={notificationCount}
+      inboxTab={inboxTab}
     />
   ) : null;
 
@@ -297,7 +296,6 @@ const TopbarDesktop = props => {
         showCreateListingsLink={showCreateListingsLink}
       />
 
-      {inboxLinkMaybe}
       {profileMenuMaybe}
       {signupLinkMaybe}
       {loginLinkMaybe}

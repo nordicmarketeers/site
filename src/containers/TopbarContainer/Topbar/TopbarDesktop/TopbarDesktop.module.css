@@ -123,14 +123,14 @@
 
 .notificationDot {
   /* Dimensions */
-  width: 7px;
-  height: 7px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
 
   /* Position */
   position: absolute;
-  top: 2px;
-  right: -9px;
+  top: 4px;
+  left: 61px;
 
   /* Style: red dot */
   background-color: var(--colorFail);
