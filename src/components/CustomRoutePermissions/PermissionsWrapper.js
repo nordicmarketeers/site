@@ -29,14 +29,7 @@ const authList = [
     // Deny if user HAS NOT verified their email address
     check: RequireEmailVerify,
     type: 'global',
-    pages: [
-      'EditListingPage',
-      'MakeOfferPage',
-      'ProfilePage',
-      'ProfileSettingsPage',
-      'InboxPage',
-      'ManageListingsPage',
-    ],
+    pages: ['EditListingPage', 'MakeOfferPage', 'ProfilePage', 'InboxPage', 'ManageListingsPage'],
   },
   {
     // Deny if customer DOES NOT have permissions
@@ -48,14 +41,7 @@ const authList = [
     // Deny if constultant HAS NOT made a post (force onboarding)
     check: RequireConsultantProfile,
     type: 'consultant',
-    pages: [
-      'ListingPage',
-      'MakeOfferPage',
-      'ProfilePage',
-      'ProfileSettingsPage',
-      'InboxPage',
-      'ManageListingsPage',
-    ],
+    pages: ['MakeOfferPage', 'InboxPage', 'ManageListingsPage'],
   },
   {
     // Deny if consultant HAS made a post
