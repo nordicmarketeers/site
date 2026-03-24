@@ -1,7 +1,7 @@
 import React from 'react';
 import css from './ListingCard.module.css';
 import NamedLink from '../NamedLink/NamedLink';
-import { IoLocationSharp } from 'react-icons/io5';
+import { IoCalendar, IoLocationSharp } from 'react-icons/io5';
 import { createSlug } from '../../util/urlHelpers';
 import noPfp from '../../assets/no_pfp.jpg';
 import { capitalize, cityCountryFormat } from '../../util/listingCardHelpers';
@@ -22,6 +22,8 @@ const JobListingCard = props => {
 
   const displayRole = capitalize(firstRole.replace('_', ' '));
 
+  const apply_last_date = publicData?.apply_last_date;
+
   return (
     <NamedLink className={classes} name="ListingPage" params={{ id, slug }}>
       <div className={css.jobCardWrapper}>
@@ -32,7 +34,13 @@ const JobListingCard = props => {
           <p className={css.jobTitle} title={title}>
             {title}
           </p>
-          <p className={css.jobLocation}>
+          <p className={css.jobLocationDate}>
+            <span title="Sista ansökningsdag">
+              <IoCalendar />
+              {apply_last_date ? apply_last_date : 'Ingen sista ansökningsdag satt'}
+            </span>
+            <br></br>
+
             <IoLocationSharp />
             {cityCountry ? cityCountry : 'Ingen plats satt'}
           </p>

@@ -419,6 +419,7 @@ export const loadData = (params, search, config) => (dispatch, getState, sdk) =>
         'publicData.part_time_percent',
         'publicData.senior_level',
         'publicData.location',
+        'publicData.apply_last_date',
         // These help rendering of 'purchase' listings,
         // when transitioning from search page to listing page
         'publicData.pickupEnabled',
