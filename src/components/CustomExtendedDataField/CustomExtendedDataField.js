@@ -62,12 +62,15 @@ const CustomFieldEnum = props => {
 
   const label = getAccessibleLabel(fieldConfig);
 
+  const defaultValue = 'priv_job_digest' ? 'yes' : null;
+
   return filterOptions ? (
     <FieldSelect
       className={classNames(css.customField, name === 'pub_part_time_percent' ? css.hide : '')}
       name={name}
       id={formId ? `${formId}.${name}` : name}
       label={label}
+      defaultValue={defaultValue}
       {...validateMaybe}
     >
       <option disabled value="">
