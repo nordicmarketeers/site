@@ -116,33 +116,16 @@ const ProfileMenu = ({
               </NamedLink>
             )}
 
-            {currentUser && isConsultantWithPost(currentUser) && (
-              <NamedLink
-                className={classNames(
-                  css.menuLink,
-
-                  isConsultantWithPost(currentUser) ? currentPageClass('ListingPage') : null
-                )}
-                name="ListingPage"
-                params={{
-                  id: currentUser.attributes?.profile?.publicData?.latestListing,
-                  slug: 'slug',
-                }}
-                currentUser={currentUser}
-              >
-                <span className={css.menuItemBorder} />
-                <FormattedMessage id="TopbarDesktop.yourListingsLink" />
-              </NamedLink>
-            )}
-
-            {currentUser && isConsultant(currentUser) && !isConsultantWithPost(currentUser) && (
+            {currentUser && isConsultant(currentUser) && (
               <NamedLink
                 className={classNames(css.menuLink, currentPageClass('EditListingPage'))}
                 name="EditListingPage"
                 params={{
-                  id: draftId,
-                  slug: draftSlug,
-                  type: 'new',
+                  id: isConsultantWithPost(currentUser)
+                    ? currentUser.attributes?.profile?.publicData?.latestListing
+                    : draftId,
+                  slug: isConsultantWithPost(currentUser) ? 'slug' : draftSlug,
+                  type: isConsultantWithPost(currentUser) ? 'edit' : 'new',
                   tab: 'details',
                 }}
                 currentUser={currentUser}
