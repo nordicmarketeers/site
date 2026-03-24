@@ -21,7 +21,11 @@ import {
 import { LISTING_STATE_DRAFT, LISTING_STATE_PENDING_APPROVAL, propTypes } from '../../util/types';
 import { isErrorNoPermissionToPostListings } from '../../util/errors';
 import { ensureOwnListing } from '../../util/data';
-import { hasPermissionToPostListings, isUserAuthorized } from '../../util/userHelpers';
+import {
+  hasPermissionToPostListings,
+  isUserAuthorized,
+  showCreateListingLinkForUser,
+} from '../../util/userHelpers';
 import { getMarketplaceEntities } from '../../ducks/marketplaceData.duck';
 import { manageDisableScrolling, isScrollingDisabled } from '../../ducks/ui.duck';
 import {
@@ -31,8 +35,15 @@ import {
 import { fetchCurrentUser } from '../../ducks/user.duck';
 
 // Import shared components
-import { NamedRedirect, Page } from '../../components';
+import {
+  LayoutSideNavigation,
+  LayoutSingleColumn,
+  NamedRedirect,
+  Page,
+  UserNav,
+} from '../../components';
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
+import FooterContainer from '../../containers/FooterContainer/FooterContainer';
 
 // Import modules from this directory
 import {
@@ -49,6 +60,7 @@ import {
 import EditListingWizard from './EditListingWizard/EditListingWizard';
 import css from './EditListingPage.module.css';
 import { isCustomer } from '../../util/userTypeHelper';
+import { useConfiguration } from '../../context/configurationContext';
 
 const STRIPE_ONBOARDING_RETURN_URL_SUCCESS = 'success';
 const STRIPE_ONBOARDING_RETURN_URL_FAILURE = 'failure';
@@ -133,6 +145,7 @@ const pickRenderableImages = (
  * @returns {JSX.Element}
  */
 export const EditListingPageComponent = props => {
+  const config = useConfiguration();
   const intl = useIntl();
   const dispatch = useDispatch();
   const [waitingForCurrentUser, setWaitingForCurrentUser] = useState(false);
@@ -310,56 +323,66 @@ export const EditListingPageComponent = props => {
       ? 'EditListingPage.titleCreateListing'
       : 'EditListingPage.titleEditListing';
 
+    const showManageListingsLink = showCreateListingLinkForUser(config, currentUser);
+
     return (
       <Page title={intl.formatMessage({ id: titleId })} scrollingDisabled={scrollingDisabled}>
-        <TopbarContainer
-          mobileRootClassName={css.mobileTopbar}
-          desktopClassName={css.desktopTopbar}
-          mobileClassName={css.mobileTopbar}
-        />
-        <EditListingWizard
-          id="EditListingWizard"
-          className={css.wizard}
-          params={params}
-          locationSearch={parse(location.search)}
-          disabled={disableForm}
-          errors={errors}
-          fetchInProgress={fetchInProgress}
-          newListingPublished={newListingPublished}
-          history={history}
-          images={images}
-          listing={currentListing}
-          weeklyExceptionQueries={page.weeklyExceptionQueries}
-          monthlyExceptionQueries={page.monthlyExceptionQueries}
-          allExceptions={page.allExceptions}
-          onFetchExceptions={onFetchExceptions}
-          onAddAvailabilityException={onAddAvailabilityException}
-          onDeleteAvailabilityException={onDeleteAvailabilityException}
-          onUpdateListing={onUpdateListing}
-          onCreateListingDraft={onCreateListingDraft}
-          onPublishListingDraft={onPublishListingDraft}
-          onPayoutDetailsChange={onPayoutDetailsChange}
-          onPayoutDetailsSubmit={onPayoutDetailsSubmit}
-          onGetStripeConnectAccountLink={onGetStripeConnectAccountLink}
-          getAccountLinkInProgress={getAccountLinkInProgress}
-          onImageUpload={onImageUpload}
-          onRemoveImage={onRemoveListingImage}
-          currentUser={currentUser}
-          onManageDisableScrolling={onManageDisableScrolling}
-          stripeOnboardingReturnURL={params.returnURLType}
-          updatedTab={page.updatedTab}
-          updateInProgress={page.updateInProgress || page.createListingDraftInProgress}
-          payoutDetailsSaveInProgress={page.payoutDetailsSaveInProgress}
-          payoutDetailsSaved={page.payoutDetailsSaved}
-          stripeAccountFetched={stripeAccountFetched}
-          stripeAccount={stripeAccount}
-          stripeAccountError={
-            createStripeAccountError || updateStripeAccountError || fetchStripeAccountError
+        <LayoutSingleColumn
+          topbar={
+            <>
+              <TopbarContainer />
+              <UserNav
+                currentPage="EditListingPage"
+                showManageListingsLink={showManageListingsLink}
+              />
+            </>
           }
-          stripeAccountLinkError={getAccountLinkError}
-          authScopes={authScopes}
-          titleId={titleId}
-        />
+          footer={<FooterContainer />}
+        >
+          <EditListingWizard
+            id="EditListingWizard"
+            className={css.wizard}
+            params={params}
+            locationSearch={parse(location.search)}
+            disabled={disableForm}
+            errors={errors}
+            fetchInProgress={fetchInProgress}
+            newListingPublished={newListingPublished}
+            history={history}
+            images={images}
+            listing={currentListing}
+            weeklyExceptionQueries={page.weeklyExceptionQueries}
+            monthlyExceptionQueries={page.monthlyExceptionQueries}
+            allExceptions={page.allExceptions}
+            onFetchExceptions={onFetchExceptions}
+            onAddAvailabilityException={onAddAvailabilityException}
+            onDeleteAvailabilityException={onDeleteAvailabilityException}
+            onUpdateListing={onUpdateListing}
+            onCreateListingDraft={onCreateListingDraft}
+            onPublishListingDraft={onPublishListingDraft}
+            onPayoutDetailsChange={onPayoutDetailsChange}
+            onPayoutDetailsSubmit={onPayoutDetailsSubmit}
+            onGetStripeConnectAccountLink={onGetStripeConnectAccountLink}
+            getAccountLinkInProgress={getAccountLinkInProgress}
+            onImageUpload={onImageUpload}
+            onRemoveImage={onRemoveListingImage}
+            currentUser={currentUser}
+            onManageDisableScrolling={onManageDisableScrolling}
+            stripeOnboardingReturnURL={params.returnURLType}
+            updatedTab={page.updatedTab}
+            updateInProgress={page.updateInProgress || page.createListingDraftInProgress}
+            payoutDetailsSaveInProgress={page.payoutDetailsSaveInProgress}
+            payoutDetailsSaved={page.payoutDetailsSaved}
+            stripeAccountFetched={stripeAccountFetched}
+            stripeAccount={stripeAccount}
+            stripeAccountError={
+              createStripeAccountError || updateStripeAccountError || fetchStripeAccountError
+            }
+            stripeAccountLinkError={getAccountLinkError}
+            authScopes={authScopes}
+            titleId={titleId}
+          />
+        </LayoutSingleColumn>
       </Page>
     );
   } else {

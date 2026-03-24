@@ -24,6 +24,17 @@ const UserNav = props => {
   const classes = classNames(rootClassName || css.root, className);
   const currentUser = useSelector(state => state.user.currentUser);
 
+  const InboxTab = [
+    {
+      text: <FormattedMessage id="TopbarDesktop.inbox" />,
+      selected: currentPage === 'InboxPage',
+      linkProps: {
+        name: 'InboxPage',
+        params: { tab: 'orders' },
+      },
+    },
+  ];
+
   const manageListingsTabMaybe =
     showManageListingsLink && isCustomer(currentUser)
       ? [
@@ -37,17 +48,19 @@ const UserNav = props => {
         ]
       : [];
 
-  const consultantProfileMaybe =
+  const consultantProfileEditMaybe =
     showManageListingsLink && isConsultantWithPost(currentUser)
       ? [
           {
             text: <FormattedMessage id="UserNav.yourListings" />,
-            selected: currentPage === 'ListingPage',
+            selected: currentPage === 'EditListingPage',
             linkProps: {
-              name: 'ListingPage',
+              name: 'EditListingPage',
               params: {
                 id: currentUser.attributes?.profile?.publicData?.latestListing,
                 slug: 'slug',
+                tab: 'details',
+                type: 'edit',
               },
             },
           },
@@ -74,8 +87,9 @@ const UserNav = props => {
       : [];
 
   const tabs = [
+    ...InboxTab,
     ...manageListingsTabMaybe,
-    ...consultantProfileMaybe,
+    ...consultantProfileEditMaybe,
     ...createConsultantProfileMaybe,
     {
       text: <FormattedMessage id="UserNav.profileSettings" />,
