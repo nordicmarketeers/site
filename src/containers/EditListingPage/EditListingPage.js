@@ -59,7 +59,7 @@ import {
 } from './EditListingPage.duck';
 import EditListingWizard from './EditListingWizard/EditListingWizard';
 import css from './EditListingPage.module.css';
-import { isCustomer } from '../../util/userTypeHelper';
+import { isConsultant, isCustomer } from '../../util/userTypeHelper';
 import { useConfiguration } from '../../context/configurationContext';
 
 const STRIPE_ONBOARDING_RETURN_URL_SUCCESS = 'success';
@@ -331,10 +331,12 @@ export const EditListingPageComponent = props => {
           topbar={
             <>
               <TopbarContainer />
-              <UserNav
-                currentPage="EditListingPage"
-                showManageListingsLink={showManageListingsLink}
-              />
+              {isConsultant(currentUser) && (
+                <UserNav
+                  currentPage="EditListingPage"
+                  showManageListingsLink={showManageListingsLink}
+                />
+              )}
             </>
           }
           footer={<FooterContainer />}
