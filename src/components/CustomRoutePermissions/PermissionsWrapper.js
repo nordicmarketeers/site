@@ -41,7 +41,7 @@ const authList = [
     // Deny if constultant HAS NOT made a post (force onboarding)
     check: RequireConsultantProfile,
     type: 'consultant',
-    pages: ['MakeOfferPage', 'InboxPage', 'ManageListingsPage'],
+    pages: ['MakeOfferPage', 'ManageListingsPage'],
   },
   {
     // Deny if consultant HAS made a post
