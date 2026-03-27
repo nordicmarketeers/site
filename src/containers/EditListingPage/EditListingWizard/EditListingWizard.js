@@ -569,9 +569,13 @@ class EditListingWizard extends Component {
         ? TABS_DETAILS_ONLY
         : tabsForListingType(processName, listingTypeConfig);
 
+    // Only show the dashboard if the user is a consultant
+    if (isConsultant(currentUser)) tabs.unshift('dashboard');
+
     // Check if wizard tab is active / linkable.
     // When creating a new listing, we don't allow users to access next tab until the current one is completed.
     const tabsStatus = tabsActive(isNewListingFlow, currentListing, tabs, config);
+    tabsStatus.details = true;
 
     // Redirect user to first tab when encoutering outdated draft listings.
     if (invalidExistingListingType && isNewListingFlow && selectedTab !== tabs[0]) {
@@ -688,13 +692,17 @@ class EditListingWizard extends Component {
           })}
         >
           {tabs.map(tab => {
-            const tabTranslations = tabLabelAndSubmit(
-              intl,
-              tab,
-              isNewListingFlow,
-              isPriceDisabled,
-              resolveLatestProcessName(processName)
-            );
+            const tabTranslations =
+              tab === 'dashboard'
+                ? { label: 'Your listings', submitButton: null }
+                : tabLabelAndSubmit(
+                    intl,
+                    tab,
+                    isNewListingFlow,
+                    isPriceDisabled,
+                    resolveLatestProcessName(processName)
+                  );
+
             return (
               <EditListingWizardTab
                 {...rest}

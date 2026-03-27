@@ -59,6 +59,7 @@ const Tabs = props => {
       linkProps: child.props.tabLinkProps,
       disabled: child.props.disabled,
       selected: child.props.selected,
+      isHeading: child.key === 'dashboard' ? true : false,
     };
   });
 

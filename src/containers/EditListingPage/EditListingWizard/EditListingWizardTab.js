@@ -18,9 +18,11 @@ import EditListingPhotosPanel from './EditListingPhotosPanel/EditListingPhotosPa
 import EditListingPricingPanel from './EditListingPricingPanel/EditListingPricingPanel';
 import EditListingPricingAndStockPanel from './EditListingPricingAndStockPanel/EditListingPricingAndStockPanel';
 import EditListingStylePanel from './EditListingStylePanel/EditListingStylePanel';
+import ListingDashboardPage from '../../ListingDashboardPage/ListingDashboardPage';
 
 import css from './EditListingWizardTab.module.css';
 
+export const DASHBOARD = 'dashboard';
 export const DETAILS = 'details';
 export const PRICING = 'pricing';
 export const PRICING_AND_STOCK = 'pricing-and-stock';
@@ -32,6 +34,7 @@ export const STYLE = 'style';
 
 // EditListingWizardTab component supports these tabs
 export const SUPPORTED_TABS = [
+  DASHBOARD,
   DETAILS,
   PRICING,
   PRICING_AND_STOCK,
@@ -195,6 +198,9 @@ const EditListingWizardTab = props => {
 
   // TODO: add missing cases for supported tabs
   switch (tab) {
+    case DASHBOARD: {
+      return <ListingDashboardPage {...panelProps(DASHBOARD)} />;
+    }
     case DETAILS: {
       return (
         <EditListingDetailsPanel

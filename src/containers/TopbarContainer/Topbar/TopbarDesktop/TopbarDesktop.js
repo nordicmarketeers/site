@@ -126,7 +126,7 @@ const ProfileMenu = ({
                     : draftId,
                   slug: isConsultantWithPost(currentUser) ? 'slug' : draftSlug,
                   type: isConsultantWithPost(currentUser) ? 'edit' : 'new',
-                  tab: 'details',
+                  tab: 'dashboard',
                 }}
                 currentUser={currentUser}
               >

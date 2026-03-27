@@ -169,15 +169,10 @@ const TopbarMobileMenu = props => {
     const isAccountSettingsPage =
       page === 'AccountSettingsPage' && ACCOUNT_SETTINGS_PAGES.includes(currentPage);
     const isInboxPage = currentPage?.indexOf('InboxPage') === 0 && page?.indexOf('InboxPage') === 0;
-    const isConsultantCreatingProfile =
-      page === 'EditListingPage' &&
-      !isConsultantWithPost(currentUser) &&
-      location.pathname.includes('draft');
     const isConsultantProfile =
-      page === 'ListingPage' &&
+      page === 'EditListingPage' &&
       isConsultantWithPost(currentUser) &&
-      location.pathname.includes(currentUser.attributes?.profile?.publicData?.latestListing) &&
-      !location.pathname.includes('edit');
+      location.pathname.includes(currentUser.attributes?.profile?.publicData?.latestListing);
 
     return currentPage === page || isAccountSettingsPage || isInboxPage || isConsultantProfile
       ? css.currentPage
@@ -194,7 +189,7 @@ const TopbarMobileMenu = props => {
           ? currentPageClass('EditListingPage')
           : null,
 
-        isConsultantWithPost(currentUser) ? currentPageClass('ListingPage') : null
+        isConsultantWithPost(currentUser) ? currentPageClass('EditListingPage') : null
       )}
     >
       {isCustomer(currentUser) && (
@@ -205,10 +200,12 @@ const TopbarMobileMenu = props => {
 
       {isConsultantWithPost(currentUser) && (
         <NamedLink
-          name="ListingPage"
+          name="EditListingPage"
           params={{
             id: currentUser.attributes?.profile?.publicData?.latestListing,
             slug: 'slug',
+            type: 'edit',
+            tab: 'dashboard',
           }}
         >
           <FormattedMessage id="TopbarDesktop.yourListingsLink" />
@@ -222,7 +219,7 @@ const TopbarMobileMenu = props => {
             id: draftId,
             slug: draftSlug,
             type: 'new',
-            tab: 'details',
+            tab: 'dashboard',
           }}
         >
           <FormattedMessage id="TopbarDesktop.yourListingsLink" />

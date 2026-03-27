@@ -59,7 +59,7 @@ const UserNav = props => {
               params: {
                 id: currentUser.attributes?.profile?.publicData?.latestListing,
                 slug: 'slug',
-                tab: 'details',
+                tab: 'dashboard',
                 type: 'edit',
               },
             },
@@ -79,7 +79,7 @@ const UserNav = props => {
                 id: draftId,
                 slug: draftSlug,
                 type: 'new',
-                tab: 'details',
+                tab: 'dashboard',
               },
             },
           },
