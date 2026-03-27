@@ -437,8 +437,8 @@ export const ListingPageComponent = props => {
               listingId={currentListing.id}
               mapsConfig={config.maps}
             />
-            <SectionReviews reviews={reviews} fetchReviewsError={fetchReviewsError} />
-            <SectionAuthorMaybe
+            {/* <SectionReviews reviews={reviews} fetchReviewsError={fetchReviewsError} /> */}
+            {/* <SectionAuthorMaybe
               title={title}
               listing={currentListing}
               authorDisplayName={authorDisplayName}
@@ -450,7 +450,7 @@ export const ListingPageComponent = props => {
               onSubmitInquiry={onSubmitInquiry}
               currentUser={currentUser}
               onManageDisableScrolling={onManageDisableScrolling}
-            />
+            /> */}
           </div>
           <div className={css.orderColumnForHeroLayout}>
             <OrderPanel
