@@ -268,7 +268,7 @@ export const AuthenticationForms = props => {
 
   return (
     <div className={css.content}>
-      <LinkTabNavHorizontal className={css.tabs} tabs={tabs} ariaLabel={ariaLabel} />
+      {/* <LinkTabNavHorizontal className={css.tabs} tabs={tabs} ariaLabel={ariaLabel} /> */}
       {loginOrSignupError}
 
       {isLogin ? (
