@@ -69,7 +69,7 @@ const scrollToTab = (currentPage, scrollLeft, setScrollLeft) => {
 const LayoutWrapperAccountSettingsSideNav = props => {
   const [mounted, setMounted] = useState(false);
   const [scrollLeft, setScrollLeft] = useGlobalState('scrollLeft');
-  const { accountSettingsNavProps, ariaLabel } = props;
+  const { accountSettingsNavProps, ariaLabel, location } = props;
 
   useEffect(() => {
     setMounted(true);
@@ -120,6 +120,30 @@ const LayoutWrapperAccountSettingsSideNav = props => {
     : [];
 
   const tabs = [
+    {
+      text: <FormattedMessage id="UserNav.accountSettings" />,
+      selected: currentPage === 'AccountSettingsPage',
+      linkProps: {
+        name: 'AccountSettingsPage',
+      },
+      isHeading: true,
+    },
+    {
+      text: <FormattedMessage id="ProfileSettingsForm.yourProfilePicture" />,
+      selected: currentPage === 'ProfileSettingsPage' && location.pathname.includes('picture'),
+      linkProps: {
+        name: 'ProfileSettingsPage',
+        params: { type: 'picture' },
+      },
+    },
+    {
+      text: <FormattedMessage id="ProfileSettingsForm.yourName" />,
+      selected: currentPage === 'ProfileSettingsPage' && location.pathname.includes('name'),
+      linkProps: {
+        name: 'ProfileSettingsPage',
+        params: { type: 'name' },
+      },
+    },
     {
       text: <FormattedMessage id="LayoutWrapperAccountSettingsSideNav.contactDetailsTabTitle" />,
       selected: currentPage === 'ContactDetailsPage',

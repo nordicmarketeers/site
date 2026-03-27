@@ -5,6 +5,7 @@ import LayoutComposer from '../LayoutComposer';
 import LayoutWrapperAccountSettingsSideNav from './LayoutWrapperAccountSettingsSideNav';
 
 import css from './LayoutSideNavigation.module.css';
+import { useLocation } from 'react-router-dom/cjs/react-router-dom.min';
 
 /**
  * Commonly used layout
@@ -41,6 +42,8 @@ const LayoutSideNavigation = props => {
     ...rest
   } = props;
 
+  const location = useLocation();
+
   const classes = classNames(rootClassName || css.root, className);
   const containerClasses = containerClassName || css.container;
 
@@ -69,6 +72,7 @@ const LayoutSideNavigation = props => {
                     ariaLabel={intl.formatMessage({
                       id: 'LayoutSideNavigation.screenreader.accountNavigation',
                     })}
+                    location={location}
                   />
                 ) : null}
                 {sideNavContent}

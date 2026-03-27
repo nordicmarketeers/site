@@ -67,6 +67,14 @@
   }
 }
 
+.heading {
+  font-size: 16px;
+
+  @media (--viewportLarge) {
+    font-size: 24px;
+  }
+}
+
 .selectedLink {
   border-bottom-color: var(--colorBlack);
   color: var(--colorBlack);

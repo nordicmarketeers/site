@@ -15,7 +15,14 @@ import {
 } from '../../util/userHelpers';
 import { isScrollingDisabled } from '../../ducks/ui.duck';
 
-import { H3, Page, UserNav, NamedLink, LayoutSingleColumn } from '../../components';
+import {
+  H3,
+  Page,
+  UserNav,
+  NamedLink,
+  LayoutSingleColumn,
+  LayoutSideNavigation,
+} from '../../components';
 
 import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
 import FooterContainer from '../../containers/FooterContainer/FooterContainer';
@@ -87,6 +94,7 @@ export const ProfileSettingsPageComponent = props => {
     uploadInProgress,
   } = props;
 
+  const pageType = props.params.type;
   const { userFields, userTypes = [] } = config.user;
   const publicUserFields = userFields.filter(uf => uf.scope === 'public');
 
@@ -155,6 +163,7 @@ export const ProfileSettingsPageComponent = props => {
       marketplaceName={config.marketplaceName}
       userFields={publicUserFields}
       userTypeConfig={userTypeConfig}
+      pageType={pageType}
     />
   ) : null;
 
@@ -164,7 +173,7 @@ export const ProfileSettingsPageComponent = props => {
 
   return (
     <Page className={css.root} title={title} scrollingDisabled={scrollingDisabled}>
-      <LayoutSingleColumn
+      <LayoutSideNavigation
         topbar={
           <>
             <TopbarContainer />
@@ -174,19 +183,18 @@ export const ProfileSettingsPageComponent = props => {
             />
           </>
         }
+        sideNav={null}
+        accountSettingsNavProps={{
+          currentPage: 'ProfileSettingsPage',
+          showPaymentMethods: false,
+          showPayoutDetails: false,
+        }}
+        useAccountSettingsNav={true}
+        intl={intl}
         footer={<FooterContainer />}
       >
-        <div className={css.content}>
-          <div className={css.headingContainer}>
-            <H3 as="h1" className={css.heading}>
-              <FormattedMessage id="ProfileSettingsPage.heading" />
-            </H3>
-
-            <ViewProfileLink userUUID={user?.id?.uuid} isUnauthorizedUser={isUnauthorizedUser} />
-          </div>
-          {profileSettingsForm}
-        </div>
-      </LayoutSingleColumn>
+        <div className={css.content}>{profileSettingsForm}</div>
+      </LayoutSideNavigation>
     </Page>
   );
 };

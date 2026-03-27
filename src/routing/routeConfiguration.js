@@ -12,6 +12,7 @@ import { NamedRedirect } from '../components';
 
 const pageDataLoadingAPI = getPageDataLoadingAPI();
 
+const AccountSettingsPage = loadable(() => import(/* webpackChunkName: "AccountSettingsPage" */ '../containers/AccountSettingsPage/AccountSettingsPage'));
 const AuthenticationPage = loadable(() => import(/* webpackChunkName: "AuthenticationPage" */ '../containers/AuthenticationPage/AuthenticationPage'));
 const CheckoutPage = loadable(() => import(/* webpackChunkName: "CheckoutPage" */ '../containers/CheckoutPage/CheckoutPage'));
 const CMSPage = loadable(() => import(/* webpackChunkName: "CMSPage" */ '../containers/CMSPage/CMSPage'));
@@ -44,11 +45,13 @@ const NoAccessPage = loadable(() => import(/* webpackChunkName: "NoAccessPage" *
 const StyleguidePage = loadable(() => import(/* webpackChunkName: "StyleguidePage" */ '../containers/StyleguidePage/StyleguidePage'));
 
 export const ACCOUNT_SETTINGS_PAGES = [
+  'AccountSettingsPage',
   'ContactDetailsPage',
   'PasswordChangePage',
   'StripePayoutPage',
   'PaymentMethodsPage',
-  'ManageAccountPage'
+  'ManageAccountPage',
+  'ProfileSettingsPage'
 ];
 
 // https://en.wikipedia.org/wiki/Universally_unique_identifier#Nil_UUID
@@ -251,7 +254,7 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       loadData: pageDataLoadingAPI.ProfilePage.loadData,
     },
     {
-      path: '/profile-settings',
+      path: '/account/profile-settings/:type',
       name: 'ProfileSettingsPage',
       auth: true,
       authPage: 'LoginPage',
@@ -367,7 +370,7 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       name: 'AccountSettingsPage',
       auth: true,
       authPage: 'LoginPage',
-      component: () => <NamedRedirect name="ContactDetailsPage" />,
+      component: AccountSettingsPage,
     },
     {
       path: '/account/contact-details',
