@@ -74,10 +74,18 @@ export const AsideContent = props => {
       </H2>
       {showLinkToProfileSettingsPage ? (
         <>
-          <NamedLink className={css.editLinkMobile} name="ProfileSettingsPage">
+          <NamedLink
+            className={css.editLinkMobile}
+            name="ProfileSettingsPage"
+            params={{ type: 'picture' }}
+          >
             <FormattedMessage id="ProfilePage.editProfileLinkMobile" />
           </NamedLink>
-          <NamedLink className={css.editLinkDesktop} name="ProfileSettingsPage">
+          <NamedLink
+            className={css.editLinkDesktop}
+            name="ProfileSettingsPage"
+            params={{ type: 'picture' }}
+          >
             <FormattedMessage id="ProfilePage.editProfileLinkDesktop" />
           </NamedLink>
         </>

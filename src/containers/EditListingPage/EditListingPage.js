@@ -270,7 +270,7 @@ export const EditListingPageComponent = props => {
             slug: listingSlug,
           },
         }
-      : { name: 'ProfileSettingsPage' };
+      : { name: 'AccountSettingsPage' };
 
     if (waitingForCurrentUser) {
       return <div>Laddar...</div>;
