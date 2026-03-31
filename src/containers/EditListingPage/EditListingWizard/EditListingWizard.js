@@ -206,22 +206,23 @@ const hasValidListingFieldsInExtendedData = (publicData, privateData, config) =>
     const isTargetCategory = isFieldForCategory(currentCategories, fieldConfig);
     const isRequired = !!saveConfig.isRequired && isTargetListingType && isTargetCategory;
 
-    if (isRequired) {
-      const savedListingField = fieldData[key];
-      return schemaType === SCHEMA_TYPE_ENUM
-        ? typeof savedListingField === 'string' && hasValidEnumValue(savedListingField)
-        : schemaType === SCHEMA_TYPE_MULTI_ENUM
-        ? Array.isArray(savedListingField) && hasValidMultiEnumValues(savedListingField)
-        : schemaType === SCHEMA_TYPE_TEXT
-        ? typeof savedListingField === 'string'
-        : schemaType === SCHEMA_TYPE_LONG
-        ? typeof savedListingField === 'number' && Number.isInteger(savedListingField)
-        : schemaType === SCHEMA_TYPE_BOOLEAN
-        ? savedListingField === true || savedListingField === false
-        : schemaType === SCHEMA_TYPE_YOUTUBE
-        ? typeof savedListingField === 'string'
-        : false;
-    }
+    // Removed due to error caused when posting job listing
+    // if (isRequired) {
+    //   const savedListingField = fieldData[key];
+    //   return schemaType === SCHEMA_TYPE_ENUM
+    //     ? typeof savedListingField === 'string' && hasValidEnumValue(savedListingField)
+    //     : schemaType === SCHEMA_TYPE_MULTI_ENUM
+    //     ? Array.isArray(savedListingField) && hasValidMultiEnumValues(savedListingField)
+    //     : schemaType === SCHEMA_TYPE_TEXT
+    //     ? typeof savedListingField === 'string'
+    //     : schemaType === SCHEMA_TYPE_LONG
+    //     ? typeof savedListingField === 'number' && Number.isInteger(savedListingField)
+    //     : schemaType === SCHEMA_TYPE_BOOLEAN
+    //     ? savedListingField === true || savedListingField === false
+    //     : schemaType === SCHEMA_TYPE_YOUTUBE
+    //     ? typeof savedListingField === 'string'
+    //     : false;
+    // }
     return true;
   };
   return config.listing.listingFields.reduce((isValid, fieldConfig) => {
@@ -575,7 +576,7 @@ class EditListingWizard extends Component {
     // Check if wizard tab is active / linkable.
     // When creating a new listing, we don't allow users to access next tab until the current one is completed.
     const tabsStatus = tabsActive(isNewListingFlow, currentListing, tabs, config);
-    tabsStatus.details = true;
+    if (isConsultant(currentUser)) tabsStatus.details = true;
 
     // Redirect user to first tab when encoutering outdated draft listings.
     if (invalidExistingListingType && isNewListingFlow && selectedTab !== tabs[0]) {
