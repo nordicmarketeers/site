@@ -437,6 +437,10 @@ export class SearchPageComponent extends Component {
           <aside className={css.layoutWrapperFilterColumn} data-testid="filterColumnAside">
             <div className={css.filterColumnContent}>
               {availableFilters.map(filterConfig => {
+                // Skip certain filters only needing to be indexed for search and not a filter on the page
+                if (['apply_last_date'].includes(filterConfig.key)) {
+                  return;
+                }
                 const key = `SearchFiltersDesktop.${filterConfig.scope || 'built-in'}.${
                   filterConfig.key
                 }`;
@@ -487,6 +491,10 @@ export class SearchPageComponent extends Component {
                 location={location}
               >
                 {availableFilters.map(filterConfig => {
+                  // Skip certain filters only needing to be indexed for search and not a filter on the page
+                  if (['apply_last_date'].includes(filterConfig.key)) {
+                    return;
+                  }
                   const key = `SearchFiltersMobile.${filterConfig.scope || 'built-in'}.${
                     filterConfig.key
                   }`;
