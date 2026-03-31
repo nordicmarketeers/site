@@ -291,6 +291,14 @@ const searchListingsPayloadCreator = ({ searchParams, config }, thunkAPI) => {
     .query(params)
     .then(response => {
       const listingFields = config?.listing?.listingFields;
+
+      // Make apply_last_date use schemeType 'long', needed in case of user navigating from listing back to SearchPage
+      listingFields.forEach((obj, i) => {
+        if (obj.key === 'apply_last_date') {
+          obj.schemaType = 'long';
+        }
+      });
+
       const sanitizeConfig = { listingFields };
 
       dispatch(addMarketplaceEntities(response, sanitizeConfig));

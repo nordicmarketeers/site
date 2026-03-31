@@ -23,7 +23,9 @@ const JobListingCard = props => {
 
   const displayRole = capitalize(firstRole.replace('_', ' '));
 
-  const apply_last_date = unixToDate(publicData?.apply_last_date);
+  const apply_last_date = Number.isInteger(publicData?.apply_last_date)
+    ? unixToDate(publicData?.apply_last_date)
+    : publicData?.apply_last_date;
 
   return (
     <NamedLink className={classes} name="ListingPage" params={{ id, slug }}>

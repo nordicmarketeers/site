@@ -45,6 +45,7 @@ export const fetchListingById = listingId => (dispatch, getState, sdk) => {
         'publicData.part_time_percent',
         'publicData.senior_level',
         'publicData.location',
+        'publicData.apply_last_date',
         'publicData.pickupEnabled',
         'publicData.shippingEnabled',
         'publicData.priceVariationsEnabled',
