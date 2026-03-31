@@ -389,6 +389,7 @@ export class SearchPageComponent extends Component {
           mode={mode}
           labelId={`${mode}-search-page-sort-by`}
           contentPlacementOffset={FILTER_DROPDOWN_OFFSET}
+          location={location}
         />
       ) : null;
     };

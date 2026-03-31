@@ -26,17 +26,6 @@ import SectionPDFMaybe from './SectionPDFMaybe';
 const CustomListingFields = props => {
   const { publicData, metadata, listingFieldConfigs, categoryConfiguration } = props;
 
-  // Treat certain fields like enums to make them appear in the details table
-  listingFieldConfigs.forEach(obj => {
-    if (['apply_last_date', 'starting_date'].includes(obj.key)) {
-      obj.schemaType = 'enum';
-
-      const valueFromPublicData = publicData[obj.key];
-
-      obj.enumOptions = [{ label: valueFromPublicData, option: valueFromPublicData }];
-    }
-  });
-
   const { key: categoryPrefix, categories: listingCategoriesConfig } = categoryConfiguration;
   const categoriesObj = pickCategoryFields(publicData, categoryPrefix, 1, listingCategoriesConfig);
   const currentCategories = Object.values(categoriesObj);

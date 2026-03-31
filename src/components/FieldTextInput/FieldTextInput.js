@@ -1,9 +1,10 @@
-import React, { Component } from 'react';
+import React, { Component, useRef } from 'react';
 import { Field } from 'react-final-form';
 import classNames from 'classnames';
 import { ValidationError, ExpandingTextarea } from '../../components';
 
 import css from './FieldTextInput.module.css';
+import { unixToDate } from '../../util/dateHelper';
 
 const CONTENT_MAX_LENGTH = 5000;
 
@@ -27,6 +28,8 @@ const FieldTextInputComponent = props => {
 
   const isDateInput =
     input.name.includes('starting_date') || input.name.includes('apply_last_date');
+
+  const isApplyLastDate = input.name.includes('apply_last_date');
 
   // Make certain custom text boxes smaller
   input.type = isDateInput ? 'text' : input.type;
@@ -82,6 +85,26 @@ const FieldTextInputComponent = props => {
         ...rest,
       }
     : { className: inputClasses, id, type, ...refMaybe, ...input, ...rest };
+
+  // Change the default value from unix to readable date if type is apply_last_date
+  const initialFormattedValue = useRef(null);
+  const initialRawValue = useRef(null);
+  if (isApplyLastDate) {
+    if (initialFormattedValue.current === null) {
+      initialRawValue.current = input.value;
+      initialFormattedValue.current = input.value ? unixToDate(input.value) : '';
+    }
+
+    const shouldFormatInitial = input.value === initialRawValue.current;
+
+    const shouldFormatAfterSubmit = meta.submitSucceeded && !meta.modifiedSinceLastSubmit;
+
+    const isUnix = /^\d+$/.test(input.value);
+
+    if ((shouldFormatInitial || shouldFormatAfterSubmit) && isUnix) {
+      inputProps.value = unixToDate(input.value);
+    }
+  }
 
   const labelClassMaybe = labelClassName ? { className: labelClassName } : {};
   const classes = classNames(rootClassName || css.root, className);

@@ -67,6 +67,16 @@ export const listingFields = [
     },
   },
 
+  // Also unsure about this
+  {
+    key: 'apply_last_date',
+    scope: 'public',
+    schemaType: 'long',
+    filterConfig: {
+      indexForSearch: true,
+    },
+  },
+
   // {
   //   "scope": "public",
   //   "label": "Gears",

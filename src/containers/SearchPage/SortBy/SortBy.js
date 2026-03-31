@@ -31,6 +31,7 @@ const SortBy = props => {
     isConflictingFilterActive,
     hasConflictingFilters,
     mode = 'desktop',
+    location,
     ...rest
   } = props;
 
@@ -59,6 +60,9 @@ const SortBy = props => {
   const isRelevanceOptionActive = activeOptions.includes(relevanceFilter);
 
   const options = config.search.sortConfig.options.reduce((selected, option) => {
+    if (option.activeOn && !location.search.includes(option.activeOn)) {
+      return selected;
+    }
     const isRelevance = option.key === relevanceKey;
     const isConflictingFilterSetAndActive = hasConflictingFilters && !isConflictingFilterActive;
 

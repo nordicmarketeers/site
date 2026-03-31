@@ -97,6 +97,16 @@ export const sortConfig = {
     // These are default sort options
     { key: 'createdAt', labelTranslationKey: 'SortBy.newest' },
     { key: '-createdAt', labelTranslationKey: 'SortBy.oldest' },
+    {
+      key: 'pub_apply_last_date',
+      label: 'Ansökningsdag (senast)',
+      activeOn: 'consultant_job',
+    },
+    {
+      key: '-pub_apply_last_date',
+      label: 'Ansökningsdag (snarast)',
+      activeOn: 'consultant_job',
+    },
     // { key: '-price', labelTranslationKey: 'SortBy.lowestPrice' },
     // { key: 'price', labelTranslationKey: 'SortBy.highestPrice' },
     // If you add own sort options, you can also use label key: { key: 'meta_rating', label: 'Highest rated' },

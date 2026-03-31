@@ -24,6 +24,7 @@ import {
 } from '../../util/urlHelpers';
 import { getProcess, isBookingProcessAlias } from '../../transactions/transaction';
 import { fetchCurrentUser, setCurrentUserHasOrders } from '../../ducks/user.duck';
+import { unixToDate } from '../../util/dateHelper';
 
 const { UUID } = sdkTypes;
 const MINUTE_IN_MS = 1000 * 60;
@@ -95,6 +96,25 @@ const showListingPayloadCreator = ({ listingId, config, isOwn = false }, thunkAP
   return show
     .then(data => {
       const listingFields = config?.listing?.listingFields;
+
+      // Format fields with dates like enums
+      const publicData = data.data.data.attributes.publicData;
+
+      listingFields.forEach(obj => {
+        if (obj.key === 'apply_last_date') {
+          const lastDate = publicData.apply_last_date;
+          publicData.apply_last_date = unixToDate(lastDate);
+
+          obj.schemaType = 'enum';
+          obj.enumOptions = [{ label: unixToDate(lastDate), option: unixToDate(lastDate) }];
+        }
+
+        if (obj.key === 'starting_date') {
+          obj.schemaType = 'enum';
+          obj.enumOptions = [{ label: publicData.starting_date, option: publicData.starting_date }];
+        }
+      });
+
       const sanitizeConfig = { listingFields };
       dispatch(addMarketplaceEntities(data, sanitizeConfig));
       return data;

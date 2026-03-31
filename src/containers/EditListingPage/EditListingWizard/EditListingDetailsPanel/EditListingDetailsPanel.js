@@ -23,6 +23,7 @@ import { H3, ListingLink } from '../../../../components';
 import ErrorMessage from './ErrorMessage';
 import EditListingDetailsForm from './EditListingDetailsForm';
 import css from './EditListingDetailsPanel.module.css';
+import { dateToUnix } from '../../../../util/dateHelper';
 
 /**
  * Get listing configuration. For existing listings, it is stored to publicData.
@@ -389,6 +390,16 @@ const EditListingDetailsPanel = props => {
               nestedCategories,
               listingFields
             );
+
+            // Convert certain dates into unix before publishing data
+            if (
+              publicListingFields.apply_last_date &&
+              !Number.isInteger(publicListingFields.apply_last_date) &&
+              publicListingFields.apply_last_date.includes('-')
+            ) {
+              publicListingFields.apply_last_date = dateToUnix(publicListingFields.apply_last_date);
+            }
+
             const privateListingFields = pickListingFieldsData(
               rest,
               'private',

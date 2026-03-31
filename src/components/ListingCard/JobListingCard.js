@@ -6,6 +6,7 @@ import { createSlug } from '../../util/urlHelpers';
 import noPfp from '../../assets/no_pfp.jpg';
 import { capitalize, cityCountryFormat } from '../../util/listingCardHelpers';
 import classNames from 'classnames';
+import { unixToDate } from '../../util/dateHelper';
 
 const JobListingCard = props => {
   const { author, classes, currentListing } = props;
@@ -22,7 +23,7 @@ const JobListingCard = props => {
 
   const displayRole = capitalize(firstRole.replace('_', ' '));
 
-  const apply_last_date = publicData?.apply_last_date;
+  const apply_last_date = unixToDate(publicData?.apply_last_date);
 
   return (
     <NamedLink className={classes} name="ListingPage" params={{ id, slug }}>
