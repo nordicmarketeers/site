@@ -13,6 +13,7 @@ import SectionMultiEnumMaybe from './SectionMultiEnumMaybe';
 import SectionTextMaybe from './SectionTextMaybe';
 import SectionYoutubeVideoMaybe from './SectionYoutubeVideoMaybe';
 import SectionPDFMaybe from './SectionPDFMaybe';
+import SectionPreviousRolesMaybe from './SectionPreviousRolesMaybe.js';
 
 /**
  * Renders custom listing fields.
@@ -48,7 +49,9 @@ const CustomListingFields = props => {
       <SectionDetailsMaybe {...props} isFieldForCategory={isFieldForSelectedCategories} />
       {propsForCustomFields.map(customFieldProps => {
         const { schemaType, key, ...fieldProps } = customFieldProps;
-        return schemaType === SCHEMA_TYPE_MULTI_ENUM ? (
+        return key === 'previous_roles' ? (
+          <SectionPreviousRolesMaybe key={key} {...fieldProps} />
+        ) : schemaType === SCHEMA_TYPE_MULTI_ENUM ? (
           <SectionMultiEnumMaybe key={key} {...fieldProps} />
         ) : key === 'portfolio' ? (
           <SectionPDFMaybe key={key} {...fieldProps} />

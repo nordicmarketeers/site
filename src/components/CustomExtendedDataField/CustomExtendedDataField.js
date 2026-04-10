@@ -22,6 +22,7 @@ import { FieldCheckboxGroup, FieldSelect, FieldTextInput, FieldBoolean } from '.
 import css from './CustomExtendedDataField.module.css';
 import classNames from 'classnames';
 import FileUploadPDF from '../FieldUploadPDF/FieldUploadPDF';
+import FieldWorkExperience from '../FieldWorkExperience/FieldWorkExperience';
 
 const createFilterOptions = options => options.map(o => ({ key: `${o.option}`, label: o.label }));
 
@@ -291,6 +292,59 @@ const CustomFieldFileUploadPDF = props => {
   );
 };
 
+const CustomFieldWorkExperience = props => {
+  const { name, fieldConfig, defaultRequiredMessage, formId, intl, initialValues = {} } = props;
+  const { isRequired, requiredMessage } = fieldConfig?.saveConfig || {};
+
+  // Parse initival values from string to proper array of objects
+  const parsedInitialValues = (() => {
+    try {
+      if (!initialValues.pub_previous_roles) return [];
+
+      const parsed = Array.isArray(initialValues.pub_previous_roles)
+        ? initialValues.pub_previous_roles
+        : JSON.parse(initialValues.pub_previous_roles);
+
+      return Array.isArray(parsed)
+        ? parsed.map(item => {
+            if (typeof item === 'string') {
+              try {
+                return JSON.parse(item);
+              } catch (e) {
+                return {};
+              }
+            }
+
+            return item || {};
+          })
+        : [];
+    } catch (e) {
+      return [];
+    }
+  })();
+
+  const validateMaybe = isRequired
+    ? { validate: required(requiredMessage || defaultRequiredMessage) }
+    : {};
+
+  const label = getAccessibleLabel(fieldConfig);
+
+  return (
+    <FieldWorkExperience
+      className={css.customField}
+      name={name}
+      id={formId ? `${formId}.${name}` : name}
+      label={label}
+      fieldConfig={fieldConfig}
+      formId={formId}
+      intl={intl}
+      defaultRequiredMessage={defaultRequiredMessage}
+      validateMaybe={validateMaybe}
+      initialValues={parsedInitialValues}
+    />
+  );
+};
+
 /**
  * Return Final Form field for each configuration according to schema type.
  *
@@ -308,6 +362,8 @@ const CustomExtendedDataField = props => {
 
   return schemaType === SCHEMA_TYPE_ENUM && enumOptions ? (
     renderFieldComponent(CustomFieldEnum, props)
+  ) : key === 'previous_roles' ? (
+    <CustomFieldWorkExperience {...props} />
   ) : schemaType === SCHEMA_TYPE_MULTI_ENUM && enumOptions ? (
     renderFieldComponent(CustomFieldMultiEnum, props)
   ) : schemaType === SCHEMA_TYPE_TEXT ? (

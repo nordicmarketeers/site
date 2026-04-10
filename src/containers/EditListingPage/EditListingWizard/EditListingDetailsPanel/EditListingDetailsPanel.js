@@ -371,6 +371,24 @@ const EditListingDetailsPanel = props => {
               ...rest
             } = values;
 
+            // Convert work experience objects to array of JSON strings for the select-multiple field
+            if (rest.pub_previous_roles && Array.isArray(rest.pub_previous_roles)) {
+              const cleaned = rest.pub_previous_roles.map(exp => {
+                const obj = typeof exp === 'string' ? JSON.parse(exp) : exp;
+
+                return {
+                  title: String(obj.title || ''),
+                  company: String(obj.company || ''),
+                  city: String(obj.city || ''),
+                  start_date: String(obj.start_date || ''),
+                  ending_date: String(obj.ending_date || ''),
+                  description: String(obj.description || ''),
+                };
+              });
+
+              rest.pub_previous_roles = JSON.stringify(cleaned);
+            }
+
             const nestedCategories = pickCategoryFields(rest, categoryKey, 1, listingCategories);
             // Remove old categories by explicitly saving null for them.
             const cleanedNestedCategories = {

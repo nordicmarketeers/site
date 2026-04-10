@@ -260,6 +260,7 @@ const AddListingFields = props => {
     listingFieldsConfig,
     selectedCategories,
     formId,
+    initialValues,
     intl,
     pdfUploaderRef,
     pendingFiles,
@@ -282,6 +283,7 @@ const AddListingFields = props => {
       ? [
           ...pickedFields,
           <CustomExtendedDataField
+            initialValues={initialValues}
             key={namespacedKey}
             name={namespacedKey}
             fieldConfig={fieldConfig}
@@ -350,6 +352,7 @@ const EditListingDetailsForm = props => {
           form: formApi,
           handleSubmit,
           onListingTypeChange,
+          initialValues,
           invalid,
           pristine,
           marketplaceCurrency,
@@ -655,6 +658,7 @@ const EditListingDetailsForm = props => {
                 setPendingFiles={setPendingFiles}
                 toDeletePaths={toDeletePaths}
                 setToDeletePaths={setToDeletePaths}
+                initialValues={initialValues}
               />
             )}
 

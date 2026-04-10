@@ -1,0 +1,58 @@
+@import '../../styles/customMediaQueries.css';
+
+.halfInput {
+  @media (--viewportSmall) {
+    width: 50%;
+    display: inline-block;
+
+    + .halfInputRight {
+      padding-left: 1rem;
+    }
+  }
+}
+
+.addBtn {
+  align-self: flex-start;
+  padding: 10px 20px;
+  background: var(--marketplaceColor) !important;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.addBtn:hover:not(:disabled) {
+  background: var(--marketplaceColorDark) !important;
+}
+
+.removeBtn {
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  position: absolute;
+  right: 10px;
+  bottom: 0;
+}
+
+.sectionInput {
+  padding-top: 0.8rem;
+
+  > label {
+    font-weight: var(--fontWeightMedium);
+  }
+}
+
+.experienceBlock {
+  position: relative;
+}
+
+.experienceBlock > .sectionInput:first-of-type {
+  padding-top: 0;
+}
+
+.description {
+  padding-bottom: 1.5rem;
+}
