@@ -33,6 +33,10 @@
   animation-range: entry 0% entry 60%;
 }
 
+.sectionContent:has([class*='SectionFooter']) {
+  animation: none;
+}
+
 @keyframes fadeVertical {
   from {
     opacity: 0;
