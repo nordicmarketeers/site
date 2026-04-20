@@ -36,11 +36,21 @@ import {
   resolveLatestProcessName,
 } from '../../transactions/transaction';
 
-import { ModalInMobile, PrimaryButton, AvatarSmall, H1, H2 } from '../../components';
+import {
+  ModalInMobile,
+  PrimaryButton,
+  AvatarSmall,
+  H1,
+  H2,
+  AvatarMedium,
+  AvatarLarge,
+} from '../../components';
 import PriceVariantPicker from './PriceVariantPicker/PriceVariantPicker';
 import SubmitFinePrint from './SubmitFinePrint/SubmitFinePrint';
 
 import css from './OrderPanel.module.css';
+import { cityCountryFormat, languagesFormat } from '../../util/listingCardHelpers';
+import { IoLanguage, IoLocationSharp } from 'react-icons/io5';
 
 const BookingTimeForm = loadable(() =>
   import(/* webpackChunkName: "BookingTimeForm" */ './BookingTimeForm/BookingTimeForm')
@@ -433,9 +443,16 @@ const OrderPanel = props => {
   const classes = classNames(rootClassName || css.root, className);
   const titleClasses = classNames(titleClassName || css.orderTitle);
 
+  const cityCountry = cityCountryFormat(publicData?.location?.address);
+  const languages = languagesFormat(publicData?.languages);
+  const consultant_availability = publicData?.availability;
+
+  const isLinkedName =
+    author.attributes.profile.publicData.userType === 'consultant' ? false : true;
+
   return (
     <div className={classes}>
-      <ModalInMobile
+      {/* <ModalInMobile
         containerClassName={css.modalContainer}
         id="OrderFormInModal"
         isModalOpenOnMobile={isOrderOpen}
@@ -446,128 +463,150 @@ const OrderPanel = props => {
         showAsModalMaxWidth={MODAL_BREAKPOINT}
         onManageDisableScrolling={onManageDisableScrolling}
         usePortal
-      >
-        <div className={css.modalHeading}>
-          <H1 className={css.heading}>{title}</H1>
+      > */}
+      {/* <div className={css.modalHeading}>
+        <H1 className={css.heading}>{title}</H1>
+      </div> */}
+
+      {showListingImage && (
+        <div className={css.orderHeading}>
+          {titleDesktop ? titleDesktop : <H2 className={titleClasses}>{title}</H2>}
+          {subTitleText ? <div className={css.orderHelp}>{subTitleText}</div> : null}
         </div>
+      )}
 
-        {showListingImage && (
-          <div className={css.orderHeading}>
-            {titleDesktop ? titleDesktop : <H2 className={titleClasses}>{title}</H2>}
-            {subTitleText ? <div className={css.orderHelp}>{subTitleText}</div> : null}
-          </div>
-        )}
+      <PriceMaybe
+        price={price}
+        publicData={publicData}
+        validListingTypes={validListingTypes}
+        intl={intl}
+        marketplaceCurrency={marketplaceCurrency}
+      />
 
-        <PriceMaybe
-          price={price}
-          publicData={publicData}
-          validListingTypes={validListingTypes}
-          intl={intl}
-          marketplaceCurrency={marketplaceCurrency}
-        />
-
-        <div className={css.author}>
-          <AvatarSmall user={author} className={css.providerAvatar} />
-          <span className={css.providerNameLinked}>
-            <FormattedMessage id="OrderPanel.author" values={{ name: authorLink }} />
-          </span>
-          <span className={css.providerNamePlain}>
-            <FormattedMessage id="OrderPanel.author" values={{ name: authorDisplayName }} />
-          </span>
-        </div>
-
-        {showPriceMissing ? (
-          <PriceMissing />
-        ) : showInvalidCurrency ? (
-          <InvalidCurrency />
-        ) : showInvalidPriceVariantsMessage ? (
-          <InvalidPriceVariants />
-        ) : showBookingFixedDurationForm ? (
-          <BookingFixedDurationForm
-            seatsEnabled={seatsEnabled}
-            className={css.bookingForm}
-            formId="OrderPanelBookingFixedDurationForm"
-            dayCountAvailableForBooking={dayCountAvailableForBooking}
-            monthlyTimeSlots={monthlyTimeSlots}
-            timeSlotsForDate={timeSlotsForDate}
-            onFetchTimeSlots={onFetchTimeSlots}
-            startDatePlaceholder={intl.formatDate(TODAY, dateFormattingOptions)}
-            startTimeInterval={startTimeInterval}
-            timeZone={timeZone}
-            finePrintComponent={SubmitFinePrint}
-            {...priceVariantsMaybe}
-            {...sharedProps}
-          />
-        ) : showBookingTimeForm ? (
-          <BookingTimeForm
-            seatsEnabled={seatsEnabled}
-            className={css.bookingForm}
-            formId="OrderPanelBookingTimeForm"
-            dayCountAvailableForBooking={dayCountAvailableForBooking}
-            monthlyTimeSlots={monthlyTimeSlots}
-            timeSlotsForDate={timeSlotsForDate}
-            onFetchTimeSlots={onFetchTimeSlots}
-            startDatePlaceholder={intl.formatDate(TODAY, dateFormattingOptions)}
-            endDatePlaceholder={intl.formatDate(TODAY, dateFormattingOptions)}
-            timeZone={timeZone}
-            finePrintComponent={SubmitFinePrint}
-            {...priceVariantsMaybe}
-            {...sharedProps}
-          />
-        ) : showBookingDatesForm ? (
-          <BookingDatesForm
-            seatsEnabled={seatsEnabled}
-            className={css.bookingForm}
-            formId="OrderPanelBookingDatesForm"
-            dayCountAvailableForBooking={dayCountAvailableForBooking}
-            monthlyTimeSlots={monthlyTimeSlots}
-            onFetchTimeSlots={onFetchTimeSlots}
-            timeZone={timeZone}
-            finePrintComponent={SubmitFinePrint}
-            {...priceVariantsMaybe}
-            {...sharedProps}
-          />
-        ) : showProductOrderForm ? (
-          <ProductOrderForm
-            formId="OrderPanelProductOrderForm"
-            currentStock={currentStock}
-            allowOrdersOfMultipleItems={allowOrdersOfMultipleItems}
-            pickupEnabled={pickupEnabled && displayPickup}
-            shippingEnabled={shippingEnabled && displayShipping}
-            displayDeliveryMethod={displayPickup || displayShipping}
-            onContactUser={onContactUser}
-            {...sharedProps}
-          />
-        ) : showInquiryForm ? (
-          <InquiryWithoutPaymentForm
-            formId="OrderPanelInquiryForm"
-            onSubmit={onSubmit}
-            finePrintComponent={SubmitFinePrint}
-            isOwnListing={isOwnListing}
-          />
-        ) : showNegotiationForm ? (
-          <NegotiationForm
-            formId="OrderPanelNegotiationForm"
-            onSubmit={onSubmit}
-            finePrintComponent={SubmitFinePrint}
-            payoutDetailsWarning={payoutDetailsWarning}
-            isOwnListing={isOwnListing}
-          />
-        ) : showRequestQuoteForm ? (
-          <NegotiationRequestQuoteForm
-            formId="OrderPanelRequestQuoteForm"
-            onSubmit={onSubmit}
-            finePrintComponent={SubmitFinePrint}
-            payoutDetailsWarning={payoutDetailsWarning}
-            isOwnListing={isOwnListing}
-          />
-        ) : !isKnownProcess ? (
-          <p className={css.errorSidebar}>
-            <FormattedMessage id="OrderPanel.unknownTransactionProcess" />
+      <div className={css.author}>
+        <AvatarLarge user={author} className={css.providerAvatar} />
+        <div className={css.authorInfo}>
+          {isLinkedName && (
+            <span className={css.providerNameLinked}>
+              <FormattedMessage id="OrderPanel.author" values={{ name: authorLink }} />
+            </span>
+          )}
+          {!isLinkedName && (
+            <span className={css.providerNamePlain}>
+              <FormattedMessage id="OrderPanel.author" values={{ name: authorDisplayName }} />
+            </span>
+          )}
+          <p className={css.metaText}>
+            <IoLocationSharp />
+            {cityCountry}
           </p>
-        ) : null}
-      </ModalInMobile>
-      <div className={css.openOrderForm}>
+          {languages && (
+            <p className={css.metaText}>
+              <IoLanguage />
+              {languages}
+            </p>
+          )}
+        </div>
+      </div>
+      <div className={css.authorExtra}>
+        <hr />
+        <p className={css.metaText}>
+          Tillgänglig fr.om: <b>{consultant_availability}</b>
+        </p>
+      </div>
+
+      {showPriceMissing ? (
+        <PriceMissing />
+      ) : showInvalidCurrency ? (
+        <InvalidCurrency />
+      ) : showInvalidPriceVariantsMessage ? (
+        <InvalidPriceVariants />
+      ) : showBookingFixedDurationForm ? (
+        <BookingFixedDurationForm
+          seatsEnabled={seatsEnabled}
+          className={css.bookingForm}
+          formId="OrderPanelBookingFixedDurationForm"
+          dayCountAvailableForBooking={dayCountAvailableForBooking}
+          monthlyTimeSlots={monthlyTimeSlots}
+          timeSlotsForDate={timeSlotsForDate}
+          onFetchTimeSlots={onFetchTimeSlots}
+          startDatePlaceholder={intl.formatDate(TODAY, dateFormattingOptions)}
+          startTimeInterval={startTimeInterval}
+          timeZone={timeZone}
+          finePrintComponent={SubmitFinePrint}
+          {...priceVariantsMaybe}
+          {...sharedProps}
+        />
+      ) : showBookingTimeForm ? (
+        <BookingTimeForm
+          seatsEnabled={seatsEnabled}
+          className={css.bookingForm}
+          formId="OrderPanelBookingTimeForm"
+          dayCountAvailableForBooking={dayCountAvailableForBooking}
+          monthlyTimeSlots={monthlyTimeSlots}
+          timeSlotsForDate={timeSlotsForDate}
+          onFetchTimeSlots={onFetchTimeSlots}
+          startDatePlaceholder={intl.formatDate(TODAY, dateFormattingOptions)}
+          endDatePlaceholder={intl.formatDate(TODAY, dateFormattingOptions)}
+          timeZone={timeZone}
+          finePrintComponent={SubmitFinePrint}
+          {...priceVariantsMaybe}
+          {...sharedProps}
+        />
+      ) : showBookingDatesForm ? (
+        <BookingDatesForm
+          seatsEnabled={seatsEnabled}
+          className={css.bookingForm}
+          formId="OrderPanelBookingDatesForm"
+          dayCountAvailableForBooking={dayCountAvailableForBooking}
+          monthlyTimeSlots={monthlyTimeSlots}
+          onFetchTimeSlots={onFetchTimeSlots}
+          timeZone={timeZone}
+          finePrintComponent={SubmitFinePrint}
+          {...priceVariantsMaybe}
+          {...sharedProps}
+        />
+      ) : showProductOrderForm ? (
+        <ProductOrderForm
+          formId="OrderPanelProductOrderForm"
+          currentStock={currentStock}
+          allowOrdersOfMultipleItems={allowOrdersOfMultipleItems}
+          pickupEnabled={pickupEnabled && displayPickup}
+          shippingEnabled={shippingEnabled && displayShipping}
+          displayDeliveryMethod={displayPickup || displayShipping}
+          onContactUser={onContactUser}
+          {...sharedProps}
+        />
+      ) : showInquiryForm ? (
+        <InquiryWithoutPaymentForm
+          formId="OrderPanelInquiryForm"
+          onSubmit={onSubmit}
+          finePrintComponent={SubmitFinePrint}
+          isOwnListing={isOwnListing}
+        />
+      ) : showNegotiationForm ? (
+        <NegotiationForm
+          formId="OrderPanelNegotiationForm"
+          onSubmit={onSubmit}
+          finePrintComponent={SubmitFinePrint}
+          payoutDetailsWarning={payoutDetailsWarning}
+          isOwnListing={isOwnListing}
+        />
+      ) : showRequestQuoteForm ? (
+        <NegotiationRequestQuoteForm
+          formId="OrderPanelRequestQuoteForm"
+          onSubmit={onSubmit}
+          finePrintComponent={SubmitFinePrint}
+          payoutDetailsWarning={payoutDetailsWarning}
+          isOwnListing={isOwnListing}
+        />
+      ) : !isKnownProcess ? (
+        <p className={css.errorSidebar}>
+          <FormattedMessage id="OrderPanel.unknownTransactionProcess" />
+        </p>
+      ) : null}
+      {/* </ModalInMobile> */}
+      {/* <div className={css.openOrderForm}>
         <PriceMaybe
           price={price}
           publicData={publicData}
@@ -609,7 +648,7 @@ const OrderPanel = props => {
             )}
           </PrimaryButton>
         )}
-      </div>
+      </div> */}
     </div>
   );
 };

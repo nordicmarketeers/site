@@ -80,7 +80,7 @@
   }
 
   @media (--viewportMedium) {
-    margin: 24px 0 24px 0;
+    margin: 24px 0 0 0;
     width: 100%;
   }
 
@@ -376,10 +376,21 @@
   }
 }
 
-.productOrderPanel {
+.orderPanelMobile {
+  display: block;
+  @media (--viewportLarge) {
+    display: none;
+  }
+}
+
+.orderPanelDesktop {
+  display: none;
   @media (--viewportLarge) {
     display: block;
   }
+}
+
+.productOrderPanel {
   /* Note: panel height might be too much on small viewport - hence min-height */
   @media (--viewportLarge) and (min-height: 950px) {
     position: sticky;

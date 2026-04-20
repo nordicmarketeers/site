@@ -383,6 +383,44 @@ export const ListingPageComponent = props => {
             <div
               className={showListingImage ? css.mobileHeading : css.noListingImageHeadingProduct}
             >
+              <div className={classNames(css.orderColumnForProductLayout, css.orderPanelMobile)}>
+                <OrderPanel
+                  className={classNames(css.productOrderPanel, {
+                    [css.imagesEnabled]: showListingImage,
+                  })}
+                  listing={currentListing}
+                  isOwnListing={isOwnListing}
+                  onSubmit={handleOrderSubmit}
+                  authorLink={
+                    <NamedLink
+                      className={css.authorNameLink}
+                      name={isVariant ? 'ListingPageVariant' : 'ListingPage'}
+                      params={params}
+                      to={{ hash: '#author' }}
+                    >
+                      {authorDisplayName}
+                    </NamedLink>
+                  }
+                  title={
+                    <FormattedMessage id="ListingPage.orderTitle" values={{ title: richTitle }} />
+                  }
+                  titleDesktop={
+                    <H4 as="h1" className={css.orderPanelTitle}>
+                      <FormattedMessage id="ListingPage.orderTitle" values={{ title: richTitle }} />
+                    </H4>
+                  }
+                  payoutDetailsWarning={payoutDetailsWarning}
+                  author={ensuredAuthor}
+                  onManageDisableScrolling={onManageDisableScrolling}
+                  onContactUser={onContactUser}
+                  {...restOfProps}
+                  validListingTypes={config.listing.listingTypes}
+                  marketplaceCurrency={config.currency}
+                  dayCountAvailableForBooking={config.stripe.dayCountAvailableForBooking}
+                  marketplaceName={config.marketplaceName}
+                  showListingImage={showListingImage}
+                />
+              </div>
               {showListingImage ? (
                 <H4 as="h1" className={css.orderPanelTitle}>
                   <FormattedMessage id="ListingPage.orderTitle" values={{ title: richTitle }} />
@@ -424,7 +462,7 @@ export const ListingPageComponent = props => {
               onManageDisableScrolling={onManageDisableScrolling}
             /> */}
           </div>
-          <div className={css.orderColumnForProductLayout}>
+          <div className={classNames(css.orderColumnForProductLayout, css.orderPanelDesktop)}>
             <OrderPanel
               className={classNames(css.productOrderPanel, {
                 [css.imagesEnabled]: showListingImage,

@@ -49,6 +49,12 @@ const CustomListingFields = props => {
       <SectionDetailsMaybe {...props} isFieldForCategory={isFieldForSelectedCategories} />
       {propsForCustomFields.map(customFieldProps => {
         const { schemaType, key, ...fieldProps } = customFieldProps;
+
+        // Keys in array not shown in any default spot (perhaps top right card instead)
+        if (['availability', 'languages'].includes(key)) {
+          return null;
+        }
+
         return key === 'previous_roles' ? (
           <SectionPreviousRolesMaybe key={key} {...fieldProps} />
         ) : schemaType === SCHEMA_TYPE_MULTI_ENUM ? (

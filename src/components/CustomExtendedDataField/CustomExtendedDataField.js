@@ -117,17 +117,25 @@ const CustomFieldText = props => {
   const validateMaybe = isRequired
     ? { validate: required(requiredMessage || defaultRequiredMessage) }
     : {};
-  const placeholder =
+  let placeholder =
     placeholderMessage || intl.formatMessage({ id: 'CustomExtendedDataField.placeholderText' });
+  let type = 'textarea';
 
   const label = getAccessibleLabel(fieldConfig);
+
+  // Custom types and placeholder for input fields
+  switch (name) {
+    case 'pub_availability':
+      type = 'text';
+      placeholder = 'Nu / dd-mm-yyy';
+  }
 
   return (
     <FieldTextInput
       className={css.customField}
       id={formId ? `${formId}.${name}` : name}
       name={name}
-      type="textarea"
+      type={type || 'textarea'}
       label={label}
       placeholder={placeholder}
       {...validateMaybe}
