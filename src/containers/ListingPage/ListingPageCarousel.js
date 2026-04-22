@@ -463,12 +463,12 @@ export const ListingPageComponent = props => {
               intl={intl}
             />
 
-            <SectionMapMaybe
+            {/* <SectionMapMaybe
               geolocation={geolocation}
               publicData={publicData}
               listingId={currentListing.id}
               mapsConfig={config.maps}
-            />
+            /> */}
             {/* <SectionReviews reviews={reviews} fetchReviewsError={fetchReviewsError} /> */}
             {/* <SectionAuthorMaybe
               title={title}
