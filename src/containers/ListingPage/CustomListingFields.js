@@ -15,6 +15,8 @@ import SectionYoutubeVideoMaybe from './SectionYoutubeVideoMaybe';
 import SectionPDFMaybe from './SectionPDFMaybe';
 import SectionPreviousRolesMaybe from './SectionPreviousRolesMaybe.js';
 
+import css from './CustomListingFields.module.css';
+
 /**
  * Renders custom listing fields.
  * - SectionDetailsMaybe is used if schemaType is 'enum', 'long', or 'boolean'
@@ -46,7 +48,9 @@ const CustomListingFields = props => {
 
   return (
     <>
-      <SectionDetailsMaybe {...props} isFieldForCategory={isFieldForSelectedCategories} />
+      <div className={css.detailsDesktop}>
+        <SectionDetailsMaybe {...props} isFieldForCategory={isFieldForSelectedCategories} />
+      </div>
       {propsForCustomFields.map(customFieldProps => {
         const { schemaType, key, ...fieldProps } = customFieldProps;
 

@@ -1,0 +1,9 @@
+@import '../../styles/customMediaQueries.css';
+
+.detailsDesktop {
+  display: block;
+
+  @media (--viewportLarge) {
+    display: none;
+  }
+}

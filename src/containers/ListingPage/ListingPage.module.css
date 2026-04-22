@@ -697,6 +697,13 @@
   }
 }
 
+.detailsDesktop {
+  @media (--viewportLarge) and (min-height: 950px) {
+    position: sticky;
+    top: 408px;
+  }
+}
+
 .detailLabel {
   font-weight: var(--fontWeightSemiBold);
   letter-spacing: -0.09px;

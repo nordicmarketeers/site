@@ -92,6 +92,8 @@ import SectionGallery from './SectionGallery';
 import CustomListingFields from './CustomListingFields';
 
 import css from './ListingPage.module.css';
+import SectionDetailsMaybe from './SectionDetailsMaybe.js';
+import { isFieldForCategory, pickCategoryFields } from '../../util/fieldHelpers.js';
 
 const MIN_LENGTH_FOR_LONG_WORDS_IN_TITLE = 16;
 
@@ -191,6 +193,26 @@ export const ListingPageComponent = props => {
     publicData = {},
     metadata = {},
   } = currentListing.attributes;
+
+  // Construct props for details table
+  const categoryConfiguration = config.categoryConfiguration;
+  const { key: categoryPrefix, categories: listingCategoriesConfig } = categoryConfiguration;
+  const categoriesObj = pickCategoryFields(publicData, categoryPrefix, 1, listingCategoriesConfig);
+  const currentCategories = Object.values(categoriesObj);
+
+  const isFieldForSelectedCategories = fieldConfig => {
+    const isTargetCategory = isFieldForCategory(currentCategories, fieldConfig);
+    return isTargetCategory;
+  };
+
+  const detailsProps = {
+    publicData: publicData,
+    metadata: metadata,
+    listingFieldConfigs: listingConfig.listingFields,
+    categoryConfiguration: config.categoryConfiguration,
+    intl: intl,
+    isFieldForCategory: isFieldForSelectedCategories,
+  };
 
   const richTitle = (
     <span>
@@ -497,6 +519,9 @@ export const ListingPageComponent = props => {
               marketplaceName={config.marketplaceName}
               showListingImage={showListingImage}
             />
+            <div className={css.detailsDesktop}>
+              <SectionDetailsMaybe {...detailsProps} />
+            </div>
           </div>
         </div>
       </LayoutSingleColumn>

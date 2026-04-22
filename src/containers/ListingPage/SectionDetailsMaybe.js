@@ -6,9 +6,15 @@ import { isFieldForListingType } from '../../util/fieldHelpers';
 import { Heading } from '../../components';
 
 import css from './ListingPage.module.css';
+import { IoIosArrowDown, IoIosArrowForward } from 'react-icons/io';
+import { capitalize } from '../../util/listingCardHelpers';
 
 const SectionDetailsMaybe = props => {
   const { publicData, metadata = {}, listingFieldConfigs, isFieldForCategory, intl } = props;
+
+  const [showOther, setShowOther] = React.useState(false);
+  const [showLanguages, setShowLanguages] = React.useState(false);
+  const [showExtent, setShowExtent] = React.useState(false);
 
   if (!publicData || !listingFieldConfigs) {
     return null;
@@ -52,6 +58,21 @@ const SectionDetailsMaybe = props => {
     return filteredConfigs;
   };
 
+  const searchTerms = [
+    'certifications',
+    'languages',
+    'tools_platforms',
+    'extent_profile',
+    'awards',
+  ];
+
+  const detailsMenus = Object.keys(publicData)
+    .filter(key => searchTerms.some(term => key.includes(term)))
+    .reduce((acc, key) => {
+      acc[key] = publicData[key];
+      return acc;
+    }, {});
+
   const existingListingFields = listingFieldConfigs.reduce(pickListingFields, []);
 
   return existingListingFields.length > 0 ? (
@@ -60,12 +81,45 @@ const SectionDetailsMaybe = props => {
         <FormattedMessage id="ListingPage.detailsTitle" />
       </Heading>
       <ul className={css.details}>
-        {existingListingFields.map(detail => (
-          <li key={detail.key} className={css.detailsRow}>
-            <span className={css.detailLabel}>{detail.label}</span>
-            <span>{detail.value}</span>
+        {/* EXTENT */}
+        {detailsMenus.extent_profile && (
+          <li className={css.detailsRow} onClick={() => setShowExtent(!showExtent)}>
+            <span className={css.detailLabel}>Omfattning</span>
+            <span>{showExtent ? <IoIosArrowDown /> : <IoIosArrowForward />}</span>
           </li>
-        ))}
+        )}
+        {showExtent &&
+          detailsMenus.extent_profile.map((extent, i) => (
+            <li key={extent + i} className={css.detailsRow}>
+              <span>{capitalize(extent)}</span>
+            </li>
+          ))}
+
+        {/* LANGUAGES */}
+        {detailsMenus.languages && (
+          <li className={css.detailsRow} onClick={() => setShowLanguages(!showLanguages)}>
+            <span className={css.detailLabel}>Språk</span>
+            <span>{showLanguages ? <IoIosArrowDown /> : <IoIosArrowForward />}</span>
+          </li>
+        )}
+        {showLanguages &&
+          detailsMenus.languages.map((language, i) => (
+            <li key={language + i} className={css.detailsRow}>
+              <span>{capitalize(language)}</span>
+            </li>
+          ))}
+
+        <li className={css.detailsRow} onClick={() => setShowOther(!showOther)}>
+          <span className={css.detailLabel}>Övrigt</span>
+          <span>{showOther ? <IoIosArrowDown /> : <IoIosArrowForward />}</span>
+        </li>
+        {showOther &&
+          existingListingFields.map(detail => (
+            <li key={detail.key} className={css.detailsRow}>
+              <span className={css.detailLabel}>{detail.label}</span>
+              <span>{detail.value}</span>
+            </li>
+          ))}
       </ul>
     </section>
   ) : null;
