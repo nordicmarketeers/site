@@ -701,6 +701,14 @@
   }
 }
 
+.detailsRowMore {
+  padding: 7px 4px 7px;
+
+  @media (--viewportMedium) {
+    padding: 4px 4px 2px 4px;
+  }
+}
+
 .detailsDesktop {
   @media (--viewportLarge) and (min-height: 950px) {
     position: sticky;

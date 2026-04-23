@@ -123,7 +123,11 @@ const SectionDetailsMaybe = props => {
           detailsMenus.tools_platforms.map((tool, i) => (
             <li
               key={tool + i}
-              className={classNames(css.detailsRow, (i + 1) % 2 !== 0 ? css.rowIsOdd : null)}
+              className={classNames(
+                css.detailsRow,
+                css.detailsRowMore,
+                (i + 1) % 2 !== 0 ? css.rowIsOdd : null
+              )}
             >
               <span className={css.detailLabel}>{tool.tool_platform}</span>
               <span>{tool.level}</span>
@@ -141,7 +145,11 @@ const SectionDetailsMaybe = props => {
           detailsMenus.extent_profile.map((extent, i) => (
             <li
               key={extent + i}
-              className={classNames(css.detailsRow, (i + 1) % 2 !== 0 ? css.rowIsOdd : null)}
+              className={classNames(
+                css.detailsRow,
+                css.detailsRowMore,
+                (i + 1) % 2 !== 0 ? css.rowIsOdd : null
+              )}
             >
               <span className={css.detailLabel}>{capitalize(extent)}</span>
             </li>
@@ -158,7 +166,11 @@ const SectionDetailsMaybe = props => {
           detailsMenus.languages.map((language, i) => (
             <li
               key={language + i}
-              className={classNames(css.detailsRow, (i + 1) % 2 !== 0 ? css.rowIsOdd : null)}
+              className={classNames(
+                css.detailsRow,
+                css.detailsRowMore,
+                (i + 1) % 2 !== 0 ? css.rowIsOdd : null
+              )}
             >
               <span className={css.detailLabel}>{capitalize(language)}</span>
             </li>
@@ -172,7 +184,11 @@ const SectionDetailsMaybe = props => {
           existingListingFields.map((detail, i) => (
             <li
               key={detail.key}
-              className={classNames(css.detailsRow, (i + 1) % 2 !== 0 ? css.rowIsOdd : null)}
+              className={classNames(
+                css.detailsRow,
+                css.detailsRowMore,
+                (i + 1) % 2 !== 0 ? css.rowIsOdd : null
+              )}
             >
               <span className={css.detailLabel}>{detail.label}</span>
               <span>{detail.value}</span>
