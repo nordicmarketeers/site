@@ -389,6 +389,20 @@ const EditListingDetailsPanel = props => {
               rest.pub_previous_roles = JSON.stringify(cleaned);
             }
 
+            // Convert tools_platforms
+            if (rest.pub_tools_platforms && Array.isArray(rest.pub_tools_platforms)) {
+              const cleaned = rest.pub_tools_platforms.map(exp => {
+                const obj = typeof exp === 'string' ? JSON.parse(exp) : exp;
+
+                return {
+                  tool_platform: String(obj.tool_platform || ''),
+                  level: String(obj.level || ''),
+                };
+              });
+
+              rest.pub_tools_platforms = JSON.stringify(cleaned);
+            }
+
             const nestedCategories = pickCategoryFields(rest, categoryKey, 1, listingCategories);
             // Remove old categories by explicitly saving null for them.
             const cleanedNestedCategories = {

@@ -677,6 +677,10 @@
   margin: 0;
 }
 
+.rowIsOdd {
+  background-color: var(--colorGrey100);
+}
+
 .detailsRow {
   display: inline-flex;
   justify-content: space-between;
@@ -707,6 +711,11 @@
 .detailLabel {
   font-weight: var(--fontWeightSemiBold);
   letter-spacing: -0.09px;
+}
+
+.detailTopLabel {
+  font-weight: var(--fontWeightSemiBold);
+  font-size: 1.1rem;
 }
 
 .inquiryModalContent {
