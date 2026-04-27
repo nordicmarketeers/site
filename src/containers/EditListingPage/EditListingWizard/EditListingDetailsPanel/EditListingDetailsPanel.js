@@ -24,6 +24,7 @@ import ErrorMessage from './ErrorMessage';
 import EditListingDetailsForm from './EditListingDetailsForm';
 import css from './EditListingDetailsPanel.module.css';
 import { dateToUnix } from '../../../../util/dateHelper';
+import { normalizeAndStringifyArray } from '../../../../util/parseHelper';
 
 /**
  * Get listing configuration. For existing listings, it is stored to publicData.
@@ -371,51 +372,25 @@ const EditListingDetailsPanel = props => {
               ...rest
             } = values;
 
-            // Convert work experience objects to array of JSON strings for the select-multiple field
-            if (rest.pub_previous_roles && Array.isArray(rest.pub_previous_roles)) {
-              const cleaned = rest.pub_previous_roles.map(exp => {
-                const obj = typeof exp === 'string' ? JSON.parse(exp) : exp;
+            // Stringify arrays of multifield fields before storing in DB
+            rest.pub_previous_roles = normalizeAndStringifyArray(rest.pub_previous_roles, {
+              title: '',
+              company: '',
+              city: '',
+              start_date: '',
+              ending_date: '',
+              description: '',
+            });
 
-                return {
-                  title: String(obj.title || ''),
-                  company: String(obj.company || ''),
-                  city: String(obj.city || ''),
-                  start_date: String(obj.start_date || ''),
-                  ending_date: String(obj.ending_date || ''),
-                  description: String(obj.description || ''),
-                };
-              });
+            rest.pub_tools_platforms = normalizeAndStringifyArray(rest.pub_tools_platforms, {
+              tool_platform: '',
+              level: '',
+            });
 
-              rest.pub_previous_roles = JSON.stringify(cleaned);
-            }
-
-            // Convert tools_platforms
-            if (rest.pub_tools_platforms && Array.isArray(rest.pub_tools_platforms)) {
-              const cleaned = rest.pub_tools_platforms.map(exp => {
-                const obj = typeof exp === 'string' ? JSON.parse(exp) : exp;
-
-                return {
-                  tool_platform: String(obj.tool_platform || ''),
-                  level: String(obj.level || ''),
-                };
-              });
-
-              rest.pub_tools_platforms = JSON.stringify(cleaned);
-            }
-
-            // Convert language_level
-            if (rest.pub_language_level && Array.isArray(rest.pub_language_level)) {
-              const cleaned = rest.pub_language_level.map(exp => {
-                const obj = typeof exp === 'string' ? JSON.parse(exp) : exp;
-
-                return {
-                  language: String(obj.language || ''),
-                  level: String(obj.level || ''),
-                };
-              });
-
-              rest.pub_language_level = JSON.stringify(cleaned);
-            }
+            rest.pub_language_level = normalizeAndStringifyArray(rest.pub_language_level, {
+              language: '',
+              level: '',
+            });
 
             const nestedCategories = pickCategoryFields(rest, categoryKey, 1, listingCategories);
             // Remove old categories by explicitly saving null for them.

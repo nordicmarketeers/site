@@ -25,6 +25,7 @@ import FileUploadPDF from '../FieldUploadPDF/FieldUploadPDF';
 import FieldWorkExperience from '../FieldWorkExperience/FieldWorkExperience';
 import FieldTools from '../FieldTools/FieldTools';
 import FieldLanguages from '../FieldLanguages/FieldLanguages';
+import { parseToObjectArray } from '../../util/parseHelper';
 
 const createFilterOptions = options => options.map(o => ({ key: `${o.option}`, label: o.label }));
 
@@ -307,31 +308,7 @@ const CustomFieldWorkExperience = props => {
   const { isRequired, requiredMessage } = fieldConfig?.saveConfig || {};
 
   // Parse initival values from string to proper array of objects
-  const parsedInitialValues = (() => {
-    try {
-      if (!initialValues.pub_previous_roles) return [];
-
-      const parsed = Array.isArray(initialValues.pub_previous_roles)
-        ? initialValues.pub_previous_roles
-        : JSON.parse(initialValues.pub_previous_roles);
-
-      return Array.isArray(parsed)
-        ? parsed.map(item => {
-            if (typeof item === 'string') {
-              try {
-                return JSON.parse(item);
-              } catch (e) {
-                return {};
-              }
-            }
-
-            return item || {};
-          })
-        : [];
-    } catch (e) {
-      return [];
-    }
-  })();
+  const parsedInitialValues = parseToObjectArray(initialValues.pub_previous_roles);
 
   const validateMaybe = isRequired
     ? { validate: required(requiredMessage || defaultRequiredMessage) }
@@ -360,31 +337,7 @@ const CustomFieldTools = props => {
   const { isRequired, requiredMessage } = fieldConfig?.saveConfig || {};
 
   // Parse initival values from string to proper array of objects
-  const parsedInitialValues = (() => {
-    try {
-      if (!initialValues.pub_tools_platforms) return [];
-
-      const parsed = Array.isArray(initialValues.pub_tools_platforms)
-        ? initialValues.pub_tools_platforms
-        : JSON.parse(initialValues.pub_tools_platforms);
-
-      return Array.isArray(parsed)
-        ? parsed.map(item => {
-            if (typeof item === 'string') {
-              try {
-                return JSON.parse(item);
-              } catch (e) {
-                return {};
-              }
-            }
-
-            return item || {};
-          })
-        : [];
-    } catch (e) {
-      return [];
-    }
-  })();
+  const parsedInitialValues = parseToObjectArray(initialValues.pub_tools_platforms);
 
   const validateMaybe = isRequired
     ? { validate: required(requiredMessage || defaultRequiredMessage) }
@@ -413,31 +366,7 @@ const CustomFieldLanguages = props => {
   const { isRequired, requiredMessage } = fieldConfig?.saveConfig || {};
 
   // Parse initival values from string to proper array of objects
-  const parsedInitialValues = (() => {
-    try {
-      if (!initialValues.pub_language_level) return [];
-
-      const parsed = Array.isArray(initialValues.pub_language_level)
-        ? initialValues.pub_language_level
-        : JSON.parse(initialValues.pub_language_level);
-
-      return Array.isArray(parsed)
-        ? parsed.map(item => {
-            if (typeof item === 'string') {
-              try {
-                return JSON.parse(item);
-              } catch (e) {
-                return {};
-              }
-            }
-
-            return item || {};
-          })
-        : [];
-    } catch (e) {
-      return [];
-    }
-  })();
+  const parsedInitialValues = parseToObjectArray(initialValues.pub_language_level);
 
   const validateMaybe = isRequired
     ? { validate: required(requiredMessage || defaultRequiredMessage) }

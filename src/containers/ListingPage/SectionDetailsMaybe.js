@@ -9,6 +9,7 @@ import css from './ListingPage.module.css';
 import { IoIosArrowDown, IoIosArrowForward } from 'react-icons/io';
 import { capitalize } from '../../util/listingCardHelpers';
 import classNames from 'classnames';
+import { parseToObjectArray } from '../../util/parseHelper';
 
 const SectionDetailsMaybe = props => {
   const { publicData, metadata = {}, listingFieldConfigs, isFieldForCategory, intl } = props;
@@ -79,58 +80,10 @@ const SectionDetailsMaybe = props => {
   const existingListingFields = listingFieldConfigs.reduce(pickListingFields, []);
 
   // Parse tools_platforms
-  detailsMenus.tools_platforms = (() => {
-    try {
-      if (!detailsMenus.tools_platforms) return [];
-
-      const parsed = Array.isArray(detailsMenus.tools_platforms)
-        ? detailsMenus.tools_platforms
-        : JSON.parse(detailsMenus.tools_platforms);
-
-      return Array.isArray(parsed)
-        ? parsed.map(item => {
-            if (typeof item === 'string') {
-              try {
-                return JSON.parse(item);
-              } catch (e) {
-                return {};
-              }
-            }
-
-            return item || {};
-          })
-        : [];
-    } catch (e) {
-      return [];
-    }
-  })();
+  detailsMenus.tools_platforms = parseToObjectArray(detailsMenus.tools_platforms);
 
   // Parse language_level
-  detailsMenus.language_level = (() => {
-    try {
-      if (!detailsMenus.language_level) return [];
-
-      const parsed = Array.isArray(detailsMenus.language_level)
-        ? detailsMenus.language_level
-        : JSON.parse(detailsMenus.language_level);
-
-      return Array.isArray(parsed)
-        ? parsed.map(item => {
-            if (typeof item === 'string') {
-              try {
-                return JSON.parse(item);
-              } catch (e) {
-                return {};
-              }
-            }
-
-            return item || {};
-          })
-        : [];
-    } catch (e) {
-      return [];
-    }
-  })();
+  detailsMenus.language_level = parseToObjectArray(detailsMenus.language_level);
 
   return existingListingFields.length > 0 ? (
     <section className={css.sectionDetails}>
