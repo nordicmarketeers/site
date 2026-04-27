@@ -24,6 +24,7 @@ import classNames from 'classnames';
 import FileUploadPDF from '../FieldUploadPDF/FieldUploadPDF';
 import FieldWorkExperience from '../FieldWorkExperience/FieldWorkExperience';
 import FieldTools from '../FieldTools/FieldTools';
+import FieldLanguages from '../FieldLanguages/FieldLanguages';
 
 const createFilterOptions = options => options.map(o => ({ key: `${o.option}`, label: o.label }));
 
@@ -407,6 +408,59 @@ const CustomFieldTools = props => {
   );
 };
 
+const CustomFieldLanguages = props => {
+  const { name, fieldConfig, defaultRequiredMessage, formId, intl, initialValues = {} } = props;
+  const { isRequired, requiredMessage } = fieldConfig?.saveConfig || {};
+
+  // Parse initival values from string to proper array of objects
+  const parsedInitialValues = (() => {
+    try {
+      if (!initialValues.pub_language_level) return [];
+
+      const parsed = Array.isArray(initialValues.pub_language_level)
+        ? initialValues.pub_language_level
+        : JSON.parse(initialValues.pub_language_level);
+
+      return Array.isArray(parsed)
+        ? parsed.map(item => {
+            if (typeof item === 'string') {
+              try {
+                return JSON.parse(item);
+              } catch (e) {
+                return {};
+              }
+            }
+
+            return item || {};
+          })
+        : [];
+    } catch (e) {
+      return [];
+    }
+  })();
+
+  const validateMaybe = isRequired
+    ? { validate: required(requiredMessage || defaultRequiredMessage) }
+    : {};
+
+  const label = getAccessibleLabel(fieldConfig);
+
+  return (
+    <FieldLanguages
+      className={css.customField}
+      name={name}
+      id={formId ? `${formId}.${name}` : name}
+      label={label}
+      fieldConfig={fieldConfig}
+      formId={formId}
+      intl={intl}
+      defaultRequiredMessage={defaultRequiredMessage}
+      validateMaybe={validateMaybe}
+      initialValues={parsedInitialValues}
+    />
+  );
+};
+
 /**
  * Return Final Form field for each configuration according to schema type.
  *
@@ -426,6 +480,8 @@ const CustomExtendedDataField = props => {
     renderFieldComponent(CustomFieldEnum, props)
   ) : key === 'tools_platforms' ? (
     <CustomFieldTools {...props} />
+  ) : key === 'language_level' ? (
+    <CustomFieldLanguages {...props} />
   ) : key === 'previous_roles' ? (
     <CustomFieldWorkExperience {...props} />
   ) : schemaType === SCHEMA_TYPE_MULTI_ENUM && enumOptions ? (

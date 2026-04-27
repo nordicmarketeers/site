@@ -66,6 +66,7 @@ const SectionDetailsMaybe = props => {
     'tools_platforms',
     'extent_profile',
     'awards',
+    'language_level',
   ];
 
   const detailsMenus = Object.keys(publicData)
@@ -85,6 +86,33 @@ const SectionDetailsMaybe = props => {
       const parsed = Array.isArray(detailsMenus.tools_platforms)
         ? detailsMenus.tools_platforms
         : JSON.parse(detailsMenus.tools_platforms);
+
+      return Array.isArray(parsed)
+        ? parsed.map(item => {
+            if (typeof item === 'string') {
+              try {
+                return JSON.parse(item);
+              } catch (e) {
+                return {};
+              }
+            }
+
+            return item || {};
+          })
+        : [];
+    } catch (e) {
+      return [];
+    }
+  })();
+
+  // Parse language_level
+  detailsMenus.language_level = (() => {
+    try {
+      if (!detailsMenus.language_level) return [];
+
+      const parsed = Array.isArray(detailsMenus.language_level)
+        ? detailsMenus.language_level
+        : JSON.parse(detailsMenus.language_level);
 
       return Array.isArray(parsed)
         ? parsed.map(item => {
@@ -156,23 +184,24 @@ const SectionDetailsMaybe = props => {
           ))}
 
         {/* LANGUAGES */}
-        {detailsMenus?.languages && (
+        {detailsMenus?.language_level && detailsMenus?.language_level[0]?.language && (
           <li className={css.detailsRow} onClick={() => setShowLanguages(!showLanguages)}>
             <span className={classNames(css.detailLabel, css.detailTopLabel)}>Språk</span>
             <span>{showLanguages ? <IoIosArrowDown /> : <IoIosArrowForward />}</span>
           </li>
         )}
         {showLanguages &&
-          detailsMenus.languages.map((language, i) => (
+          detailsMenus.language_level.map((lang, i) => (
             <li
-              key={language + i}
+              key={lang + i}
               className={classNames(
                 css.detailsRow,
                 css.detailsRowMore,
                 (i + 1) % 2 !== 0 ? css.rowIsOdd : null
               )}
             >
-              <span className={css.detailLabel}>{capitalize(language)}</span>
+              <span className={css.detailLabel}>{lang.language}</span>
+              <span>{lang.level}</span>
             </li>
           ))}
 

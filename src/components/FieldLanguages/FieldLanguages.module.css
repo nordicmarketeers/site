@@ -1,0 +1,84 @@
+@import '../../styles/customMediaQueries.css';
+
+.halfInput {
+  @media (--viewportSmall) {
+    width: 50%;
+    display: inline-block;
+
+    + .halfInputRight {
+      padding-left: 1rem;
+    }
+  }
+}
+
+.addBtn {
+  align-self: flex-start;
+  padding: 10px 20px;
+  background: var(--marketplaceColor) !important;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.addBtn:hover:not(:disabled) {
+  background: var(--marketplaceColorDark) !important;
+}
+
+.removeBtn {
+  border: none;
+  cursor: pointer;
+  font-size: 24px;
+  position: absolute;
+  color: rgb(211, 26, 26);
+  right: 0;
+  top: 24px;
+
+  @media (--viewportSmall) {
+    top: 4px;
+  }
+
+  @media (--viewportMedium) {
+    top: 10px;
+  }
+}
+
+.sectionInput {
+  margin-top: 0.5rem;
+
+  @media (--viewportSmall) {
+    margin-top: 0;
+  }
+
+  > label {
+    font-weight: var(--fontWeightMedium);
+  }
+}
+
+.sectionInput {
+  padding-right: 30px;
+}
+
+.experienceBlock {
+  position: relative;
+}
+
+.experienceBlock > .sectionInput:first-of-type {
+  padding-top: 0;
+}
+
+.experienceBlock > hr {
+  margin: 1rem 0 1rem 0;
+  border-top: 1px solid var(--colorGrey200);
+}
+
+.experienceBlock:last-of-type {
+  margin-bottom: 0.8rem;
+
+  > hr {
+    display: none;
+  }
+}

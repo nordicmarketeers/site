@@ -55,7 +55,7 @@ const CustomListingFields = props => {
         const { schemaType, key, ...fieldProps } = customFieldProps;
 
         // Keys in array not shown in any default spot (perhaps top right card instead)
-        if (['availability', 'languages', 'tools_platforms'].includes(key)) {
+        if (['availability', 'languages', 'tools_platforms', 'language_level'].includes(key)) {
           return null;
         }
 

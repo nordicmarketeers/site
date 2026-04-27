@@ -403,6 +403,20 @@ const EditListingDetailsPanel = props => {
               rest.pub_tools_platforms = JSON.stringify(cleaned);
             }
 
+            // Convert language_level
+            if (rest.pub_language_level && Array.isArray(rest.pub_language_level)) {
+              const cleaned = rest.pub_language_level.map(exp => {
+                const obj = typeof exp === 'string' ? JSON.parse(exp) : exp;
+
+                return {
+                  language: String(obj.language || ''),
+                  level: String(obj.level || ''),
+                };
+              });
+
+              rest.pub_language_level = JSON.stringify(cleaned);
+            }
+
             const nestedCategories = pickCategoryFields(rest, categoryKey, 1, listingCategories);
             // Remove old categories by explicitly saving null for them.
             const cleanedNestedCategories = {
