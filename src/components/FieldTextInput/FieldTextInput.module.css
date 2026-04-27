@@ -1,3 +1,5 @@
+@import '../../styles/customMediaQueries.css';
+
 .root {
 }
 
@@ -10,4 +12,35 @@
 }
 .inputError {
   border: var(--borderErrorField);
+
+  + .maxTextLength {
+    bottom: 43px;
+
+    @media (--viewportSmall) {
+      bottom: 44px;
+    }
+
+    @media (--viewportMedium) {
+      bottom: 44px;
+    }
+  }
+}
+
+.maxTextLength {
+  position: absolute;
+  bottom: 1px;
+  right: 4px;
+  font-size: 0.7rem;
+  color: var(--colorGrey400);
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  line-height: 0.8rem;
+
+  @media (--viewportSmall) {
+    bottom: 3px;
+  }
+
+  @media (--viewportMedium) {
+    bottom: 5px;
+  }
 }

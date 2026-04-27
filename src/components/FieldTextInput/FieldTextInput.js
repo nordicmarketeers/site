@@ -18,6 +18,7 @@ const FieldTextInputComponent = props => {
     id,
     label,
     input,
+    maxTextLength,
     meta,
     onUnmount,
     isUncontrolled,
@@ -63,7 +64,7 @@ const FieldTextInputComponent = props => {
       [css.inputError]: hasError,
       [css.textarea]: isTextarea,
     });
-  const maxLength = CONTENT_MAX_LENGTH;
+  const maxLength = maxTextLength ? maxTextLength : CONTENT_MAX_LENGTH;
   const inputProps = isTextarea
     ? {
         className: inputClasses,
@@ -105,6 +106,8 @@ const FieldTextInputComponent = props => {
       inputProps.value = unixToDate(input.value);
     }
   }
+  const textRef = useRef(null);
+  const currentTextLength = textRef.current?.value?.length ? textRef.current?.value?.length : 0;
 
   const labelClassMaybe = labelClassName ? { className: labelClassName } : {};
   const classes = classNames(rootClassName || css.root, className);
@@ -124,7 +127,14 @@ const FieldTextInputComponent = props => {
           placeholder="dd-mm-yyyy"
         />
       ) : (
-        <input {...inputProps} />
+        <>
+          <input ref={textRef} {...inputProps} />
+          {maxTextLength && (
+            <span className={css.maxTextLength}>
+              {currentTextLength}/{maxTextLength}
+            </span>
+          )}
+        </>
       )}
       {hideErrorMessage ? null : <ValidationError fieldMeta={fieldMeta} />}
     </div>

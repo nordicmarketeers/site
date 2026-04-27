@@ -613,7 +613,7 @@ const EditListingDetailsForm = props => {
                 placeholder={intl.formatMessage({
                   id: 'EditListingDetailsForm.titlePlaceholder',
                 })}
-                maxLength={TITLE_MAX_LENGTH}
+                maxTextLength={TITLE_MAX_LENGTH}
                 validate={composeValidators(required(titleRequiredMessage), maxLength60Message)}
                 autoFocus={autoFocus}
               />
