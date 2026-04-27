@@ -21,5 +21,11 @@ export const capitalize = str => {
 };
 
 export const languagesFormat = languages => {
-  return Array.isArray(languages) ? languages.map(capitalize).join(', ') : '';
+  if (!Array.isArray(languages)) return '';
+
+  return languages
+    .map(item => item?.language)
+    .filter(Boolean)
+    .map(capitalize)
+    .join(', ');
 };

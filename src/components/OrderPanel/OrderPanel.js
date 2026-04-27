@@ -51,6 +51,7 @@ import SubmitFinePrint from './SubmitFinePrint/SubmitFinePrint';
 import css from './OrderPanel.module.css';
 import { cityCountryFormat, languagesFormat } from '../../util/listingCardHelpers';
 import { IoLanguage, IoLocationSharp } from 'react-icons/io5';
+import { parseToObjectArray } from '../../util/parseHelper';
 
 const BookingTimeForm = loadable(() =>
   import(/* webpackChunkName: "BookingTimeForm" */ './BookingTimeForm/BookingTimeForm')
@@ -444,7 +445,7 @@ const OrderPanel = props => {
   const titleClasses = classNames(titleClassName || css.orderTitle);
 
   const cityCountry = cityCountryFormat(publicData?.location?.address);
-  const languages = languagesFormat(publicData?.languages);
+  const languages = languagesFormat(parseToObjectArray(publicData?.language_level));
   const consultant_availability = publicData?.availability;
 
   const isLinkedName =

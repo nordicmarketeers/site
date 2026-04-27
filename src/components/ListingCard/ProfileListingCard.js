@@ -5,6 +5,7 @@ import { AvatarLarge } from '../Avatar/Avatar';
 import { IoLanguage, IoLocationSharp } from 'react-icons/io5';
 import { createSlug } from '../../util/urlHelpers';
 import { capitalize, cityCountryFormat, languagesFormat } from '../../util/listingCardHelpers';
+import { parseToObjectArray } from '../../util/parseHelper';
 
 const ProfileListingCard = props => {
   const { author, classes, currentListing } = props;
@@ -15,7 +16,7 @@ const ProfileListingCard = props => {
 
   const cityCountry = cityCountryFormat(publicData?.location?.address);
 
-  const languages = languagesFormat(publicData?.languages);
+  const languages = languagesFormat(parseToObjectArray(publicData?.language_level));
 
   const authorName = author.attributes.profile.displayName;
 

@@ -416,6 +416,7 @@ export const loadData = (params, search, config) => (dispatch, getState, sdk) =>
         'state',
         'publicData.approved',
         'publicData.languages',
+        'publicData.language_level',
         'publicData.listingType',
         'publicData.transactionProcessAlias',
         'publicData.unitType',
