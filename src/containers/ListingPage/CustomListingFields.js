@@ -14,6 +14,7 @@ import SectionTextMaybe from './SectionTextMaybe';
 import SectionYoutubeVideoMaybe from './SectionYoutubeVideoMaybe';
 import SectionPDFMaybe from './SectionPDFMaybe';
 import SectionPreviousRolesMaybe from './SectionPreviousRolesMaybe.js';
+import SectionSkillsMaybe from './SectionSkillsMaybe.js';
 
 import css from './CustomListingFields.module.css';
 
@@ -48,6 +49,13 @@ const CustomListingFields = props => {
 
   return (
     <>
+      {/* Sections which are to come above details section in mobile mode */}
+      {propsForCustomFields.map(customFieldProps => {
+        const { schemaType, key, ...fieldProps } = customFieldProps;
+
+        return key === 'skills' ? <SectionSkillsMaybe key={key} {...fieldProps} /> : null;
+      })}
+
       <div className={css.detailsDesktop}>
         <SectionDetailsMaybe {...props} isFieldForCategory={isFieldForSelectedCategories} />
       </div>
@@ -55,7 +63,9 @@ const CustomListingFields = props => {
         const { schemaType, key, ...fieldProps } = customFieldProps;
 
         // Keys in array not shown in any default spot (perhaps top right card instead)
-        if (['availability', 'languages', 'tools_platforms', 'language_level'].includes(key)) {
+        if (
+          ['availability', 'languages', 'tools_platforms', 'language_level', 'skills'].includes(key)
+        ) {
           return null;
         }
 

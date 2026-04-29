@@ -991,3 +991,41 @@
     padding-right: 0;
   }
 }
+
+.skillsWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  transition: max-height 0.25s ease;
+}
+
+.skillTag {
+  margin: 4px 8px 4px 0;
+  font-size: 0.9rem;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background-color: var(--colorGrey100);
+  color: var(--colorGrey700);
+  white-space: nowrap;
+}
+
+.skillsCollapsed {
+  overflow: hidden;
+  max-height: 32px;
+}
+
+.skillsExpanded {
+  max-height: 500px;
+}
+
+.showSkills {
+  border: 2px solid var(--marketplaceColor);
+  margin: 8px 0 0 0;
+  font-size: 0.9rem;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background-color: var(--colorWhite);
+  color: var(--colorGrey700);
+  white-space: nowrap;
+  cursor: pointer;
+}
