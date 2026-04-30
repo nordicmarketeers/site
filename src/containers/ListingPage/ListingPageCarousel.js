@@ -453,7 +453,7 @@ export const ListingPageComponent = props => {
                 </H3>
               )}
             </div>
-            <SectionTextMaybe text={description} showAsIngress readMoreLines={3} />
+            <SectionTextMaybe text={description} showAsIngress readMoreLines={8} />
 
             <CustomListingFields
               publicData={publicData}
