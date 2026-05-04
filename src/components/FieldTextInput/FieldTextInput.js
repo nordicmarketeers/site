@@ -81,11 +81,12 @@ const FieldTextInputComponent = props => {
         id,
         type,
         defaultValue,
+        maxLength,
         ...refMaybe,
         ...inputWithoutValue,
         ...rest,
       }
-    : { className: inputClasses, id, type, ...refMaybe, ...input, ...rest };
+    : { className: inputClasses, id, type, maxLength, ...refMaybe, ...input, ...rest };
 
   // Change the default value from unix to readable date if type is apply_last_date
   const initialFormattedValue = useRef(null);

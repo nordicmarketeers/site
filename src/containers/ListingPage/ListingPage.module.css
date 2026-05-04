@@ -371,8 +371,8 @@
 .orderPanel {
   /* Note: panel height might be too much on small viewport - hence min-height */
   @media (--viewportLarge) and (min-height: 950px) {
-    position: sticky;
-    top: 108px;
+    /* position: sticky; */
+    /* top: 108px; */
   }
 }
 
@@ -393,8 +393,8 @@
 .productOrderPanel {
   /* Note: panel height might be too much on small viewport - hence min-height */
   @media (--viewportLarge) and (min-height: 950px) {
-    position: sticky;
-    top: 108px;
+    /* position: sticky; */
+    /* top: 108px; */
   }
   &.imagesEnabled {
     @media (--viewportLarge) {
@@ -746,8 +746,8 @@
 
 .detailsDesktop {
   @media (--viewportLarge) and (min-height: 950px) {
-    position: sticky;
-    top: 408px;
+    /* position: sticky; */
+    /* top: 408px; */
   }
 }
 
@@ -1028,4 +1028,35 @@
   color: var(--colorGrey700);
   white-space: nowrap;
   cursor: pointer;
+}
+
+.highlightsWrapper {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  justify-items: center;
+  text-align: center;
+
+  > p {
+    margin-bottom: 0;
+    margin-top: 0;
+  }
+
+  > p > svg {
+    color: var(--marketplaceColor);
+  }
+}
+
+@media (--viewportMedium) {
+  .highlightsWrapper {
+    grid-template-columns: repeat(2, 1fr);
+    justify-items: stretch;
+    text-align: left;
+  }
+}
+
+.highlightsWrapper p:only-child {
+  grid-column: 1 / -1;
+  justify-self: center;
+  max-width: 600px;
 }

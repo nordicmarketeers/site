@@ -1,6 +1,7 @@
 @import '../../styles/customMediaQueries.css';
 
 .root {
+  position: relative;
 }
 
 .input {

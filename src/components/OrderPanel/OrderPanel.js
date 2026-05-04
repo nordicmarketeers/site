@@ -51,6 +51,8 @@ import SubmitFinePrint from './SubmitFinePrint/SubmitFinePrint';
 import css from './OrderPanel.module.css';
 import { cityCountryFormat, languagesFormat } from '../../util/listingCardHelpers';
 import { IoLanguage, IoLocationSharp } from 'react-icons/io5';
+import { GoNorthStar } from 'react-icons/go';
+
 import { parseToObjectArray } from '../../util/parseHelper';
 
 const BookingTimeForm = loadable(() =>
@@ -447,6 +449,7 @@ const OrderPanel = props => {
   const cityCountry = cityCountryFormat(publicData?.location?.address);
   const languages = languagesFormat(parseToObjectArray(publicData?.language_level));
   const consultant_availability = publicData?.availability;
+  const highlights = parseToObjectArray(publicData?.highlights)?.[0];
 
   const isLinkedName =
     author.attributes.profile.publicData.userType === 'consultant' ? false : true;
@@ -510,10 +513,26 @@ const OrderPanel = props => {
         </div>
       </div>
       <div className={css.authorExtra}>
+        {highlights && (
+          <div className={css.highlightsWrapper}>
+            {highlights.text_first && (
+              <p>
+                <GoNorthStar /> {highlights.text_first}
+              </p>
+            )}
+            {highlights.text_second && (
+              <p>
+                <GoNorthStar /> {highlights.text_second}
+              </p>
+            )}
+          </div>
+        )}
         <hr />
-        <p className={css.metaText}>
-          Tillgänglig fr.om: <b>{consultant_availability}</b>
-        </p>
+        {consultant_availability && (
+          <p className={css.metaText}>
+            Tillgänglig fr.om: <b>{consultant_availability}</b>
+          </p>
+        )}
       </div>
 
       {showPriceMissing ? (

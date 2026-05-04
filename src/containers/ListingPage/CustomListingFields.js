@@ -15,6 +15,7 @@ import SectionYoutubeVideoMaybe from './SectionYoutubeVideoMaybe';
 import SectionPDFMaybe from './SectionPDFMaybe';
 import SectionPreviousRolesMaybe from './SectionPreviousRolesMaybe.js';
 import SectionSkillsMaybe from './SectionSkillsMaybe.js';
+import SectionHighlightsMaybe from './SectionHighlightsMaybe.js';
 
 import css from './CustomListingFields.module.css';
 
@@ -53,7 +54,11 @@ const CustomListingFields = props => {
       {propsForCustomFields.map(customFieldProps => {
         const { schemaType, key, ...fieldProps } = customFieldProps;
 
-        return key === 'skills' ? <SectionSkillsMaybe key={key} {...fieldProps} /> : null;
+        return key === 'highlights' ? (
+          <SectionHighlightsMaybe key={key} {...fieldProps} />
+        ) : key === 'skills' ? (
+          <SectionSkillsMaybe key={key} {...fieldProps} />
+        ) : null;
       })}
 
       <div className={css.detailsDesktop}>
@@ -64,7 +69,14 @@ const CustomListingFields = props => {
 
         // Keys in array not shown in any default spot (perhaps top right card instead)
         if (
-          ['availability', 'languages', 'tools_platforms', 'language_level', 'skills'].includes(key)
+          [
+            'availability',
+            'languages',
+            'tools_platforms',
+            'language_level',
+            'skills',
+            'highlights',
+          ].includes(key)
         ) {
           return null;
         }
