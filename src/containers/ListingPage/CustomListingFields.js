@@ -76,6 +76,7 @@ const CustomListingFields = props => {
             'language_level',
             'skills',
             'highlights',
+            'extent_profile',
           ].includes(key)
         ) {
           return null;
