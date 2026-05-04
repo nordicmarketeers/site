@@ -61,14 +61,18 @@ const SectionDetailsMaybe = props => {
     return filteredConfigs;
   };
 
+  // Things to end up INSIDE of detailsMenus
   const searchTerms = [
     'certifications',
+    'education',
     'languages',
     'tools_platforms',
     'extent_profile',
-    'awards',
     'language_level',
   ];
+
+  // Things to BE EXCLUDED from existingListingFields
+  const excludedFromOther = ['can_remote', 'senior_level'];
 
   const detailsMenus = Object.keys(publicData)
     .filter(key => searchTerms.some(term => key.includes(term)))
@@ -79,13 +83,20 @@ const SectionDetailsMaybe = props => {
 
   const existingListingFields = listingFieldConfigs.reduce(pickListingFields, []);
 
+  const filteredExistingListingFields = existingListingFields.filter(
+    field => !excludedFromOther.includes(field.key)
+  );
+
   // Parse tools_platforms
   detailsMenus.tools_platforms = parseToObjectArray(detailsMenus.tools_platforms);
 
   // Parse language_level
   detailsMenus.language_level = parseToObjectArray(detailsMenus.language_level);
 
-  return existingListingFields.length > 0 ? (
+  return filteredExistingListingFields.length > 0 ||
+    detailsMenus.language_level ||
+    detailsMenus.extent_profile ||
+    detailsMenus.tools_platforms ? (
     <section className={css.sectionDetails}>
       <Heading as="h2" rootClassName={css.sectionHeading}>
         <FormattedMessage id="ListingPage.detailsTitle" />
@@ -158,12 +169,14 @@ const SectionDetailsMaybe = props => {
             </li>
           ))}
 
-        <li className={css.detailsRow} onClick={() => setShowOther(!showOther)}>
-          <span className={classNames(css.detailLabel, css.detailTopLabel)}>Övrigt</span>
-          <span>{showOther ? <IoIosArrowDown /> : <IoIosArrowForward />}</span>
-        </li>
+        {filteredExistingListingFields && filteredExistingListingFields.length > 0 && (
+          <li className={css.detailsRow} onClick={() => setShowOther(!showOther)}>
+            <span className={classNames(css.detailLabel, css.detailTopLabel)}>Övrigt</span>
+            <span>{showOther ? <IoIosArrowDown /> : <IoIosArrowForward />}</span>
+          </li>
+        )}
         {showOther &&
-          existingListingFields.map((detail, i) => (
+          filteredExistingListingFields.map((detail, i) => (
             <li
               key={detail.key}
               className={classNames(
