@@ -313,9 +313,15 @@
   > p {
     margin: 0;
     color: var(--colorGrey600);
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 6px;
+    align-items: start;
   }
 
   > p > svg {
     color: var(--marketplaceColor);
+    flex-shrink: 0;
+    margin-top: 4px;
   }
 }
