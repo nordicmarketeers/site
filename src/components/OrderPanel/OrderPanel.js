@@ -450,6 +450,9 @@ const OrderPanel = props => {
   const languages = languagesFormat(parseToObjectArray(publicData?.language_level));
   const consultant_availability = publicData?.availability;
   const highlights = parseToObjectArray(publicData?.highlights)?.[0];
+  const remoteStatus = publicData?.can_remote === 'yes' ? true : false;
+
+  console.log({ remoteStatus });
 
   const isLinkedName =
     author.attributes.profile.publicData.userType === 'consultant' ? false : true;
@@ -528,6 +531,11 @@ const OrderPanel = props => {
           </div>
         )}
         <hr />
+        {remoteStatus && (
+          <p className={css.metaText}>
+            <b>Kan arbeta remote</b>
+          </p>
+        )}
         {consultant_availability && (
           <p className={css.metaText}>
             Tillgänglig fr.om: <b>{consultant_availability}</b>
