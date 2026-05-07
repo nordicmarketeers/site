@@ -19,6 +19,7 @@ const SectionDetailsMaybe = props => {
   const [showExtent, setShowExtent] = React.useState(false);
   const [showToolPlatform, setShowToolPlatform] = React.useState(false);
   const [showEducation, setShowEducation] = React.useState(false);
+  const [showCertifications, setShowCertifications] = React.useState(false);
 
   if (!publicData || !listingFieldConfigs) {
     return null;
@@ -71,6 +72,7 @@ const SectionDetailsMaybe = props => {
     'extent_profile',
     'language_level',
     'education',
+    'certifications',
   ];
 
   // Things to BE EXCLUDED from existingListingFields
@@ -97,6 +99,9 @@ const SectionDetailsMaybe = props => {
 
   // Parse education
   detailsMenus.education = parseToObjectArray(detailsMenus.education);
+
+  // Parese certifications
+  detailsMenus.certifications = parseToObjectArray(detailsMenus.certifications);
 
   return filteredExistingListingFields.length > 0 ||
     detailsMenus.language_level ||
@@ -175,6 +180,27 @@ const SectionDetailsMaybe = props => {
                 {(edu.city || edu.subject) && <br />} {edu?.subject}
                 {edu.city && `, ${edu.city}`}
               </span>
+            </li>
+          ))}
+
+        {/* CERTIFICATIONS */}
+        {detailsMenus?.certifications.length > 0 && (
+          <li className={css.detailsRow} onClick={() => setShowCertifications(!showCertifications)}>
+            <span className={classNames(css.detailLabel, css.detailTopLabel)}>Certifikat</span>
+            <span>{showCertifications ? <IoIosArrowDown /> : <IoIosArrowForward />}</span>
+          </li>
+        )}
+        {showCertifications &&
+          detailsMenus.certifications.map((item, i) => (
+            <li
+              key={item + i}
+              className={classNames(
+                css.detailsRow,
+                css.detailsRowMore,
+                (i + 1) % 2 !== 0 ? css.rowIsOdd : null
+              )}
+            >
+              <span>{item.certificate}</span>
             </li>
           ))}
 

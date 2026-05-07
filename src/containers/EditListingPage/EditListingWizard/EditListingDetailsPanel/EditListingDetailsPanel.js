@@ -406,6 +406,10 @@ const EditListingDetailsPanel = props => {
               city: '',
             });
 
+            rest.pub_certifications = normalizeAndStringifyArray(rest.pub_certifications, {
+              certificate: '',
+            });
+
             const nestedCategories = pickCategoryFields(rest, categoryKey, 1, listingCategories);
             // Remove old categories by explicitly saving null for them.
             const cleanedNestedCategories = {

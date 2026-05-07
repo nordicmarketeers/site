@@ -83,6 +83,7 @@ const CustomListingFields = props => {
             'role',
             'customer_types',
             'education',
+            'certifications',
           ].includes(key)
         ) {
           return null;
