@@ -16,6 +16,7 @@ import SectionPDFMaybe from './SectionPDFMaybe';
 import SectionPreviousRolesMaybe from './SectionPreviousRolesMaybe.js';
 import SectionSkillsMaybe from './SectionSkillsMaybe.js';
 import SectionHighlightsMaybe from './SectionHighlightsMaybe.js';
+import SectionHalfWidthBoxMaybe from './SectionHalfWidthBoxMaybe.js';
 
 import css from './CustomListingFields.module.css';
 
@@ -54,7 +55,9 @@ const CustomListingFields = props => {
       {propsForCustomFields.map(customFieldProps => {
         const { schemaType, key, ...fieldProps } = customFieldProps;
 
-        return key === 'highlights' ? (
+        return key === 'role' || key === 'customer_types' ? (
+          <SectionHalfWidthBoxMaybe key={key} {...fieldProps} />
+        ) : key === 'highlights' ? (
           <SectionHighlightsMaybe key={key} {...fieldProps} />
         ) : key === 'skills' ? (
           <SectionSkillsMaybe key={key} {...fieldProps} />
@@ -77,6 +80,8 @@ const CustomListingFields = props => {
             'skills',
             'highlights',
             'extent_profile',
+            'role',
+            'customer_types',
           ].includes(key)
         ) {
           return null;

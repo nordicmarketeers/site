@@ -908,7 +908,11 @@
 
 .sectionPDF {
   padding: 0 24px;
-  margin: 32px 0 24px 0;
+  margin: 0 0 36px 0;
+
+  @media (--viewportMedium) {
+    margin-bottom: 40px;
+  }
 }
 
 .pdfGrid {
@@ -1064,4 +1068,65 @@
   grid-column: 1 / -1;
   justify-self: center;
   max-width: 600px;
+}
+
+.halfWidthBoxWrapper {
+  box-sizing: border-box;
+  border: 1px solid var(--colorGrey200);
+  border-radius: 12px;
+  padding: 24px 12px 24px 24px;
+
+  display: inline-block;
+  vertical-align: top;
+
+  width: calc(100% - 48px);
+  margin: 0 24px 24px 24px;
+}
+
+.halfWidthBoxWrapper + .halfWidthBoxWrapper {
+  margin-bottom: 36px;
+}
+
+.halfWidthBoxWrapper:only-child {
+  margin-bottom: 36px;
+}
+
+@media (--viewportSmall) {
+  .halfWidthBoxWrapper {
+    width: calc(50% - 30px);
+    margin: 0 0 36px 24px;
+  }
+
+  .halfWidthBoxWrapper + .halfWidthBoxWrapper {
+    margin-left: 12px;
+    margin-right: 24px;
+  }
+
+  .halfWidthBoxWrapper:only-child {
+    width: calc(100% - 48px);
+    margin: 0 24px 36px 24px;
+  }
+}
+
+@media (--viewportMedium) {
+  .halfWidthBoxWrapper {
+    /* width: calc(50%); */
+    margin: 0 0 40px 0;
+  }
+
+  .halfWidthBoxWrapper + .halfWidthBoxWrapper {
+    margin-left: 24px;
+    margin-right: 0;
+  }
+
+  .halfWidthBoxWrapper:only-child {
+    width: 100%;
+  }
+}
+
+.halfWidthBoxSelected {
+  list-style-type: disc;
+  list-style-position: inside;
+  margin: 0;
+  padding: 0;
 }
