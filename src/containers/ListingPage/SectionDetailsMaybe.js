@@ -153,7 +153,7 @@ const SectionDetailsMaybe = props => {
           ))}
 
         {/* EDUCATION */}
-        {detailsMenus?.education && (
+        {detailsMenus?.education.length > 0 && (
           <li className={css.detailsRow} onClick={() => setShowEducation(!showEducation)}>
             <span className={classNames(css.detailLabel, css.detailTopLabel)}>Utbildingar</span>
             <span>{showEducation ? <IoIosArrowDown /> : <IoIosArrowForward />}</span>
