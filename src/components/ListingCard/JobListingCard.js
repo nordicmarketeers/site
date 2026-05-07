@@ -21,7 +21,7 @@ const JobListingCard = props => {
 
   const [firstRole, ...restRoles] = publicData?.role;
 
-  const displayRole = capitalize(firstRole.replace('_', ' '));
+  const displayRole = capitalize(firstRole?.replace('_', ' '));
 
   const apply_last_date = Number.isInteger(publicData?.apply_last_date)
     ? unixToDate(publicData?.apply_last_date)
