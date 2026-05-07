@@ -452,8 +452,6 @@ const OrderPanel = props => {
   const highlights = parseToObjectArray(publicData?.highlights)?.[0];
   const remoteStatus = publicData?.can_remote === 'yes' ? true : false;
 
-  console.log({ remoteStatus });
-
   const isLinkedName =
     author.attributes.profile.publicData.userType === 'consultant' ? false : true;
 
