@@ -399,6 +399,13 @@ const EditListingDetailsPanel = props => {
               text_fourth: '',
             });
 
+            rest.pub_education = normalizeAndStringifyArray(rest.pub_education, {
+              school: '',
+              subject: '',
+              exam: '',
+              city: '',
+            });
+
             const nestedCategories = pickCategoryFields(rest, categoryKey, 1, listingCategories);
             // Remove old categories by explicitly saving null for them.
             const cleanedNestedCategories = {

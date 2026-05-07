@@ -18,6 +18,7 @@ const SectionDetailsMaybe = props => {
   const [showLanguages, setShowLanguages] = React.useState(false);
   const [showExtent, setShowExtent] = React.useState(false);
   const [showToolPlatform, setShowToolPlatform] = React.useState(false);
+  const [showEducation, setShowEducation] = React.useState(false);
 
   if (!publicData || !listingFieldConfigs) {
     return null;
@@ -69,6 +70,7 @@ const SectionDetailsMaybe = props => {
     'tools_platforms',
     'extent_profile',
     'language_level',
+    'education',
   ];
 
   // Things to BE EXCLUDED from existingListingFields
@@ -92,6 +94,9 @@ const SectionDetailsMaybe = props => {
 
   // Parse language_level
   detailsMenus.language_level = parseToObjectArray(detailsMenus.language_level);
+
+  // Parse education
+  detailsMenus.education = parseToObjectArray(detailsMenus.education);
 
   return filteredExistingListingFields.length > 0 ||
     detailsMenus.language_level ||
@@ -144,6 +149,32 @@ const SectionDetailsMaybe = props => {
               )}
             >
               <span className={css.detailLabel}>{capitalize(extent)}</span>
+            </li>
+          ))}
+
+        {/* EDUCATION */}
+        {detailsMenus?.education && (
+          <li className={css.detailsRow} onClick={() => setShowEducation(!showEducation)}>
+            <span className={classNames(css.detailLabel, css.detailTopLabel)}>Utbildingar</span>
+            <span>{showEducation ? <IoIosArrowDown /> : <IoIosArrowForward />}</span>
+          </li>
+        )}
+        {showEducation &&
+          detailsMenus.education.map((edu, i) => (
+            <li
+              key={edu + i}
+              className={classNames(
+                css.detailsRow,
+                css.detailsRowMore,
+                (i + 1) % 2 !== 0 ? css.rowIsOdd : null
+              )}
+            >
+              <span>
+                {edu?.school}
+                {edu.exam && `, ${edu.exam}`}
+                {(edu.city || edu.subject) && <br />} {edu?.subject}
+                {edu.city && `, ${edu.city}`}
+              </span>
             </li>
           ))}
 
