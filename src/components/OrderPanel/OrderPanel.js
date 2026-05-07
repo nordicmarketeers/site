@@ -49,7 +49,7 @@ import PriceVariantPicker from './PriceVariantPicker/PriceVariantPicker';
 import SubmitFinePrint from './SubmitFinePrint/SubmitFinePrint';
 
 import css from './OrderPanel.module.css';
-import { cityCountryFormat, languagesFormat } from '../../util/listingCardHelpers';
+import { capitalize, cityCountryFormat, languagesFormat } from '../../util/listingCardHelpers';
 import { IoLanguage, IoLocationSharp } from 'react-icons/io5';
 import { GoNorthStar } from 'react-icons/go';
 
@@ -451,6 +451,7 @@ const OrderPanel = props => {
   const consultant_availability = publicData?.availability;
   const highlights = parseToObjectArray(publicData?.highlights)?.[0];
   const remoteStatus = publicData?.can_remote === 'yes' ? true : false;
+  const seniorLevel = capitalize(publicData?.senior_level);
 
   const isLinkedName =
     author.attributes.profile.publicData.userType === 'consultant' ? false : true;
@@ -499,6 +500,10 @@ const OrderPanel = props => {
           {!isLinkedName && (
             <span className={css.providerNamePlain}>
               <FormattedMessage id="OrderPanel.author" values={{ name: authorDisplayName }} />
+              <span className={css.seniorLevel}>
+                <span className={css.seniorLevelDot}>•</span>
+                {seniorLevel}
+              </span>
             </span>
           )}
           <p className={css.metaText}>

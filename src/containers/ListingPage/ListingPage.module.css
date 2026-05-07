@@ -308,7 +308,7 @@
   @media (--viewportLarge) {
     display: block;
     margin-left: 48px;
-    flex-basis: 312px;
+    flex-basis: 331px;
     flex-shrink: 0;
   }
 }
