@@ -644,7 +644,7 @@
 
 .readMoreButton {
   display: block;
-  margin: 8px auto 0;
+  margin: 4px 0 0 0;
 
   border: none;
   background: transparent;
@@ -713,7 +713,7 @@
 }
 
 .rowIsOdd {
-  background-color: var(--colorGrey100);
+  background-color: var(--colorGrey75);
 }
 
 .detailsRow {
