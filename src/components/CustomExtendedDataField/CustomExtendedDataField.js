@@ -133,7 +133,7 @@ const CustomFieldText = props => {
   switch (name) {
     case 'pub_availability':
       type = 'text';
-      placeholder = 'Nu / dd-mm-yyy';
+      placeholder = 'Nu / dd-mm-yyyy';
   }
 
   return (
