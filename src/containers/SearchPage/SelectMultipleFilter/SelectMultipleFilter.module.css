@@ -13,13 +13,13 @@
 
 .fieldGroupPlain {
   margin: 0;
-  padding-left: 12px;
+  padding-left: 0;
   padding-bottom: 6px;
   border: none;
 
   @media (--viewportMedium) {
-    padding: 3px 0 29px 12px;
-    padding: 4px 0 4px 12px;
+    padding: 3px 0 29px 0;
+    padding: 4px 0 4px 0;
   }
 }
 
@@ -34,12 +34,43 @@
 }
 
 .item {
-  padding: 4px 0 2px 0;
+  padding: 4px 0 4px 14px;
 
   /* Fix broken multi-column layout in Chrome */
   page-break-inside: avoid;
 
   @media (--viewportMedium) {
-    padding: 4px 0;
+    padding: 4px 0 4px 14px;
   }
+}
+
+.filterSearch {
+  height: 3rem;
+  margin-bottom: 8px;
+  border-bottom-width: 2px;
+
+  &::-webkit-input-placeholder {
+    line-height: normal;
+  }
+
+  &:hover,
+  &:focus {
+    border-bottom-color: var(--marketplaceColor);
+    outline: none;
+  }
+}
+
+.showMoreBtn {
+  display: block;
+  margin: 8px auto 0;
+
+  border: none;
+  background: transparent;
+
+  padding: 0;
+
+  color: var(--marketplaceColor);
+
+  cursor: pointer;
+  text-align: center;
 }

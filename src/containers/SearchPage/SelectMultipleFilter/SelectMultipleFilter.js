@@ -17,13 +17,75 @@ import css from './SelectMultipleFilter.module.css';
 //       There's a mutation problem: formstate.dirty is not reliable with it.
 const GroupOfFieldCheckboxes = props => {
   const { id, className, name, options, legend } = props;
+
+  // Enable enhanced behavior only for specific filter names
+  const ENABLE_ENHANCED_UI_FOR = ['role', 'skills'];
+
+  const shouldEnhance = ENABLE_ENHANCED_UI_FOR.includes(name);
+
+  const [expanded, setExpanded] = React.useState(false);
+  const [searchValue, setSearchValue] = React.useState('');
+
+  const isSearching = searchValue.trim().length > 0;
+
+  const filteredOptions = React.useMemo(() => {
+    if (!isSearching) {
+      return options;
+    }
+
+    const normalizedSearch = searchValue.toLowerCase();
+
+    return options.filter(optionConfig => {
+      const { label, option } = optionConfig;
+
+      return (
+        String(label)
+          .toLowerCase()
+          .includes(normalizedSearch) ||
+        String(option)
+          .toLowerCase()
+          .includes(normalizedSearch)
+      );
+    });
+  }, [options, searchValue, isSearching]);
+
+  const visibleOptions = React.useMemo(() => {
+    if (!shouldEnhance) {
+      return options;
+    }
+
+    if (isSearching) {
+      return filteredOptions;
+    }
+
+    if (!expanded) {
+      return options.slice(0, 5);
+    }
+
+    return options;
+  }, [shouldEnhance, isSearching, filteredOptions, expanded, options]);
+
+  const shouldShowToggle = shouldEnhance && !isSearching && options.length > 5;
+
   return (
     <fieldset className={className}>
       {legend ? <legend className={css.accessibilityLegend}>{legend}</legend> : null}
+
+      {shouldEnhance ? (
+        <input
+          type="text"
+          value={searchValue}
+          onChange={e => setSearchValue(e.target.value)}
+          placeholder="Search..."
+          className={css.filterSearch}
+        />
+      ) : null}
+
       <ul className={css.list}>
-        {options.map(optionConfig => {
+        {visibleOptions.map(optionConfig => {
           const { option, label } = optionConfig;
           const fieldId = `${id}.${option}`;
+
           return (
             <li key={fieldId} className={css.item}>
               <FieldCheckbox id={fieldId} name={name} label={label} value={option} />
@@ -31,6 +93,16 @@ const GroupOfFieldCheckboxes = props => {
           );
         })}
       </ul>
+
+      {shouldShowToggle ? (
+        <button
+          type="button"
+          className={css.showMoreBtn}
+          onClick={() => setExpanded(prev => !prev)}
+        >
+          {expanded ? 'Show less' : 'Show all'}
+        </button>
+      ) : null}
     </fieldset>
   );
 };
