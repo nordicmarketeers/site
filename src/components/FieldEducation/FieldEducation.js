@@ -95,6 +95,7 @@ const EducationComponent = ({ className, input, meta, label, initialValues = [] 
               }}
               label="Skola"
               placeholder={'Lunds Universitet'}
+              dataList={'educationSchoolNames'}
             />
 
             {/* Subject */}
@@ -112,6 +113,7 @@ const EducationComponent = ({ className, input, meta, label, initialValues = [] 
               }}
               placeholder={'Dataanalys'}
               label="Ämnesområde"
+              dataList={'educationSubjects'}
             />
 
             {/* Exam */}
@@ -129,6 +131,7 @@ const EducationComponent = ({ className, input, meta, label, initialValues = [] 
               }}
               label="Examen"
               placeholder={'Kandidatexamen'}
+              dataList={'educationExams'}
             />
 
             {/* City */}

@@ -7,10 +7,16 @@ import css from './FieldTextInput.module.css';
 import { unixToDate } from '../../util/dateHelper';
 
 // Datalists
+// Tools platform fields
 import toolsPlatform from '../../dataLists/toolsPlatform.json';
 
+// Education fields
+import educationExams from '../../dataLists/educationExams.json';
+import educationSubjects from '../../dataLists/educationSubjects.json';
+import educationSchoolNames from '../../dataLists/educationSchoolNames.json';
+
 // Contains suggested text for certain fields
-const dataLists = { toolsPlatform };
+const dataLists = { toolsPlatform, educationExams, educationSubjects, educationSchoolNames };
 
 const CONTENT_MAX_LENGTH = 5000;
 
