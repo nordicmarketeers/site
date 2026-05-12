@@ -7,6 +7,8 @@ import classNames from 'classnames';
 const emptyBlock = {
   school: '',
   subject: '',
+  start_date: '',
+  ending_date: '',
   exam: '',
   city: '',
 };
@@ -29,6 +31,8 @@ const EducationComponent = ({ className, input, meta, label, initialValues = [] 
         ? initialValues.map(item => ({
             school: item.school || '',
             subject: item.subject || '',
+            start_date: item.start_date || '',
+            ending_date: item.ending_date || '',
             exam: item.exam || '',
             city: item.city || '',
           }))
@@ -114,6 +118,40 @@ const EducationComponent = ({ className, input, meta, label, initialValues = [] 
               placeholder={'Dataanalys'}
               label="Ämnesområde"
               dataList={'educationSubjects'}
+            />
+
+            {/* Start Date */}
+            <FieldTextInput
+              id={`start-${index}`}
+              className={classNames(css.halfInput, css.sectionInput)}
+              name={`${baseName}.start_date`}
+              type="text"
+              value={block.start_date}
+              input={{
+                name: `${baseName}.start_date`,
+                value: block.start_date,
+                type: 'text',
+                onChange: e => updateBlock(index, 'start_date', e.target.value),
+              }}
+              placeholder={'April 2021'}
+              label="Startdatum"
+            />
+
+            {/* End Date */}
+            <FieldTextInput
+              id={`end-${index}`}
+              className={classNames(css.halfInput, css.halfInputRight, css.sectionInput)}
+              name={`${baseName}.ending_date`}
+              type="text"
+              value={block.ending_date}
+              input={{
+                name: `${baseName}.ending_date`,
+                value: block.ending_date,
+                type: 'text',
+                onChange: e => updateBlock(index, 'ending_date', e.target.value),
+              }}
+              placeholder={'Dec 2025 / Nu'}
+              label="Slutdatum"
             />
 
             {/* Exam */}

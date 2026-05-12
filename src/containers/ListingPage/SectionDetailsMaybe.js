@@ -10,6 +10,7 @@ import { IoIosArrowDown, IoIosArrowForward } from 'react-icons/io';
 import { capitalize } from '../../util/listingCardHelpers';
 import classNames from 'classnames';
 import { parseToObjectArray } from '../../util/parseHelper';
+import { compareEndingDates } from '../../util/dateHelper';
 
 const SectionDetailsMaybe = props => {
   const { publicData, metadata = {}, listingFieldConfigs, isFieldForCategory, intl } = props;
@@ -99,6 +100,7 @@ const SectionDetailsMaybe = props => {
 
   // Parse education
   detailsMenus.education = parseToObjectArray(detailsMenus.education);
+  detailsMenus.education = [...detailsMenus.education].sort(compareEndingDates);
 
   // Parese certifications
   detailsMenus.certifications = parseToObjectArray(detailsMenus.certifications);
@@ -175,10 +177,13 @@ const SectionDetailsMaybe = props => {
               )}
             >
               <span>
-                {edu?.school}
-                {edu.exam && `, ${edu.exam}`}
-                {(edu.city || edu.subject) && <br />} {edu?.subject}
-                {edu.city && `, ${edu.city}`}
+                <b>{edu?.school}</b>
+                {edu.city && `, ${edu.city}`} <br />
+                {edu.exam && edu.exam}
+                {edu.exam && edu.subject && ', '}
+                {edu.subject && edu.subject}
+                <br />
+                {edu.start_date && edu.start_date} {edu.ending_date && ` - ${edu.ending_date}`}
               </span>
             </li>
           ))}
