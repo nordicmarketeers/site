@@ -45,3 +45,35 @@
     bottom: 5px;
   }
 }
+
+.datalist {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: calc(100% - 30px);
+  background: var(--colorWhite);
+  border: 1px solid var(--colorGrey200);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  box-sizing: border-box;
+  z-index: 9999;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.datalistOption {
+  display: block;
+  width: 100%;
+  padding: 6px 10px;
+  box-sizing: border-box;
+  background: white;
+  cursor: pointer;
+}
+
+.datalistOption:hover {
+  background: var(--colorGrey75);
+}
+
+.datalistOptionActive {
+  background: var(--colorGrey75);
+}

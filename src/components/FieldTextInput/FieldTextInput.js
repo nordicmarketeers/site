@@ -1,10 +1,16 @@
-import React, { Component, useRef } from 'react';
+import React, { Component, useRef, useState } from 'react';
 import { Field } from 'react-final-form';
 import classNames from 'classnames';
 import { ValidationError, ExpandingTextarea } from '../../components';
 
 import css from './FieldTextInput.module.css';
 import { unixToDate } from '../../util/dateHelper';
+
+// Datalists
+import toolsPlatform from '../../dataLists/toolsPlatform.json';
+
+// Contains suggested text for certain fields
+const dataLists = { toolsPlatform };
 
 const CONTENT_MAX_LENGTH = 5000;
 
@@ -15,6 +21,7 @@ const FieldTextInputComponent = props => {
     inputRootClass,
     labelClassName,
     customErrorText,
+    dataList,
     id,
     label,
     input,
@@ -26,6 +33,11 @@ const FieldTextInputComponent = props => {
     hideErrorMessage,
     ...rest
   } = props;
+
+  const [isFocused, setIsFocused] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
+
+  const textRef = useRef(null);
 
   const isDateInput =
     input.name.includes('starting_date') || input.name.includes('apply_last_date');
@@ -64,7 +76,9 @@ const FieldTextInputComponent = props => {
       [css.inputError]: hasError,
       [css.textarea]: isTextarea,
     });
+
   const maxLength = maxTextLength ? maxTextLength : CONTENT_MAX_LENGTH;
+
   const inputProps = isTextarea
     ? {
         className: inputClasses,
@@ -86,7 +100,15 @@ const FieldTextInputComponent = props => {
         ...inputWithoutValue,
         ...rest,
       }
-    : { className: inputClasses, id, type, maxLength, ...refMaybe, ...input, ...rest };
+    : {
+        className: inputClasses,
+        id,
+        type,
+        maxLength,
+        ...refMaybe,
+        ...input,
+        ...rest,
+      };
 
   // Change the default value from unix to readable date if type is apply_last_date
   const initialFormattedValue = useRef(null);
@@ -107,11 +129,72 @@ const FieldTextInputComponent = props => {
       inputProps.value = unixToDate(input.value);
     }
   }
-  const textRef = useRef(null);
-  const currentTextLength = textRef.current?.value?.length ? textRef.current?.value?.length : 0;
+
+  const value = input.value || '';
+
+  const filteredDataList =
+    dataList && value
+      ? (dataLists[dataList] || []).filter(item => item.toLowerCase().includes(value.toLowerCase()))
+      : [];
+
+  const showList = isFocused && filteredDataList.length > 0 && !filteredDataList.includes(value);
+
+  const handleKeyDown = e => {
+    if (!showList) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+
+      setActiveIndex(i => {
+        const next = i + 1;
+        return next >= filteredDataList.length ? 0 : next;
+      });
+    }
+
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+
+      setActiveIndex(i => {
+        const prev = i - 1;
+        return prev < 0 ? filteredDataList.length - 1 : prev;
+      });
+    }
+
+    if (e.key === 'Enter') {
+      if (activeIndex >= 0) {
+        e.preventDefault();
+
+        const selectedValue = filteredDataList[activeIndex];
+
+        const el = textRef.current;
+
+        if (el) {
+          const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')
+            .set;
+
+          setter.call(el, selectedValue);
+
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        setActiveIndex(-1);
+
+        textRef.current?.blur();
+      }
+    }
+
+    if (e.key === 'Escape') {
+      setActiveIndex(-1);
+
+      textRef.current?.blur();
+    }
+  };
+
+  const currentTextLength = textRef.current?.value?.length ? textRef.current.value.length : 0;
 
   const labelClassMaybe = labelClassName ? { className: labelClassName } : {};
   const classes = classNames(rootClassName || css.root, className);
+
   return (
     <div className={classes}>
       {label ? (
@@ -119,6 +202,7 @@ const FieldTextInputComponent = props => {
           {label}
         </label>
       ) : null}
+
       {isTextarea ? (
         <ExpandingTextarea {...inputProps} />
       ) : isDateInput ? (
@@ -129,7 +213,53 @@ const FieldTextInputComponent = props => {
         />
       ) : (
         <>
-          <input ref={textRef} {...inputProps} />
+          <input
+            ref={textRef}
+            autoComplete="off"
+            {...inputProps}
+            onFocus={() => {
+              setIsFocused(true);
+            }}
+            onBlur={() => {
+              setIsFocused(false);
+              setActiveIndex(-1);
+            }}
+            onKeyDown={handleKeyDown}
+          />
+
+          {showList && (
+            <div className={css.datalist}>
+              {filteredDataList.map((item, i) => (
+                <div
+                  key={item}
+                  className={`${css.datalistOption} ${
+                    i === activeIndex ? css.datalistOptionActive : ''
+                  }`}
+                  onMouseDown={() => {
+                    const el = textRef.current;
+
+                    if (el) {
+                      const setter = Object.getOwnPropertyDescriptor(
+                        window.HTMLInputElement.prototype,
+                        'value'
+                      ).set;
+
+                      setter.call(el, item);
+
+                      el.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+
+                    setActiveIndex(-1);
+
+                    textRef.current?.blur();
+                  }}
+                >
+                  {item}
+                </div>
+              ))}
+            </div>
+          )}
+
           {maxTextLength && (
             <span className={css.maxTextLength}>
               {currentTextLength}/{maxTextLength}
@@ -137,6 +267,7 @@ const FieldTextInputComponent = props => {
           )}
         </>
       )}
+
       {hideErrorMessage ? null : <ValidationError fieldMeta={fieldMeta} />}
     </div>
   );

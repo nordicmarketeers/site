@@ -90,6 +90,7 @@ const FieldToolsComponent = ({ className, input, meta, label, initialValues = []
                 onChange: e => updateBlock(index, 'tool_platform', e.target.value),
               }}
               placeholder={'Verktyg / plattform'}
+              dataList={'toolsPlatform'}
             />
 
             {/* Skill level */}

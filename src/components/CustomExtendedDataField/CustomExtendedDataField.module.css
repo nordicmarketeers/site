@@ -1,6 +1,8 @@
 @import '../../styles/customMediaQueries.css';
 
 .customField {
+  position: relative;
+  z-index: 1;
   margin-bottom: 24px;
 
   &:last-child {
@@ -16,6 +18,10 @@
   }
 
   animation: fadeIn 500ms 0ms forwards;
+}
+
+.customField:focus-within {
+  z-index: 999;
 }
 
 /* Animations on the custom dropdowns with search breaks them */
