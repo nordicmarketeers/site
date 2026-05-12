@@ -94,7 +94,7 @@ const EducationComponent = ({ className, input, meta, label, initialValues = [] 
                 onChange: e => updateBlock(index, 'school', e.target.value),
               }}
               label="Skola"
-              placeholder={'Lunds Universitet'}
+              placeholder={'Lunds universitet'}
               dataList={'educationSchoolNames'}
             />
 
@@ -149,6 +149,7 @@ const EducationComponent = ({ className, input, meta, label, initialValues = [] 
               }}
               placeholder={'Lund'}
               label="Stad"
+              dataList={'cityNames'}
             />
             {/* Remove button */}
             <button

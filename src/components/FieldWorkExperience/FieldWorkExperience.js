@@ -133,6 +133,7 @@ const WorkExperienceComponent = ({ className, input, meta, label, initialValues 
               }}
               placeholder={'Malmö'}
               label="Stad"
+              dataList={'cityNames'}
             />
 
             {/* Start Date */}

@@ -90,6 +90,7 @@ const FieldLanguagesComponent = ({ className, input, meta, label, initialValues 
                 onChange: e => updateBlock(index, 'language', e.target.value),
               }}
               placeholder={'Språk'}
+              dataList={'languageNames'}
             />
 
             {/* Skill level */}

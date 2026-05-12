@@ -15,8 +15,19 @@ import educationExams from '../../dataLists/educationExams.json';
 import educationSubjects from '../../dataLists/educationSubjects.json';
 import educationSchoolNames from '../../dataLists/educationSchoolNames.json';
 
+// General fields
+import cityNames from '../../dataLists/cityNames.json';
+import languageNames from '../../dataLists/languagesNames.json';
+
 // Contains suggested text for certain fields
-const dataLists = { toolsPlatform, educationExams, educationSubjects, educationSchoolNames };
+const dataLists = {
+  toolsPlatform,
+  educationExams,
+  educationSubjects,
+  educationSchoolNames,
+  cityNames,
+  languageNames,
+};
 
 const CONTENT_MAX_LENGTH = 5000;
 
