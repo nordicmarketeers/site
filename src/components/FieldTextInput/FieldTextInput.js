@@ -7,13 +7,17 @@ import css from './FieldTextInput.module.css';
 import { unixToDate } from '../../util/dateHelper';
 
 // Datalists
-// Tools platform fields
+// Skill-related fields
 import toolsPlatform from '../../dataLists/toolsPlatform.json';
+import rolesNames from '../../dataLists/rolesNames.json';
 
 // Education fields
 import educationExams from '../../dataLists/educationExams.json';
 import educationSubjects from '../../dataLists/educationSubjects.json';
 import educationSchoolNames from '../../dataLists/educationSchoolNames.json';
+
+// Company fields
+import companyNames from '../../dataLists/companyNames.json';
 
 // General fields
 import cityNames from '../../dataLists/cityNames.json';
@@ -27,6 +31,8 @@ const dataLists = {
   educationSchoolNames,
   cityNames,
   languageNames,
+  companyNames,
+  rolesNames,
 };
 
 const CONTENT_MAX_LENGTH = 5000;

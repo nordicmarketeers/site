@@ -99,6 +99,7 @@ const WorkExperienceComponent = ({ className, input, meta, label, initialValues 
               }}
               label="Titel / Roll"
               placeholder={'Marknadskoordinator'}
+              dataList={'rolesNames'}
             />
 
             {/* Company */}
@@ -116,6 +117,7 @@ const WorkExperienceComponent = ({ className, input, meta, label, initialValues 
               }}
               label="Företagets namn"
               placeholder={'Google'}
+              dataList={'companyNames'}
             />
 
             {/* City */}
