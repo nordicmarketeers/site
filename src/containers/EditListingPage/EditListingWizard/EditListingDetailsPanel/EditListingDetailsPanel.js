@@ -401,11 +401,11 @@ const EditListingDetailsPanel = props => {
 
             rest.pub_education = normalizeAndStringifyArray(rest.pub_education, {
               school: '',
+              city: '',
+              exam: '',
               subject: '',
               start_date: '',
               ending_date: '',
-              exam: '',
-              city: '',
             });
 
             rest.pub_certifications = normalizeAndStringifyArray(rest.pub_certifications, {

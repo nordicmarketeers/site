@@ -6,11 +6,11 @@ import classNames from 'classnames';
 
 const emptyBlock = {
   school: '',
+  city: '',
+  exam: '',
   subject: '',
   start_date: '',
   ending_date: '',
-  exam: '',
-  city: '',
 };
 
 const EducationComponent = ({ className, input, meta, label, initialValues = [] }) => {
@@ -30,11 +30,11 @@ const EducationComponent = ({ className, input, meta, label, initialValues = [] 
       initialValues.length > 0
         ? initialValues.map(item => ({
             school: item.school || '',
+            city: item.city || '',
+            exam: item.exam || '',
             subject: item.subject || '',
             start_date: item.start_date || '',
             ending_date: item.ending_date || '',
-            exam: item.exam || '',
-            city: item.city || '',
           }))
         : [emptyBlock];
 
@@ -102,6 +102,42 @@ const EducationComponent = ({ className, input, meta, label, initialValues = [] 
               dataList={'educationSchoolNames'}
             />
 
+            {/* City */}
+            <FieldTextInput
+              id={`city-${index}`}
+              className={classNames(css.halfInput, css.halfInputRight, css.sectionInput)}
+              name={`${baseName}.city`}
+              type="text"
+              value={block.city}
+              input={{
+                name: `${baseName}.city`,
+                value: block.city,
+                type: 'text',
+                onChange: e => updateBlock(index, 'city', e.target.value),
+              }}
+              placeholder={'Lund'}
+              label="Stad"
+              dataList={'cityNames'}
+            />
+
+            {/* Exam */}
+            <FieldTextInput
+              id={`exam-${index}`}
+              className={classNames(css.halfInput, css.sectionInput)}
+              name={`${baseName}.exam`}
+              type="text"
+              value={block.exam}
+              input={{
+                name: `${baseName}.exam`,
+                value: block.exam,
+                type: 'text',
+                onChange: e => updateBlock(index, 'exam', e.target.value),
+              }}
+              label="Examen"
+              placeholder={'Kandidatexamen'}
+              dataList={'educationExams'}
+            />
+
             {/* Subject */}
             <FieldTextInput
               id={`subject-${index}`}
@@ -154,41 +190,6 @@ const EducationComponent = ({ className, input, meta, label, initialValues = [] 
               label="Slutdatum"
             />
 
-            {/* Exam */}
-            <FieldTextInput
-              id={`exam-${index}`}
-              className={classNames(css.halfInput, css.sectionInput)}
-              name={`${baseName}.exam`}
-              type="text"
-              value={block.exam}
-              input={{
-                name: `${baseName}.exam`,
-                value: block.exam,
-                type: 'text',
-                onChange: e => updateBlock(index, 'exam', e.target.value),
-              }}
-              label="Examen"
-              placeholder={'Kandidatexamen'}
-              dataList={'educationExams'}
-            />
-
-            {/* City */}
-            <FieldTextInput
-              id={`city-${index}`}
-              className={classNames(css.halfInput, css.halfInputRight, css.sectionInput)}
-              name={`${baseName}.city`}
-              type="text"
-              value={block.city}
-              input={{
-                name: `${baseName}.city`,
-                value: block.city,
-                type: 'text',
-                onChange: e => updateBlock(index, 'city', e.target.value),
-              }}
-              placeholder={'Lund'}
-              label="Stad"
-              dataList={'cityNames'}
-            />
             {/* Remove button */}
             <button
               type="button"
