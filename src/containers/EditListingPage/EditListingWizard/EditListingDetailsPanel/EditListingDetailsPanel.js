@@ -377,6 +377,8 @@ const EditListingDetailsPanel = props => {
               title: '',
               company: '',
               city: '',
+              employment_type: '',
+              location_type: '',
               start_date: '',
               ending_date: '',
               description: '',

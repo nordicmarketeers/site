@@ -183,7 +183,7 @@ const SectionDetailsMaybe = props => {
                 {edu.exam && edu.subject && ', '}
                 {edu.subject && edu.subject}
                 <br />
-                {edu.start_date && edu.start_date} {edu.ending_date && ` - ${edu.ending_date}`}
+                {edu.start_date && edu.start_date} {edu.ending_date && ` – ${edu.ending_date}`}
               </span>
             </li>
           ))}

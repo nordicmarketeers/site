@@ -963,21 +963,42 @@
   animation: spin 1s linear infinite;
 }
 
+.previousRoles {
+  margin-bottom: 1rem;
+  box-sizing: border-box;
+  border: 1px solid var(--colorGrey200);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.previousRoles:last-of-type {
+  margin-bottom: 0;
+}
+
+.previousRoles > *:last-child {
+  padding-bottom: 0;
+}
+
+.previousRoles > *:first-child {
+  padding-top: 0;
+}
+
 .rolesCompanyTitle {
   font-weight: var(--fontWeightSemiBold);
   padding-bottom: 0;
 }
 
+.rolesTitleDivider {
+  padding: 0 1rem;
+}
+
+.rolesEmpTypeLocType {
+  padding: 0.3rem 0 0.2rem 0;
+  color: var(--colorGrey700);
+}
+
 .rolesCityDate {
   padding-bottom: 0.8rem;
-}
-
-.previousRoles > *:last-child {
-  padding-bottom: 1rem;
-}
-
-.previousRoles:last-of-type > *:last-child {
-  padding-bottom: 0;
 }
 
 @keyframes spin {
@@ -1129,4 +1150,8 @@
   list-style-position: inside;
   margin: 0;
   padding: 0;
+}
+
+.halfWidthBoxSelected > *:last-child {
+  padding-bottom: 0;
 }

@@ -3,11 +3,14 @@ import { Field } from 'react-final-form';
 import FieldTextInput from '../FieldTextInput/FieldTextInput';
 import css from './FieldWorkExperience.module.css';
 import classNames from 'classnames';
+import FieldSelect from '../FieldSelect/FieldSelect';
 
 const emptyBlock = {
   title: '',
   company: '',
   city: '',
+  employment_type: '',
+  location_type: '',
   start_date: '',
   ending_date: '',
   description: '',
@@ -32,6 +35,8 @@ const WorkExperienceComponent = ({ className, input, meta, label, initialValues 
             title: item.title || '',
             company: item.company || '',
             city: item.city || '',
+            employment_type: item.employment_type || '',
+            location_type: item.location_type || '',
             start_date: item.start_date || '',
             ending_date: item.ending_date || '',
             description: item.description || '',
@@ -46,7 +51,8 @@ const WorkExperienceComponent = ({ className, input, meta, label, initialValues 
   useEffect(() => {
     if (!blocks || blocks.length === 0) return;
 
-    input.onChange(blocks);
+    // We need to stringify when a field is FieldSelect
+    input.onChange(JSON.stringify(blocks));
   }, [blocks]);
 
   const updateBlock = (index, field, value) => {
@@ -138,6 +144,75 @@ const WorkExperienceComponent = ({ className, input, meta, label, initialValues 
               dataList={'cityNames'}
             />
 
+            {/* Employment type */}
+            <FieldSelect
+              className={classNames(css.halfInput, css.sectionInput)}
+              name={`${input.name}.employment_type_${index}`}
+              id={`employment_type-${index}`}
+              defaultValue={block.employment_type}
+              input={{
+                name: `${input.name}.employment_type_${index}`,
+                value: block.employment_type,
+                onChange: e => updateBlock(index, 'employment_type', e.target.value),
+              }}
+              label="Anställningstyp"
+            >
+              <option disabled value="">
+                {'Välj'}
+              </option>
+              <option key={`employment_type-${index}-fulltime`} value={'Heltid'}>
+                {'Heltid'}
+              </option>
+              <option key={`employment_type-${index}-parttime`} value={'Deltid'}>
+                {'Deltid'}
+              </option>
+              <option key={`employment_type-${index}-selfemployed`} value={'Egen företagare'}>
+                {'Egen företagare'}
+              </option>
+              <option key={`employment_type-${index}-freelance`} value={'Frilans'}>
+                {'Frilans'}
+              </option>
+              <option key={`employment_type-${index}-fixedterm`} value={'Visstid'}>
+                {'Visstid'}
+              </option>
+              <option key={`employment_type-${index}-internship`} value={'Praktikplats'}>
+                {'Praktikplats'}
+              </option>
+              <option key={`employment_type-${index}-apprenticeship`} value={'Lärlingsplats'}>
+                {'Lärlingsplats'}
+              </option>
+              <option key={`employment_type-${index}-seasonal`} value={'Säsongsarbete'}>
+                {'Säsongsarbete'}
+              </option>
+            </FieldSelect>
+
+            {/* Location type */}
+            <FieldSelect
+              className={classNames(css.halfInput, css.sectionInput, css.halfInputRight)}
+              name={`${input.name}.location_type_${index}`}
+              id={`location_type-${index}`}
+              defaultValue={block.location_type}
+              input={{
+                name: `${input.name}.location_type_${index}`,
+                value: block.location_type,
+                onChange: e => updateBlock(index, 'location_type', e.target.value),
+              }}
+              label="Platstyp"
+            >
+              <option disabled value="">
+                {'Välj'}
+              </option>
+              <option key={`location_type-${index}-onsite`} value={'På plats'}>
+                {'På plats'}
+              </option>
+              <option key={`location_type-${index}-hybrid`} value={'Hybrid'}>
+                {'Hybrid'}
+              </option>
+              <option key={`location_type-${index}-remote`} value={'På distans'}>
+                {'På distans'}
+              </option>
+            </FieldSelect>
+
             {/* Start Date */}
             <FieldTextInput
               id={`start-${index}`}
@@ -195,14 +270,14 @@ const WorkExperienceComponent = ({ className, input, meta, label, initialValues 
               onClick={() => removeBlock(index)}
               className={classNames(css.btn, css.removeBtn)}
             >
-              × Ta bort sektion
+              × Ta bort roll
             </button>
           </div>
         );
       })}
 
       <button type="button" onClick={addBlock} className={classNames(css.btn, css.addBtn)}>
-        + Lägg till sektion
+        + Lägg till roll
       </button>
     </div>
   );

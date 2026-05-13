@@ -45,16 +45,24 @@ const SectionPreviousRolesMaybe = props => {
       {blocks.map((s, i) => {
         return (
           <div className={css.previousRoles} key={`${s.company}-${s.title}-${s.start_date}`}>
-            {s.title && s.company && (
+            {(s.title || s.company) && (
               <p className={classNames(textClass, css.rolesCompanyTitle)}>
-                {`${s.company} `}
-                {`∣ ${s.title}`}
+                {s.company}
+                {s.company && s.title && <span className={css.rolesTitleDivider}>∣</span>}
+                {s.title}
+              </p>
+            )}
+            {(s.employment_type || s.location_type) && (
+              <p className={classNames(textClass, css.rolesEmpTypeLocType)}>
+                {s?.employment_type}
+                {s.employment_type && s.location_type && ', '}
+                {s?.location_type}
               </p>
             )}
             {s.start_date && s.ending_date && s.city && (
               <p className={classNames(textClass, css.rolesCityDate)}>
                 {`${s.city}, `}
-                {`${s.start_date} -`}
+                {`${s.start_date} –`}
                 {` ${s.ending_date}`}
               </p>
             )}
