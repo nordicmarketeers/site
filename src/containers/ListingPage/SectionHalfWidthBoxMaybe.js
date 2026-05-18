@@ -8,6 +8,7 @@ const SectionHalfWidthBoxMaybe = props => {
   const { heading, options, selectedOptions } = props;
 
   const selectedFinal = selectedOptions
+    .slice(0, 5)
     .map(key => options.find(opt => opt.key === key))
     .filter(Boolean);
   if (!selectedFinal.length) return;

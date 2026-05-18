@@ -100,7 +100,15 @@ const FieldCheckboxRenderer = props => {
   if ((id && id.includes('role')) || id.includes('skills') || id.includes('customer_types')) {
     return (
       <Tag className={classes}>
-        {label && <legend>{label}</legend>}
+        {label && (
+          <legend>
+            {label}
+            {(id.includes('role') || id.includes('customer_types')) && (
+              <span className={css.labelSubtitle}>Endast 5 visas på din profil</span>
+            )}
+          </legend>
+        )}
+
         <div
           ref={containerRef}
           data-field-checkbox-dropdown
