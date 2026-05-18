@@ -2,7 +2,6 @@
 
 .customField {
   position: relative;
-  z-index: 1;
   margin-bottom: 24px;
 
   &:last-child {
