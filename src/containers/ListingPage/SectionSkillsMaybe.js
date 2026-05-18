@@ -1,4 +1,5 @@
-import React, { useState, useRef, useLayoutEffect } from 'react';
+import React, { useState, useRef } from 'react';
+import useIsomorphicLayoutEffect from '../../util/useIsomorphicLayoutEffect';
 import { Heading } from '../../components';
 import classNames from 'classnames';
 
@@ -16,7 +17,7 @@ const SectionSkillsMaybe = props => {
   const [hasOverflow, setHasOverflow] = useState(false);
   const wrapperRef = useRef(null);
 
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const el = wrapperRef.current;
     if (!el) return;
 

@@ -1,4 +1,5 @@
-import React, { useState, useRef, useLayoutEffect } from 'react';
+import React, { useState, useRef } from 'react';
+import useIsomorphicLayoutEffect from '../../util/useIsomorphicLayoutEffect';
 import { Heading } from '../../components';
 import { richText } from '../../util/richText';
 import classNames from 'classnames';
@@ -28,7 +29,7 @@ const SectionTextMaybe = props => {
 
   const shouldCollapse = hasReadMore && !expanded;
 
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (!hasReadMore || !textRef.current) return;
 
     const el = textRef.current;
