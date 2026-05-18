@@ -11,7 +11,6 @@ const ProfileListingCard = props => {
   const { author, classes, currentListing } = props;
 
   const { title = '', publicData } = currentListing.attributes;
-  const slug = createSlug(title);
   const id = currentListing.id.uuid;
 
   const cityCountry = cityCountryFormat(publicData?.location?.address);
@@ -19,6 +18,8 @@ const ProfileListingCard = props => {
   const languages = languagesFormat(parseToObjectArray(publicData?.language_level));
 
   const authorName = author.attributes.profile.displayName;
+
+  const slug = authorName.split(' ').join('_') || createSlug(title);
 
   const seniorLevel = capitalize(publicData?.senior_level);
 

@@ -23,6 +23,7 @@ const UserNav = props => {
   const intl = useIntl();
   const classes = classNames(rootClassName || css.root, className);
   const currentUser = useSelector(state => state.user.currentUser);
+  const consultantSlug = currentUser.attributes.profile.displayName.split(' ').join('_') || 'slug';
 
   const InboxTab = [
     {
@@ -58,7 +59,7 @@ const UserNav = props => {
               name: 'EditListingPage',
               params: {
                 id: currentUser.attributes?.profile?.publicData?.latestListing,
-                slug: 'slug',
+                slug: consultantSlug,
                 tab: 'dashboard',
                 type: 'edit',
               },

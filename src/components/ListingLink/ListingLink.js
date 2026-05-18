@@ -9,6 +9,7 @@ import {
 import { NamedLink } from '../../components';
 
 import css from './ListingLink.module.css';
+import { isConsultant } from '../../util/userTypeHelper';
 
 const MIN_LENGTH_FOR_LONG_WORDS = 16;
 
@@ -44,6 +45,8 @@ const ListingLink = props => {
       })}
     </span>
   );
+  const consultantSlug =
+    listing.author.attributes.profile.displayName.split(' ').join('_') || 'slug';
 
   const isPendingApproval = state === LISTING_STATE_PENDING_APPROVAL;
   const isDraft = state === LISTING_STATE_DRAFT;
@@ -63,7 +66,7 @@ const ListingLink = props => {
       }
     : {
         name: 'ListingPage',
-        params: { id, slug },
+        params: { id, slug: isConsultant(listing.author) ? consultantSlug : slug },
       };
   return (
     <NamedLink className={className} {...linkProps}>

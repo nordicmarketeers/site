@@ -165,6 +165,8 @@ const TopbarMobileMenu = props => {
 
   const displayName = user.attributes.profile.firstName;
 
+  const consultantSlug = displayName.split(' ').join('_') || 'slug';
+
   const currentPageClass = page => {
     const isAccountSettingsPage =
       page === 'AccountSettingsPage' && ACCOUNT_SETTINGS_PAGES.includes(currentPage);
@@ -203,7 +205,7 @@ const TopbarMobileMenu = props => {
           name="EditListingPage"
           params={{
             id: currentUser.attributes?.profile?.publicData?.latestListing,
-            slug: 'slug',
+            slug: consultantSlug,
             type: 'edit',
             tab: 'dashboard',
           }}

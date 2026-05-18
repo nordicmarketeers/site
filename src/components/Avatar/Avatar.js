@@ -79,6 +79,7 @@ export const Avatar = props => {
   const defaultUserAbbreviatedName = '';
 
   const displayName = userDisplayNameAsString(avatarUser, defaultUserDisplayName);
+  const consultantSlug = displayName.split(' ').join('_');
   const abbreviatedName = userAbbreviatedName(avatarUser, defaultUserAbbreviatedName);
   const rootProps = { className: classes, title: displayName };
   const linkProps =
@@ -92,7 +93,7 @@ export const Avatar = props => {
           name: 'ListingPage',
           params: {
             id: avatarUser.attributes?.profile?.publicData?.latestListing,
-            slug: 'slug',
+            slug: consultantSlug,
           },
         }
       : avatarUser.id

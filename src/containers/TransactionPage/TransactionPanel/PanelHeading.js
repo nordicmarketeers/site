@@ -47,6 +47,9 @@ const PanelHeading = props => {
     customerNameLink,
   } = props;
 
+  const consultantSlug =
+    customerName.props.user.attributes.profile.displayName.split(' ').join('_') || 'slug';
+
   const isProvider = transactionRole === 'provider';
   const isCustomer = !isProvider;
 
@@ -69,7 +72,7 @@ const PanelHeading = props => {
                     name="ListingPage"
                     params={{
                       id: customerNameLink.id,
-                      slug: 'slug',
+                      slug: consultantSlug,
                     }}
                   >
                     {customerName}
@@ -80,7 +83,7 @@ const PanelHeading = props => {
                     name="ListingPage"
                     params={{
                       id: customerNameLink.id,
-                      slug: 'slug',
+                      slug: consultantSlug,
                     }}
                   >
                     {providerName}

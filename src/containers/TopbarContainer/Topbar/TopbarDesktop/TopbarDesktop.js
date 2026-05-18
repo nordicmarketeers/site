@@ -124,7 +124,9 @@ const ProfileMenu = ({
                   id: isConsultantWithPost(currentUser)
                     ? currentUser.attributes?.profile?.publicData?.latestListing
                     : draftId,
-                  slug: isConsultantWithPost(currentUser) ? 'slug' : draftSlug,
+                  slug: isConsultantWithPost(currentUser)
+                    ? currentUser.attributes.profile.displayName.split(' ').join('_') || 'slug'
+                    : draftSlug,
                   type: isConsultantWithPost(currentUser) ? 'edit' : 'new',
                   tab: 'dashboard',
                 }}
