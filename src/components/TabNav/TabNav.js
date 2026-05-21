@@ -21,6 +21,18 @@ const Tab = props => {
   );
 };
 
+const SubTab = props => {
+  const { subTab, onSubTabClick, className } = props;
+
+  return (
+    <div className={className}>
+      <p onClick={() => onSubTabClick(subTab)} className={classNames(css.link, css.subTab)}>
+        {subTab.labelKey}
+      </p>
+    </div>
+  );
+};
+
 /**
  * @typedef {Object} TabConfig
  * @property {string} text - The text to be rendered in the tab
@@ -44,21 +56,44 @@ const Tab = props => {
  * @returns {JSX.Element}
  */
 const TabNav = props => {
-  const { className, rootClassName, tabRootClassName, tabs, ariaLabel, isHeading } = props;
+  const {
+    className,
+    rootClassName,
+    tabRootClassName,
+    tabs,
+    ariaLabel,
+    isHeading,
+    onSubTabClick,
+  } = props;
+
   const classes = classNames(rootClassName || css.root, className);
   const tabClasses = tabRootClassName || css.tab;
   return (
     <nav className={classes} aria-label={ariaLabel}>
       {tabs.map((tab, index) => {
         const id = typeof tab.id === 'string' ? tab.id : `${index}`;
+
         return (
-          <Tab
-            key={id}
-            id={id}
-            className={tabClasses}
-            {...tab}
-            isHeading={isHeading ? isHeading : tab.isHeading}
-          />
+          <React.Fragment key={id}>
+            <Tab
+              id={id}
+              className={tabClasses}
+              {...tab}
+              isHeading={isHeading ? isHeading : tab.isHeading}
+            />
+
+            {tab.subTabs &&
+              tab.subTabs.map((subTab, index) => {
+                return (
+                  <SubTab
+                    key={subTab.key || index}
+                    subTab={subTab}
+                    onSubTabClick={onSubTabClick}
+                    className={tabClasses}
+                  />
+                );
+              })}
+          </React.Fragment>
         );
       })}
     </nav>

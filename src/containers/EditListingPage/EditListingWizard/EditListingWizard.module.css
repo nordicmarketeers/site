@@ -36,18 +36,33 @@
   box-shadow: var(--boxShadowLight);
   border-top: 1px solid var(--colorGrey100);
   overflow-x: scroll;
+  max-width: 100vw;
+  position: sticky;
+  top: 58px;
+  z-index: 9999999;
+
+  @media (--viewportMedium) {
+    position: sticky;
+    top: 129px;
+  }
 
   @media (--viewportLarge) {
-    padding: 72px 0 82px 36px;
+    padding: 24px 0 82px 36px;
     flex-direction: column;
     overflow-x: auto;
     background-color: var(--colorGrey50);
     box-shadow: none;
     border-top: none;
+
+    @media (min-height: 590px) {
+      align-self: flex-start;
+      top: 120px;
+      position: sticky;
+    }
   }
 
   @media (--viewportLargeWithPaddings) {
-    padding: 72px 0 82px calc((100% - 1056px) / 2);
+    padding: 24px 0 82px calc((100% - 1056px) / 2);
   }
 }
 

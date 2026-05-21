@@ -129,6 +129,95 @@ const tabsForListingType = (processName, listingTypeConfig) => {
   return tabs[processName] || tabs['default-inquiry'];
 };
 
+// Sub-tabs configuration (scroll tabs)
+const CONSULTANT_SUB_TABS_CONFIG = {
+  [DETAILS]: [
+    {
+      key: 'profileInfo',
+      mainTab: DETAILS,
+      labelKey: 'Profilinfo',
+      targetLabelText: 'title',
+    },
+    {
+      key: 'keySkills',
+      mainTab: DETAILS,
+      labelKey: 'Nyckelkompetenser',
+      targetLabelText: 'Kompetenser',
+    },
+    {
+      key: 'availabilty',
+      mainTab: DETAILS,
+      labelKey: 'Tillgänglighet',
+      targetLabelText: 'Tillgänglighet',
+    },
+    {
+      key: 'qualifications',
+      mainTab: DETAILS,
+      labelKey: 'Kvalifikationer',
+      targetLabelText: 'Senioritetsnivå',
+    },
+    {
+      key: 'portfolio',
+      mainTab: DETAILS,
+      labelKey: 'Portfolio & Cases',
+      targetLabelText: 'Portfolio',
+    },
+    {
+      key: 'merits',
+      mainTab: DETAILS,
+      labelKey: 'Meriter',
+      targetLabelText: 'Omdömen',
+    },
+    {
+      key: 'experience',
+      mainTab: DETAILS,
+      labelKey: 'Erfarenheter',
+      targetLabelText: 'Tidigare roller',
+    },
+  ],
+};
+
+// Scroll to a section by finding a <label> containing specific text
+const scrollToSubTabSection = targetLabelText => {
+  if (!targetLabelText) return;
+
+  const labels = document.querySelectorAll('label, legend');
+
+  for (let label of labels) {
+    if (label.textContent && label.textContent.trim().includes(targetLabelText)) {
+      // const section = label.closest('div, section, fieldset') || label.parentElement;
+
+      if (label && label.scrollIntoView) {
+        label.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+        label.style.transition = 'background-color 0.3s';
+        label.style.backgroundColor = '#fff9c4';
+        setTimeout(() => {
+          label.style.backgroundColor = '';
+        }, 1200);
+      }
+      return;
+    }
+  }
+};
+
+const handleSubTabClick = props => {
+  const { subTab, selectedTab, params, history, routeConfiguration } = props;
+  if (selectedTab === subTab.mainTab) {
+    scrollToSubTabSection(subTab.targetLabelText);
+  } else {
+    // Subtab leads to different tab
+    const newParams = { ...params, tab: subTab.mainTab };
+
+    history.push({
+      pathname: createResourceLocatorString('EditListingPage', routeConfiguration, newParams, {}),
+      state: { scrollToSubTabKey: subTab.key },
+    });
+  }
+};
+
 /**
  * Return translations for wizard tab: label and submit button.
  *
@@ -450,6 +539,32 @@ class EditListingWizard extends Component {
     }
   }
 
+  // Used for when navigating sub menus from a seperate menu (e.g Dashboard to submenu under Details)
+  componentDidUpdate(prevProps) {
+    const prevTab = prevProps.params.tab;
+    const currentTab = this.props.params.tab;
+
+    const SUB_TABS_CONFIG = isConsultant(this.props.currentUser)
+      ? CONSULTANT_SUB_TABS_CONFIG
+      : null;
+
+    if (prevTab !== currentTab) {
+      const scrollKey = this.props.history.location?.state?.scrollToSubTabKey;
+
+      if (scrollKey) {
+        const subTab = Object.values(SUB_TABS_CONFIG)
+          .flat()
+          .find(t => t.key === scrollKey);
+
+        if (subTab) {
+          setTimeout(() => {
+            scrollToSubTabSection(subTab.targetLabelText);
+          }, 100);
+        }
+      }
+    }
+  }
+
   handleCreateFlowTabScrolling(shouldScroll) {
     this.hasScrolledToTab = shouldScroll;
   }
@@ -500,6 +615,7 @@ class EditListingWizard extends Component {
       intl,
       errors,
       fetchInProgress,
+      history,
       payoutDetailsSaveInProgress,
       payoutDetailsSaved,
       onManageDisableScrolling,
@@ -526,6 +642,8 @@ class EditListingWizard extends Component {
         ? lt.listingType === 'consultant_profile'
         : lt.listingType === 'consultant_job';
     });
+
+    const SUB_TABS_CONFIG = isConsultant(currentUser) ? CONSULTANT_SUB_TABS_CONFIG : null;
 
     const selectedTab = params.tab;
     const isNewListingFlow = [LISTING_PAGE_PARAM_TYPE_NEW, LISTING_PAGE_PARAM_TYPE_DRAFT].includes(
@@ -681,7 +799,6 @@ class EditListingWizard extends Component {
     if (returnedNormallyFromStripe && stripeConnected && !requirementsMissing) {
       return <NamedRedirect name="EditListingPage" params={pathParams} />;
     }
-
     return (
       <div className={classes}>
         <Tabs
@@ -691,6 +808,10 @@ class EditListingWizard extends Component {
           ariaLabel={intl.formatMessage({
             id: 'EditListingWizard.screenreader.tabNavigation',
           })}
+          subTabsConfig={SUB_TABS_CONFIG}
+          onSubTabClick={subTab =>
+            handleSubTabClick({ subTab, selectedTab, params, history, routeConfiguration })
+          }
         >
           {tabs.map(tab => {
             const tabTranslations =

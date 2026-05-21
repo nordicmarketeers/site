@@ -36,12 +36,14 @@ const Tabs = props => {
     navRootClassName,
     tabRootClassName,
     ariaLabel,
+    subTabsConfig,
+    onSubTabClick,
   } = props;
   const rootClasses = rootClassName || css.root;
   const classes = classNames(rootClasses, className);
 
   const tabNavTabs = React.Children.map(children, child => {
-    const { tabId, tabLabel, tabLinkProps } = child.props;
+    const { tabId, tabLabel, tabLinkProps, tab } = child.props;
 
     // Child components need to have TabNav props included
     if (!tabId || !tabLabel || !tabLinkProps) {
@@ -60,6 +62,7 @@ const Tabs = props => {
       disabled: child.props.disabled,
       selected: child.props.selected,
       isHeading: child.key === 'dashboard' ? true : false,
+      subTabs: subTabsConfig[tab] || null,
     };
   });
 
@@ -78,6 +81,7 @@ const Tabs = props => {
         tabs={tabNavTabs}
         tabRootClassName={tabRootClassName}
         ariaLabel={ariaLabel}
+        onSubTabClick={onSubTabClick}
       />
       {selectedTabPanel}
     </div>
