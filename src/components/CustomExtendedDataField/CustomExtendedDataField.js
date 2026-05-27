@@ -29,6 +29,7 @@ import { parseToObjectArray } from '../../util/parseHelper';
 import FieldHighlights from '../FieldHighlights/FieldHighlights';
 import FieldEducation from '../FieldEducation/FieldEducation';
 import FieldCertifications from '../FieldCertifications/FieldCertifications';
+import FieldSkills from '../FieldSkills/FieldSkills';
 
 const createFilterOptions = options => options.map(o => ({ key: `${o.option}`, label: o.label }));
 
@@ -480,6 +481,34 @@ const CustomFieldCertifications = props => {
   );
 };
 
+const CustomFieldSkills = props => {
+  const { name, fieldConfig, defaultRequiredMessage, formId, intl, initialValues = {} } = props;
+  const { isRequired, requiredMessage } = fieldConfig?.saveConfig || {};
+
+  const correctInitialValues = parseToObjectArray(initialValues.pub_skills);
+
+  const validateMaybe = isRequired
+    ? { validate: required(requiredMessage || defaultRequiredMessage) }
+    : {};
+
+  const label = getAccessibleLabel(fieldConfig);
+
+  return (
+    <FieldSkills
+      className={css.customField}
+      name={name}
+      id={formId ? `${formId}.${name}` : name}
+      label={label}
+      fieldConfig={fieldConfig}
+      formId={formId}
+      intl={intl}
+      defaultRequiredMessage={defaultRequiredMessage}
+      validateMaybe={validateMaybe}
+      initialValues={correctInitialValues}
+    />
+  );
+};
+
 /**
  * Return Final Form field for each configuration according to schema type.
  *
@@ -497,7 +526,9 @@ const CustomExtendedDataField = props => {
 
   return schemaType === SCHEMA_TYPE_ENUM && enumOptions ? (
     renderFieldComponent(CustomFieldEnum, props)
-  ) : key === 'certifications' ? (
+  ) : key === 'skills' ? (
+    <CustomFieldSkills {...props} />
+  ) : key === 'skill_levels' ? null : key === 'certifications' ? (
     <CustomFieldCertifications {...props} />
   ) : key === 'education' ? (
     <CustomFieldEducation {...props} />

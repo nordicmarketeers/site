@@ -24,7 +24,8 @@ import ErrorMessage from './ErrorMessage';
 import EditListingDetailsForm from './EditListingDetailsForm';
 import css from './EditListingDetailsPanel.module.css';
 import { dateToUnix } from '../../../../util/dateHelper';
-import { normalizeAndStringifyArray } from '../../../../util/parseHelper';
+import { normalizeAndStringifyArray, parseToObjectArray } from '../../../../util/parseHelper';
+import { sanitizeSkills, valuesArray, valuesObject } from '../../../../util/dataFormatHelper';
 
 /**
  * Get listing configuration. For existing listings, it is stored to publicData.
@@ -413,6 +414,17 @@ const EditListingDetailsPanel = props => {
             rest.pub_certifications = normalizeAndStringifyArray(rest.pub_certifications, {
               certificate: '',
             });
+
+            rest.pub_skills = parseToObjectArray(rest.pub_skills, {
+              skill: '',
+              skill_level: '',
+            });
+
+            const cleanSkills = sanitizeSkills(rest.pub_skills);
+
+            rest.pub_skill_levels = valuesObject(cleanSkills);
+
+            rest.pub_skills = valuesArray(cleanSkills);
 
             const nestedCategories = pickCategoryFields(rest, categoryKey, 1, listingCategories);
             // Remove old categories by explicitly saving null for them.

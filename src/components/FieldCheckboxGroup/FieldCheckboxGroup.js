@@ -34,7 +34,7 @@ const FieldCheckboxRenderer = props => {
   const Tag = label ? 'fieldset' : 'div';
 
   // Enable search for certain checkbox group types
-  if ((id && id.includes('role')) || id.includes('skills') || id.includes('customer_types')) {
+  if ((id && id.includes('role')) || id.includes('customer_types')) {
     return <FieldCheckboxGroupWithSearch {...props} />;
   } else
     return (

@@ -26,6 +26,7 @@ import {
 import css from './EditListingDetailsForm.module.css';
 import { useSelector } from 'react-redux';
 import { supabase } from '../../../../lib/supabaseClient';
+import { combineSkills } from '../../../../util/dataFormatHelper';
 
 const TITLE_MAX_LENGTH = 60;
 
@@ -278,6 +279,13 @@ const AddListingFields = props => {
     const isProviderScope = ['public', 'private'].includes(scope);
     const isTargetListingType = isFieldForListingType(listingType, fieldConfig);
     const isTargetCategory = isFieldForCategory(targetCategoryIds, fieldConfig);
+
+    // Create correct initialValues for skills (needed due to being covered by two fields)
+    initialValues.pub_skills = combineSkills(
+      initialValues.pub_skills,
+      initialValues.pub_skill_levels,
+      listingFieldsConfig
+    );
 
     return isKnownSchemaType && isProviderScope && isTargetListingType && isTargetCategory
       ? [
