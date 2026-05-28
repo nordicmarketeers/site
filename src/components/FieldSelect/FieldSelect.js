@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { Field } from 'react-final-form';
 import classNames from 'classnames';
 import { ValidationError } from '../../components';
@@ -18,6 +18,8 @@ const FieldSelectComponent = props => {
     children,
     onChange,
     showLabelAsDisabled,
+    searchable = false,
+    disabled,
     ...rest
   } = props;
 
@@ -35,20 +37,6 @@ const FieldSelectComponent = props => {
     [selectClassName]: selectClassName,
     [css.selectError]: hasError,
   });
-  const handleChange = e => {
-    input.onChange(e);
-    if (onChange) {
-      onChange(e.currentTarget.value);
-    }
-  };
-
-  const selectProps = {
-    className: selectClasses,
-    id,
-    ...input,
-    onChange: handleChange,
-    ...rest,
-  };
 
   const labelClasses = classNames({
     [css.labelDisabled]: showLabelAsDisabled,
@@ -56,6 +44,105 @@ const FieldSelectComponent = props => {
   });
 
   const classes = classNames(rootClassName || css.root, className);
+
+  const handleChange = e => {
+    input.onChange(e);
+
+    if (onChange) {
+      onChange(e.currentTarget.value);
+    }
+  };
+
+  // Regular select mode
+  if (!searchable) {
+    return (
+      <div className={classes}>
+        {label ? (
+          <label htmlFor={id} className={labelClasses}>
+            {label}
+          </label>
+        ) : null}
+
+        <select
+          className={selectClasses}
+          id={id}
+          {...input}
+          onChange={handleChange}
+          disabled={disabled}
+          {...rest}
+        >
+          {children}
+        </select>
+
+        <ValidationError fieldMeta={meta} />
+      </div>
+    );
+  }
+
+  // Searchable select
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+
+  const options = React.Children.toArray(children)
+    .filter(child => child.props?.value !== undefined)
+    .map(child => ({
+      value: child.props.value,
+      label: child.props.children,
+      disabled: !!child.props.disabled,
+    }));
+
+  const placeholderOption = options.find(option => option.disabled && option.value === '');
+
+  const placeholder = placeholderOption?.label || 'Select...';
+
+  const selectedOption = options.find(option => option.value === input.value);
+
+  const filteredOptions = useMemo(() => {
+    if (!search.trim()) {
+      return options.filter(option => !option.disabled);
+    }
+
+    return options.filter(
+      option =>
+        !option.disabled &&
+        String(option.label)
+          .toLowerCase()
+          .includes(search.toLowerCase())
+    );
+  }, [search, options]);
+
+  const handleSelect = option => {
+    if (option.disabled) {
+      return;
+    }
+
+    const syntheticEvent = {
+      target: {
+        value: option.value,
+      },
+      currentTarget: {
+        value: option.value,
+      },
+    };
+
+    input.onChange(syntheticEvent);
+
+    if (onChange) {
+      onChange(option.value);
+    }
+
+    setSearch('');
+    setIsOpen(false);
+  };
+
+  const handleBlur = () => {
+    setTimeout(() => {
+      setIsOpen(false);
+
+      setSearch('');
+    }, 100);
+  };
+
   return (
     <div className={classes}>
       {label ? (
@@ -63,7 +150,43 @@ const FieldSelectComponent = props => {
           {label}
         </label>
       ) : null}
-      <select {...selectProps}>{children}</select>
+
+      <div className={css.searchableSelect}>
+        <input
+          id={id}
+          type="text"
+          className={selectClasses}
+          autoComplete="off"
+          disabled={disabled}
+          placeholder={placeholder}
+          value={isOpen ? search : selectedOption ? selectedOption.label : ''}
+          onFocus={() => {
+            setIsOpen(true);
+            setSearch('');
+          }}
+          onBlur={handleBlur}
+          onChange={e => {
+            setSearch(e.target.value);
+            setIsOpen(true);
+          }}
+          {...rest}
+        />
+
+        {isOpen && filteredOptions.length > 0 ? (
+          <div className={css.dropdown}>
+            {filteredOptions.map(option => (
+              <div
+                key={option.value}
+                className={css.option}
+                onMouseDown={() => handleSelect(option)}
+              >
+                {option.label}
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </div>
+
       <ValidationError fieldMeta={meta} />
     </div>
   );

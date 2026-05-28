@@ -87,6 +87,7 @@ const FieldSkillsComponent = ({ className, input, fieldConfig, label, initialVal
                 value: block.skill,
                 onChange: e => updateBlock(index, 'skill', e.target.value),
               }}
+              searchable={true}
             >
               <option disabled value="">
                 {'Kompetens'}
