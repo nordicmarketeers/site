@@ -93,11 +93,26 @@ const FieldSkillsComponent = ({ className, input, fieldConfig, label, initialVal
                 {'Kompetens'}
               </option>
 
-              {(fieldConfig?.enumOptions || []).map(skill => (
-                <option key={`skill_value-${index}-${skill.option}`} value={skill.option}>
-                  {skill.label}
-                </option>
-              ))}
+              {(fieldConfig?.enumOptions || [])
+                .filter(skill => {
+                  // Keep currently selected value visible
+                  if (skill.option === block.skill) {
+                    return true;
+                  }
+
+                  // Hide values already selected in other blocks
+                  const isAlreadySelected = blocks.some(
+                    (otherBlock, otherIndex) =>
+                      otherIndex !== index && otherBlock.skill === skill.option
+                  );
+
+                  return !isAlreadySelected;
+                })
+                .map(skill => (
+                  <option key={`skill_value-${index}-${skill.option}`} value={skill.option}>
+                    {skill.label}
+                  </option>
+                ))}
             </FieldSelect>
 
             {/* Skill level */}
