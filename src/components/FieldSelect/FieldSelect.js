@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { Field } from 'react-final-form';
 import classNames from 'classnames';
 import { ValidationError } from '../../components';
@@ -82,6 +82,10 @@ const FieldSelectComponent = props => {
   // Searchable select
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
+
+  // Refs for scrolling
+  const optionRefs = useRef([]);
 
   const options = React.Children.toArray(children)
     .filter(child => child.props?.value !== undefined)
@@ -111,18 +115,27 @@ const FieldSelectComponent = props => {
     );
   }, [search, options]);
 
-  const handleSelect = option => {
-    if (option.disabled) {
-      return;
+  useEffect(() => {
+    optionRefs.current = optionRefs.current.slice(0, filteredOptions.length);
+  }, [filteredOptions]);
+
+  // Scroll into view when highlighted changes
+  useEffect(() => {
+    const el = optionRefs.current[highlightedIndex];
+    if (el && el.scrollIntoView) {
+      el.scrollIntoView({
+        block: 'nearest',
+        behavior: 'smooth',
+      });
     }
+  }, [highlightedIndex]);
+
+  const handleSelect = option => {
+    if (option.disabled) return;
 
     const syntheticEvent = {
-      target: {
-        value: option.value,
-      },
-      currentTarget: {
-        value: option.value,
-      },
+      target: { value: option.value },
+      currentTarget: { value: option.value },
     };
 
     input.onChange(syntheticEvent);
@@ -133,14 +146,46 @@ const FieldSelectComponent = props => {
 
     setSearch('');
     setIsOpen(false);
+    setHighlightedIndex(0);
+
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
   };
 
   const handleBlur = () => {
     setTimeout(() => {
       setIsOpen(false);
-
       setSearch('');
+      setHighlightedIndex(0);
     }, 100);
+  };
+
+  const handleKeyDown = e => {
+    if (!isOpen) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setHighlightedIndex(prev => Math.min(prev + 1, filteredOptions.length - 1));
+    }
+
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlightedIndex(prev => Math.max(prev - 1, 0));
+    }
+
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const option = filteredOptions[highlightedIndex];
+      if (option) handleSelect(option);
+    }
+
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      setIsOpen(false);
+      setSearch('');
+      setHighlightedIndex(0);
+    }
   };
 
   return (
@@ -163,22 +208,31 @@ const FieldSelectComponent = props => {
           onFocus={() => {
             setIsOpen(true);
             setSearch('');
+            setHighlightedIndex(0);
           }}
           onBlur={handleBlur}
           onChange={e => {
             setSearch(e.target.value);
             setIsOpen(true);
+            setHighlightedIndex(0);
           }}
+          onKeyDown={handleKeyDown}
           {...rest}
         />
 
         {isOpen && filteredOptions.length > 0 ? (
-          <div className={css.dropdown}>
-            {filteredOptions.map(option => (
+          <div className={css.dropdown} role="listbox">
+            {filteredOptions.map((option, index) => (
               <div
+                role="option"
                 key={option.value}
+                ref={el => (optionRefs.current[index] = el)}
                 className={css.option}
                 onMouseDown={() => handleSelect(option)}
+                onMouseEnter={() => setHighlightedIndex(index)}
+                style={{
+                  background: index === highlightedIndex ? '#eee' : undefined,
+                }}
               >
                 {option.label}
               </div>
@@ -192,22 +246,6 @@ const FieldSelectComponent = props => {
   );
 };
 
-/**
- * Final Form Field wrapping <select> input
- *
- * @component
- * @param {Object} props
- * @param {string?} props.className add more style rules in addition to components own css.root
- * @param {string?} props.rootClassName overwrite components own css.root
- * @param {string?} props.selectClassName add more style rules to <select> component
- * @param {string} props.name Name of the input in Final Form
- * @param {string} props.id Label is optional, but if it is given, an id is also required so the label can reference the input in the `for` attribute
- * @param {ReactNode} props.label
- * @param {ReactNode} props.children
- * @param {boolean} props.disabled Whether the select element is disabled
- * @param {boolean} props.showLabelAsDisabled Whether the label is disabled
- * @returns {JSX.Element} Final Form Field containing <select> input
- */
 const FieldSelect = props => {
   return <Field component={FieldSelectComponent} {...props} />;
 };
