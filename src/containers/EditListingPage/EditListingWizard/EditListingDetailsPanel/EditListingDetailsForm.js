@@ -27,8 +27,40 @@ import css from './EditListingDetailsForm.module.css';
 import { useSelector } from 'react-redux';
 import { supabase } from '../../../../lib/supabaseClient';
 import { combineSkills } from '../../../../util/dataFormatHelper';
+import { isConsultant } from '../../../../util/userTypeHelper';
 
 const TITLE_MAX_LENGTH = 60;
+
+const CONSULTANT_INNER_TITLES_CONFIG = [
+  {
+    match: 'title',
+    title: 'Profilinfo',
+  },
+  {
+    match: 'kompetenser',
+    title: 'Nyckelkompetenser',
+  },
+  {
+    match: 'tillgänglighet',
+    title: 'Tillgänglighet',
+  },
+  {
+    match: 'senioritetsnivå',
+    title: 'Kvalifikationer',
+  },
+  {
+    match: 'portfolio',
+    title: 'Portfolio & Cases',
+  },
+  {
+    match: 'omdömen',
+    title: 'Meriter',
+  },
+  {
+    match: 'tidigare roller',
+    title: 'Erfarenheter',
+  },
+];
 
 // Show various error messages
 const ErrorMessage = props => {
@@ -454,6 +486,44 @@ const EditListingDetailsForm = props => {
 
           partTimePercentEl.dispatchEvent(new Event('change', { bubbles: true }));
         };
+
+        useEffect(() => {
+          const INNER_TITLES_CONFIG = isConsultant(currentUser)
+            ? CONSULTANT_INNER_TITLES_CONFIG
+            : [];
+
+          if (!INNER_TITLES_CONFIG) return;
+
+          const labels = document.querySelectorAll('label');
+
+          labels.forEach(label => {
+            const labelText = label.textContent?.toLowerCase();
+
+            const matchedConfig = INNER_TITLES_CONFIG.find(config =>
+              labelText?.includes(config.match.toLowerCase())
+            );
+
+            if (!matchedConfig) return;
+
+            const previousElement = label.previousElementSibling;
+
+            // Prevent duplicate headings
+            if (
+              previousElement &&
+              previousElement.dataset &&
+              previousElement.dataset.consultantInnerTitle === matchedConfig.title
+            ) {
+              return;
+            }
+
+            const heading = document.createElement('h4');
+            heading.textContent = matchedConfig.title;
+            heading.dataset.consultantInnerTitle = matchedConfig.title;
+            heading.className = css.innerTitle;
+
+            label.parentNode.insertBefore(heading, label);
+          });
+        }, [values]);
 
         return (
           <Form

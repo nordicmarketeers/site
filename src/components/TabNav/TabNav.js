@@ -1,8 +1,29 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import classNames from 'classnames';
 import { NamedLink } from '../../components';
 
 import css from './TabNav.module.css';
+
+const getCurrentInnerTitle = () => {
+  const headings = [...document.querySelectorAll('h4[data-consultant-inner-title]')];
+
+  if (!headings.length) return null;
+
+  // Make up for sticky elements at the top
+  const stickyOffset = 300;
+
+  let currentHeading = headings[0];
+
+  headings.forEach(heading => {
+    const rect = heading.getBoundingClientRect();
+
+    if (rect.top <= stickyOffset) {
+      currentHeading = heading;
+    }
+  });
+
+  return currentHeading;
+};
 
 const Tab = props => {
   const { className, id, disabled, text, selected, linkProps, isHeading } = props;
@@ -24,9 +45,45 @@ const Tab = props => {
 const SubTab = props => {
   const { subTab, onSubTabClick, className } = props;
 
+  const [isSelected, setIsSelected] = useState(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentHeading = getCurrentInnerTitle();
+
+          const isCurrent =
+            subTab.targetTitleText?.toLowerCase() === currentHeading?.textContent?.toLowerCase();
+
+          setIsSelected(isCurrent ? css.selectedSubTab : null);
+
+          ticking = false;
+        });
+
+        ticking = true;
+      }
+    };
+
+    handleScroll();
+
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [subTab]);
+
   return (
     <div className={className}>
-      <p onClick={() => onSubTabClick(subTab)} className={classNames(css.link, css.subTab)}>
+      <p
+        onClick={() => onSubTabClick(subTab)}
+        className={classNames(css.link, css.subTab, isSelected)}
+      >
         {subTab.labelKey}
       </p>
     </div>

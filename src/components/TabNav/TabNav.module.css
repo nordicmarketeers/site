@@ -72,10 +72,27 @@
   font-size: 14px;
   padding: 10px 5px;
   margin: 0;
+  color: var(--colorGrey600);
 
   @media (--viewportLarge) {
     margin: 8px 0;
     padding: 0;
+  }
+}
+
+.selectedSubTab {
+  border-bottom-color: var(--colorGrey500);
+  color: var(--colorGrey800);
+
+  @media (--viewportLarge) {
+    width: var(--TabNav_linkWidth);
+    background-image: url("data:image/svg+xml;utf8,<svg width='4' height='32' viewBox='0 0 4 32' xmlns='http://www.w3.org/2000/svg'><path d='M0 0h4v32H0z' fill='%237B7B82' fill-rule='evenodd'/></svg>");
+    background-position: right center;
+
+    &:hover {
+      background-image: url("data:image/svg+xml;utf8,<svg width='4' height='32' viewBox='0 0 4 32' xmlns='http://www.w3.org/2000/svg'><path d='M0 0h4v32H0z' fill='%234a4a4a' fill-rule='evenodd'/></svg>");
+      background-position: right center;
+    }
   }
 }
 

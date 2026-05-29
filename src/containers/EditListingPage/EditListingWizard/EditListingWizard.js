@@ -136,66 +136,66 @@ const CONSULTANT_SUB_TABS_CONFIG = {
       key: 'profileInfo',
       mainTab: DETAILS,
       labelKey: 'Profilinfo',
-      targetLabelText: 'title',
+      targetTitleText: 'Profilinfo',
     },
     {
       key: 'keySkills',
       mainTab: DETAILS,
       labelKey: 'Nyckelkompetenser',
-      targetLabelText: 'Kompetenser',
+      targetTitleText: 'Nyckelkompetenser',
     },
     {
       key: 'availabilty',
       mainTab: DETAILS,
       labelKey: 'Tillgänglighet',
-      targetLabelText: 'Tillgänglighet',
+      targetTitleText: 'Tillgänglighet',
     },
     {
       key: 'qualifications',
       mainTab: DETAILS,
       labelKey: 'Kvalifikationer',
-      targetLabelText: 'Senioritetsnivå',
+      targetTitleText: 'Kvalifikationer',
     },
     {
       key: 'portfolio',
       mainTab: DETAILS,
       labelKey: 'Portfolio & Cases',
-      targetLabelText: 'Portfolio',
+      targetTitleText: 'Portfolio & Cases',
     },
     {
       key: 'merits',
       mainTab: DETAILS,
       labelKey: 'Meriter',
-      targetLabelText: 'Omdömen',
+      targetTitleText: 'Meriter',
     },
     {
       key: 'experience',
       mainTab: DETAILS,
       labelKey: 'Erfarenheter',
-      targetLabelText: 'Tidigare roller',
+      targetTitleText: 'Erfarenheter',
     },
   ],
 };
 
-// Scroll to a section by finding a <label> containing specific text
-const scrollToSubTabSection = targetLabelText => {
-  if (!targetLabelText) return;
+// Scroll to a section by finding a h4 containing specific text
+const scrollToSubTabSection = targetTitleText => {
+  if (!targetTitleText) return;
 
-  const labels = document.querySelectorAll('label, legend');
+  const titles = document.querySelectorAll('h4');
 
-  for (let label of labels) {
-    if (label.textContent && label.textContent.trim().includes(targetLabelText)) {
+  for (let title of titles) {
+    if (title.textContent && title.textContent.trim().includes(targetTitleText)) {
       // const section = label.closest('div, section, fieldset') || label.parentElement;
 
-      if (label && label.scrollIntoView) {
-        label.scrollIntoView({
+      if (title && title.scrollIntoView) {
+        title.scrollIntoView({
           behavior: 'smooth',
           block: 'center',
         });
-        label.style.transition = 'background-color 0.3s';
-        label.style.backgroundColor = '#fff9c4';
+        title.style.transition = 'background-color 0.3s';
+        title.style.backgroundColor = '#fff9c4';
         setTimeout(() => {
-          label.style.backgroundColor = '';
+          title.style.backgroundColor = '';
         }, 1200);
       }
       return;
@@ -206,9 +206,9 @@ const scrollToSubTabSection = targetLabelText => {
 const handleSubTabClick = props => {
   const { subTab, selectedTab, params, history, routeConfiguration } = props;
   if (selectedTab === subTab.mainTab) {
-    scrollToSubTabSection(subTab.targetLabelText);
+    scrollToSubTabSection(subTab.targetTitleText);
   } else {
-    // Subtab leads to different tab
+    // Subtab is inside of different main tab (not current main tab)
     const newParams = { ...params, tab: subTab.mainTab };
 
     history.push({
@@ -558,7 +558,7 @@ class EditListingWizard extends Component {
 
         if (subTab) {
           setTimeout(() => {
-            scrollToSubTabSection(subTab.targetLabelText);
+            scrollToSubTabSection(subTab.targetTitleText);
           }, 100);
         }
       }
