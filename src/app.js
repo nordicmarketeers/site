@@ -1,4 +1,4 @@
-import React from 'react';
+import { React, useEffect } from 'react';
 import { any, string } from 'prop-types';
 
 import { HelmetProvider } from 'react-helmet-async';
@@ -8,6 +8,7 @@ import loadable from '@loadable/component';
 import difference from 'lodash/difference';
 import mapValues from 'lodash/mapValues';
 import moment from 'moment';
+import { loadMapbox } from './util/mapboxLoader';
 
 // Configs and store setup
 import defaultConfig from './config/configDefault';
@@ -240,6 +241,16 @@ export const ClientApp = props => {
       />
     );
   }
+
+  // Load Mapbox after client hydration
+  useEffect(() => {
+    const { mapboxAccessToken } = appConfig.maps || {};
+    if (mapboxAccessToken) {
+      loadMapbox(mapboxAccessToken).catch(err => {
+        console.error('Failed to load Mapbox libraries:', err);
+      });
+    }
+  }, [appConfig.maps?.mapboxAccessToken]);
 
   // Marketplace color and the color for <PrimaryButton> come from configs
   // If set, we need to create CSS Property and set it to DOM (documentElement is selected here)

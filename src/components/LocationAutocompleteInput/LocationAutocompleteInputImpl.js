@@ -176,7 +176,7 @@ class LocationAutocompleteInputImplementation extends Component {
     const Geocoder = geocoderVariant.default;
     // Create the Geocoder as late as possible only when it is needed.
     if (!this._geocoder) {
-      this._geocoder = new Geocoder();
+      this._geocoder = new Geocoder(this.props.config);
     }
     return this._geocoder;
   }

@@ -1,5 +1,6 @@
 import { types as sdkTypes } from '../../util/sdkLoader';
 import { userLocation } from '../../util/maps';
+import { loadMapbox } from '../../util/mapboxLoader';
 
 const { LatLng: SDKLatLng, LatLngBounds: SDKLatLngBounds } = sdkTypes;
 
@@ -70,17 +71,31 @@ export const GeocoderAttribution = () => null;
  * using the Mapbox Geocoding API.
  */
 class GeocoderMapbox {
+  constructor(config = {}) {
+    this.config = config;
+    this._client = null;
+  }
+
   getClient() {
     const libLoaded = typeof window !== 'undefined' && window.mapboxgl && window.mapboxSdk;
+
     if (!libLoaded) {
-      throw new Error('Mapbox libraries are required for GeocoderMapbox');
+      // Wait for runtime loader instead of throwing
+      return this.ensureLoaded().then(() => this.getClient());
     }
+
     if (!this._client && window?.mapboxgl?.accessToken) {
       this._client = window.mapboxSdk({
         accessToken: window.mapboxgl.accessToken,
       });
     }
     return this._client;
+  }
+
+  // Helper to ensure Mapbox is loaded
+  ensureLoaded() {
+    const { mapboxAccessToken } = this.config?.maps || {};
+    return loadMapbox(mapboxAccessToken);
   }
 
   // Public API
