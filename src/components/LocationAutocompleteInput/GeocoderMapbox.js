@@ -27,9 +27,8 @@ const locationBounds = (latlng, distance) => {
   }
 
   // Ensure Mapbox is loaded before using mapboxgl
-  if (!window.mapboxgl) {
-    // This should not happen in normal flow, but protects during hydration/refresh
-    console.warn('Mapbox not yet loaded in locationBounds');
+  if (typeof window === 'undefined' || !window.mapboxgl) {
+    // Return null to prevent errors upon hydration errors.
     return null;
   }
 
