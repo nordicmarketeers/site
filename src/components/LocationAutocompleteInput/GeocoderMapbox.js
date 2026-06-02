@@ -26,6 +26,13 @@ const locationBounds = (latlng, distance) => {
     return null;
   }
 
+  // Ensure Mapbox is loaded before using mapboxgl
+  if (!window.mapboxgl) {
+    // This should not happen in normal flow, but protects during hydration/refresh
+    console.warn('Mapbox not yet loaded in locationBounds');
+    return null;
+  }
+
   const bounds = new window.mapboxgl.LngLat(latlng.lng, latlng.lat).toBounds(distance);
   return new SDKLatLngBounds(
     new SDKLatLng(bounds.getNorth(), bounds.getEast()),
