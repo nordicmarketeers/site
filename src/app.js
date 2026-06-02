@@ -8,7 +8,7 @@ import loadable from '@loadable/component';
 import difference from 'lodash/difference';
 import mapValues from 'lodash/mapValues';
 import moment from 'moment';
-import { loadMapbox } from './util/mapboxLoader';
+import { isMapboxLoaded, loadMapbox } from './util/mapboxLoader';
 
 // Configs and store setup
 import defaultConfig from './config/configDefault';
@@ -241,6 +241,12 @@ export const ClientApp = props => {
       />
     );
   }
+
+  // === TEMP DEBUG: Track Mapbox loading state ===
+  useEffect(() => {
+    console.log('=== PAGE LOADED WITH URL:', window.location.search);
+    console.log('Mapbox status at mount:', isMapboxLoaded());
+  }, []);
 
   // Load Mapbox after client hydration
   useEffect(() => {
