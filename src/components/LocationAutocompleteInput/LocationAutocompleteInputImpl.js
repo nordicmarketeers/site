@@ -134,6 +134,7 @@ const currentValue = props => {
 class LocationAutocompleteInputImplementation extends Component {
   constructor(props) {
     super(props);
+    console.log('6. LocationAutocompleteInputImpl constructor', props.input?.value);
     this._isMounted = false;
     this.state = {
       inputHasFocus: false,
@@ -450,6 +451,7 @@ class LocationAutocompleteInputImplementation extends Component {
       submitButton: SubmitButton,
       ariaLabel,
     } = this.props;
+    console.log('7. LocationAutocompleteInputImpl render()', currentValue(this.props));
     const { name, onFocus } = input;
     const { search } = currentValue(this.props);
     const { touched, valid } = meta || {};

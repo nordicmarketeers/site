@@ -110,6 +110,9 @@ class LocationFilter extends Component {
       intl,
       ...rest
     } = this.props;
+    console.log('5. LocationFilter render() START', {
+      initialAddress: this.props.initialValues?.address,
+    });
 
     const label = 'Location';
 

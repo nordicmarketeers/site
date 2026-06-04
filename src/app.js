@@ -217,6 +217,7 @@ const EnvironmentVariableWarning = props => {
 export const ClientApp = props => {
   const { store, hostedTranslations = {}, hostedConfig = {}, currentUser } = props;
   const appConfig = mergeConfig(hostedConfig, defaultConfig);
+  console.log('1. ClientApp function START');
 
   // Show warning on the localhost:3000, if the environment variable key contains "SECRET"
   if (appSettings.dev) {
@@ -241,6 +242,7 @@ export const ClientApp = props => {
       />
     );
   }
+  console.log('2. After MaintenanceMode check');
 
   // === TEMP DEBUG: Track Mapbox loading state ===
   useEffect(() => {
