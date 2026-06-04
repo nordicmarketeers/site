@@ -452,6 +452,7 @@ class LocationAutocompleteInputImplementation extends Component {
       ariaLabel,
     } = this.props;
     console.log('7. LocationAutocompleteInputImpl render()', currentValue(this.props));
+    console.log('RENDER - getGeocoder exists?', !!this.getGeocoder);
     const { name, onFocus } = input;
     const { search } = currentValue(this.props);
     const { touched, valid } = meta || {};
