@@ -60,11 +60,7 @@ const LocationPredictionsList = props => {
 
   const item = (prediction, index) => {
     const isHighlighted = index === highlightedIndex;
-    // Defensive check - geocoder might not be fully ready during hydration
-    const predictionId =
-      geocoder && typeof geocoder.getPredictionId === 'function'
-        ? geocoder.getPredictionId(prediction)
-        : 'temp-id';
+    const predictionId = geocoder.getPredictionId(prediction);
 
     return (
       <li
@@ -101,10 +97,8 @@ const LocationPredictionsList = props => {
             <IconCurrentLocation />
             <FormattedMessage id="LocationAutocompleteInput.currentLocation" />
           </span>
-        ) : geocoder && typeof geocoder.getPredictionAddress === 'function' ? (
-          geocoder.getPredictionAddress(prediction)
         ) : (
-          ''
+          geocoder.getPredictionAddress(prediction)
         )}
       </li>
     );
@@ -541,7 +535,7 @@ class LocationAutocompleteInputImplementation extends Component {
           aria-controls={predictionsId}
           aria-activedescendant={predictions[this.state.highlightedIndex]?.id}
         />
-        {renderPredictions && geocoder ? (
+        {renderPredictions && predictions.length > 0 ? (
           <OutsideClickHandler onOutsideClick={this.handleOnBlur}>
             <LocationPredictionsList
               id={predictionsId}
