@@ -113,6 +113,7 @@ class LocationFilter extends Component {
     console.log('5. LocationFilter render() START', {
       initialAddress: this.props.initialValues?.address,
     });
+    console.log('LocationFilter render - SSR?', typeof window === 'undefined');
 
     const label = 'Location';
 
