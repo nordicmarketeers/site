@@ -460,8 +460,20 @@ class LocationAutocompleteInputImplementation extends Component {
       selectedPlace.bounds &&
       (typeof window === 'undefined' || !window.mapboxgl)
     ) {
-      return null;
+      console.log(
+        '7,1. LocationAutocompleteInputImpl RETURNING NULL',
+        window.mapboxgl,
+        selectedPlace,
+        selectedPlace?.bounds
+      );
+      return <div style={{ visibility: 'hidden' }} />;
     }
+    console.log(
+      '7,2. LocationAutocompleteInputImpl PASSED SAFEGUARD',
+      window.mapboxgl,
+      selectedPlace,
+      selectedPlace?.bounds
+    );
     const { touched, valid } = meta || {};
     const isValid = valid && touched;
     const predictions = this.currentPredictions();
