@@ -42,7 +42,11 @@ class LocationFilter extends Component {
         })()
       : { isSelected: false, currentCity: '' };
 
-    this.state = { isFocused: false, isSelected, currentCity };
+    this.state = {
+      isFocused: false,
+      isSelected,
+      currentCity,
+    };
     this.currentSearch = isBrowser ? window.location.search : '';
   }
 
@@ -110,10 +114,6 @@ class LocationFilter extends Component {
       intl,
       ...rest
     } = this.props;
-    console.log('5. LocationFilter render() START', {
-      initialAddress: this.props.initialValues?.address,
-    });
-    console.log('LocationFilter render - SSR?', typeof window === 'undefined');
 
     const label = 'Location';
 
@@ -126,7 +126,11 @@ class LocationFilter extends Component {
     const initialOrigin = parseLatLng(propsInitial.origin);
     const initialBounds = parseLatLngBounds(propsInitial.bounds);
     const initialSelectedPlace = initialAddress
-      ? { address: initialAddress, origin: initialOrigin, bounds: null }
+      ? {
+          address: initialAddress,
+          origin: initialOrigin,
+          bounds: initialBounds,
+        }
       : null;
     const formInitialValues = {
       location: {

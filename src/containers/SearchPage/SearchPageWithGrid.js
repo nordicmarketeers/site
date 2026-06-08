@@ -278,9 +278,6 @@ export class SearchPageComponent extends Component {
       params: currentPathParams = {},
       currentUser,
     } = this.props;
-    console.log('8. SearchPageComponent render() START', {
-      hasAddress: !!this.props.location?.search?.includes('address'),
-    });
 
     // If the search page variant is of type /s/:listingType, this defines the :listingType
     // path parameter used to filter the whole page.

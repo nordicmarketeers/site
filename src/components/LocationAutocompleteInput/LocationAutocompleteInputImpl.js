@@ -60,6 +60,11 @@ const LocationPredictionsList = props => {
 
   const item = (prediction, index) => {
     const isHighlighted = index === highlightedIndex;
+
+    if (!geocoder || typeof geocoder.getPredictionId !== 'function') {
+      return <li key="temp" />;
+    }
+
     const predictionId = geocoder.getPredictionId(prediction);
 
     return (
@@ -134,7 +139,6 @@ const currentValue = props => {
 class LocationAutocompleteInputImplementation extends Component {
   constructor(props) {
     super(props);
-    console.log('6. LocationAutocompleteInputImpl constructor', props.input?.value);
     this._isMounted = false;
     this.state = {
       inputHasFocus: false,
@@ -451,21 +455,9 @@ class LocationAutocompleteInputImplementation extends Component {
       submitButton: SubmitButton,
       ariaLabel,
     } = this.props;
-    console.log('7. LocationAutocompleteInputImpl render()', currentValue(this.props));
-    console.log('RENDER - getGeocoder exists?', !!this.getGeocoder);
-    const { name, onFocus } = input;
-    const { search, selectedPlace } = currentValue(this.props);
-    if (
-      typeof window !== 'undefined' &&
-      selectedPlace &&
-      selectedPlace.bounds &&
-      !window.mapboxgl
-    ) {
-      console.log('7,1. RETURNING PLACEHOLDER FOR HYDRATION');
-      return <div style={{ visibility: 'hidden' }} />;
-    }
 
-    console.log('7,2. PASSED SAFEGUARD', window.mapboxgl, selectedPlace, selectedPlace?.bounds);
+    const { name, onFocus } = input;
+    const { search } = currentValue(this.props);
     const { touched, valid } = meta || {};
     const isValid = valid && touched;
     const predictions = this.currentPredictions();
@@ -480,15 +472,9 @@ class LocationAutocompleteInputImplementation extends Component {
       [validClassName]: isValid,
     });
     const predictionsClass = classNames(predictionsClassName);
-    // Only render predictions when the input has focus. For
-    // development and easier workflow with the browser devtools, you
-    // might want to hardcode this to `true`. Otherwise the dropdown
-    // list will disappear.
     const renderPredictions = this.state.inputHasFocus;
     const geocoderVariant = getGeocoderVariant(config.maps.mapProvider);
     const GeocoderAttribution = geocoderVariant.GeocoderAttribution;
-    // The first ref option in this optional chain is about callback ref,
-    // which was used in previous version of this Template.
     const refMaybe =
       typeof inputRef === 'function'
         ? {

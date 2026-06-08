@@ -236,6 +236,27 @@ const FilterComponent = props => {
       const { scope, filterConfig = {} } = config;
       const { label } = filterConfig;
       const queryParamNames = [constructQueryParamName(key, scope)];
+
+      const [mapboxReady, setMapboxReady] = React.useState(
+        typeof window !== 'undefined' && !!window.mapboxgl
+      );
+
+      React.useEffect(() => {
+        if (mapboxReady) return;
+
+        const check = () => {
+          if (window.mapboxgl) {
+            setMapboxReady(true);
+          }
+        };
+
+        const id = setInterval(check, 200);
+
+        return () => clearInterval(id);
+      }, [mapboxReady]);
+
+      if (!mapboxReady) return <input disabled type="text" placeholder="Loading Mapbox..." />;
+
       return (
         <LocationFilter
           label={label}
