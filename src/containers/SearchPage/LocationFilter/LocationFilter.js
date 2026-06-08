@@ -126,7 +126,7 @@ class LocationFilter extends Component {
     const initialOrigin = parseLatLng(propsInitial.origin);
     const initialBounds = parseLatLngBounds(propsInitial.bounds);
     const initialSelectedPlace = initialAddress
-      ? { address: initialAddress, origin: initialOrigin, bounds: initialBounds }
+      ? { address: initialAddress, origin: initialOrigin, bounds: null }
       : null;
     const formInitialValues = {
       location: {
