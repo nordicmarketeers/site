@@ -454,7 +454,14 @@ class LocationAutocompleteInputImplementation extends Component {
     console.log('7. LocationAutocompleteInputImpl render()', currentValue(this.props));
     console.log('RENDER - getGeocoder exists?', !!this.getGeocoder);
     const { name, onFocus } = input;
-    const { search } = currentValue(this.props);
+    const { search, selectedPlace } = currentValue(this.props);
+    if (
+      selectedPlace &&
+      selectedPlace.bounds &&
+      (typeof window === 'undefined' || !window.mapboxgl)
+    ) {
+      return null;
+    }
     const { touched, valid } = meta || {};
     const isValid = valid && touched;
     const predictions = this.currentPredictions();
