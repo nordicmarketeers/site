@@ -456,24 +456,16 @@ class LocationAutocompleteInputImplementation extends Component {
     const { name, onFocus } = input;
     const { search, selectedPlace } = currentValue(this.props);
     if (
+      typeof window !== 'undefined' &&
       selectedPlace &&
       selectedPlace.bounds &&
-      (typeof window === 'undefined' || !window.mapboxgl)
+      !window.mapboxgl
     ) {
-      console.log(
-        '7,1. LocationAutocompleteInputImpl RETURNING NULL',
-        window.mapboxgl,
-        selectedPlace,
-        selectedPlace?.bounds
-      );
+      console.log('7,1. RETURNING PLACEHOLDER FOR HYDRATION');
       return <div style={{ visibility: 'hidden' }} />;
     }
-    console.log(
-      '7,2. LocationAutocompleteInputImpl PASSED SAFEGUARD',
-      window.mapboxgl,
-      selectedPlace,
-      selectedPlace?.bounds
-    );
+
+    console.log('7,2. PASSED SAFEGUARD', window.mapboxgl, selectedPlace, selectedPlace?.bounds);
     const { touched, valid } = meta || {};
     const isValid = valid && touched;
     const predictions = this.currentPredictions();
