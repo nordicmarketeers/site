@@ -1,4 +1,5 @@
 import React from 'react';
+import css from './FilterComponent.module.css';
 
 // utils
 import { SCHEMA_TYPE_ENUM, SCHEMA_TYPE_MULTI_ENUM, SCHEMA_TYPE_LONG } from '../../util/types';
@@ -255,7 +256,16 @@ const FilterComponent = props => {
         return () => clearInterval(id);
       }, [mapboxReady]);
 
-      if (!mapboxReady) return <input disabled type="text" placeholder="Loading Mapbox..." />;
+      if (!mapboxReady)
+        return (
+          <input
+            disabled
+            type="text"
+            placeholder="Loading Mapbox..."
+            id="locationFilterPlaceholder"
+            className={css.locationFilterPlaceholder}
+          />
+        );
 
       return (
         <LocationFilter

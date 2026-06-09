@@ -1,0 +1,10 @@
+@import '../../styles/customMediaQueries.css';
+
+.locationFilterPlaceholder {
+  margin: 50px 0;
+
+  @media (--viewportMedium) {
+    margin-top: 28px;
+    margin-bottom: 56px;
+  }
+}
