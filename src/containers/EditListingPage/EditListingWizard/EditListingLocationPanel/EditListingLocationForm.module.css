@@ -65,3 +65,12 @@
     margin-top: 100px;
   }
 }
+
+.locationFilterPlaceholder {
+  margin: 24px 0;
+
+  @media (--viewportMedium) {
+    margin-top: 30px;
+    margin-bottom: 30px;
+  }
+}

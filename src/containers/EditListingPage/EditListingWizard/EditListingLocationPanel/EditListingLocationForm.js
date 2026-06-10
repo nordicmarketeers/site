@@ -85,6 +85,24 @@ export const EditListingLocationForm = props => (
       const submitInProgress = updateInProgress;
       const submitDisabled = invalid || disabled || submitInProgress;
 
+      const [mapboxReady, setMapboxReady] = React.useState(
+        typeof window !== 'undefined' && !!window.mapboxgl
+      );
+
+      React.useEffect(() => {
+        if (mapboxReady) return;
+
+        const check = () => {
+          if (window.mapboxgl) {
+            setMapboxReady(true);
+          }
+        };
+
+        const id = setInterval(check, 200);
+
+        return () => clearInterval(id);
+      }, [mapboxReady]);
+
       return (
         <Form className={classes} onSubmit={handleSubmit}>
           {updateListingError ? (
@@ -99,29 +117,41 @@ export const EditListingLocationForm = props => (
             </p>
           ) : null}
 
-          <FieldLocationAutocompleteInput
-            rootClassName={css.locationAddress}
-            inputClassName={css.locationAutocompleteInput}
-            iconClassName={css.locationAutocompleteInputIcon}
-            predictionsClassName={css.predictionsRoot}
-            validClassName={css.validLocation}
-            autoFocus={autoFocus}
-            name="location"
-            id={`${formId}.location`}
-            label={intl.formatMessage({
-              id: 'EditListingLocationForm.address',
-            })}
-            placeholder={intl.formatMessage({
-              id: 'EditListingLocationForm.addressPlaceholder',
-            })}
-            useDefaultPredictions={false}
-            format={identity}
-            valueFromForm={values.location}
-            validate={composeValidators(
-              autocompleteSearchRequired(addressRequiredMessage),
-              autocompletePlaceSelected(addressNotRecognizedMessage)
-            )}
-          />
+          {!mapboxReady && (
+            <input
+              disabled
+              type="text"
+              placeholder="Loading Mapbox..."
+              id="locationFilterPlaceholder"
+              className={css.locationFilterPlaceholder}
+            />
+          )}
+
+          {mapboxReady && (
+            <FieldLocationAutocompleteInput
+              rootClassName={css.locationAddress}
+              inputClassName={css.locationAutocompleteInput}
+              iconClassName={css.locationAutocompleteInputIcon}
+              predictionsClassName={css.predictionsRoot}
+              validClassName={css.validLocation}
+              autoFocus={autoFocus}
+              name="location"
+              id={`${formId}.location`}
+              label={intl.formatMessage({
+                id: 'EditListingLocationForm.address',
+              })}
+              placeholder={intl.formatMessage({
+                id: 'EditListingLocationForm.addressPlaceholder',
+              })}
+              useDefaultPredictions={false}
+              format={identity}
+              valueFromForm={values.location}
+              validate={composeValidators(
+                autocompleteSearchRequired(addressRequiredMessage),
+                autocompletePlaceSelected(addressNotRecognizedMessage)
+              )}
+            />
+          )}
 
           {/* <FieldTextInput
             className={css.building}
