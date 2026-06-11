@@ -19,12 +19,13 @@ import css from './ListingDashboardPage.module.css';
 export const ListingDashboardPageComponent = props => {
   const config = useConfiguration();
   const intl = useIntl();
-  const { currentUser } = props;
+  const { currentUser, updatePageTitle: UpdatePageTitle } = props;
 
   const title = intl.formatMessage({ id: 'UserNav.yourListings' });
 
   return (
     <main title={title} className={css.panel}>
+      <UpdatePageTitle panelHeading={'Dashboard'} />
       <div>
         <H3 as="h1">
           <FormattedMessage id="UserNav.yourListings" />
